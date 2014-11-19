@@ -1,0 +1,6 @@
+/htdocs/index.php
+.idea/*
+runtime/*
+tests/*
+codeception.yml
+data/*
