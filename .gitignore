@@ -1,6 +1,5 @@
-/htdocs/index.php
+data/*
 .idea/*
 runtime/*
 tests/*
 codeception.yml
-data/*
