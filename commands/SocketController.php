@@ -5,6 +5,7 @@ use Yii;
 use yii\base\Exception;
 use yii\console\Controller;
 use app\modules\socket\models\Chat;
+use app\modules\socket\models\Server;
 
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
@@ -15,41 +16,34 @@ use React\Socket;
 
 class SocketController extends Controller
 {
-    public function actionTest()
-    {
-        require dirname(__DIR__) . '/vendor/autoload.php';
 
-
-        $server = IoServer::factory(
-            new HttpServer(
-                new WsServer(
-                    new Chat()
-                )
-            ),
-            8080
-        );
-
-
-        $server->run();
-    }
     public function actionInit()
     {
         $loop = EventLoop\Factory::create();
+
         $socket = new Socket\Server($loop);
         $socket->listen(8080);
+
         $server = new IoServer(
-            new HttpServer(new WsServer(new Chat($loop))),
+            new HttpServer(
+                new WsServer(
+                    new Chat($loop))),
             $socket,
             $loop
         );
 
-
+        Server::setPID();
         $server->run();
     }
 
-
-    public function actionKill()
+    public function actionStop()
     {
-        posix_kill('65049', SIGKILL);
+        Server::stop();
     }
+
+    public function actionPort()
+    {
+        echo $this->port;
+    }
+
 }

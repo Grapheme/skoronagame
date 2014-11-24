@@ -37,14 +37,18 @@ use app\assets\AppAsset;
         echo Nav::widget([
             'options' => ['class' => 'navbar-nav navbar-right'],
             'items' => [
+                Yii::$app->user->can('admin') ?
+                    ['label' => 'SignUp', 'url' => ['/user/default/signup']]:'',
+
                 !Yii::$app->user->isGuest ?
                 ['label' => 'Users', 'url' => ['/admin/default/users']] : '',
 
                 !Yii::$app->user->isGuest ?
-                ['label' => 'Administration', 'url' => ['/admin/default/index']] : '',
+                ['label' => 'Questions', 'url' => ['/admin/default/index']] : '',
 
                 Yii::$app->user->can('admin') ?
-                    ['label' => 'SignUp', 'url' => ['/user/default/signup']]:'',
+                    ['label' => 'SERVER', 'url' => ['/socket/default/server']]:'',
+
                 Yii::$app->user->isGuest ?
                     ['label' => 'Login', 'url' => ['/user/default/login']]:
                     ['label' => 'Logout (' .Yii::$app->user->identity->email . ')',

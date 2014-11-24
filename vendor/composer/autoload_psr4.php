@@ -14,6 +14,7 @@ return array(
     'yii\\bootstrap\\' => array($vendorDir . '/yiisoft/yii2-bootstrap'),
     'yii\\' => array($vendorDir . '/yiisoft/yii2'),
     'vova07\\rbac\\' => array($vendorDir . '/vova07/yii2-rbac-module'),
+    'vova07\\console\\' => array($vendorDir . '/vova07/yii2-console-runner-extension'),
     'kartik\\' => array($vendorDir . '/kartik-v/dependent-dropdown', $vendorDir . '/kartik-v/bootstrap-fileinput', $vendorDir . '/kartik-v/bootstrap-star-rating', $vendorDir . '/kartik-v/yii2-widgets', $vendorDir . '/kartik-v/yii2-sortable', $vendorDir . '/kartik-v/yii2-sortable-input'),
     'cebe\\markdown\\' => array($vendorDir . '/cebe/markdown'),
     'React\\Stream\\' => array($vendorDir . '/react/stream/src'),

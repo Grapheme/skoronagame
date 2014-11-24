@@ -3,3 +3,5 @@ data/*
 runtime/*
 tests/*
 codeception.yml
+htdocs/assets/*
+htdocs/index.php

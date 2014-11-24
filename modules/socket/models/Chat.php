@@ -21,6 +21,32 @@ class Chat implements MessageComponentInterface {
         $this->GameModel = new Game($loop);
     }
 
+    public static function sender(ConnectionInterface $conn, $data) {
+
+        $data = Chat::send_format($data);
+        $conn->send($data);
+    }
+
+    public static function send_format($data) {
+
+        $rez['action'] = is_array($data)? $data[0] : 'sendmsg';
+
+        switch($rez['action']){
+
+            case ('initgame'):
+                $rez['castle'] = $data[1];
+                $rez['color'] = $data[2];
+                break;
+
+            case ('sendmsg'):
+                $rez['msg'] = $data;
+                break;
+        }
+
+        $data = ['data' => $rez];
+        return json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
     public function onOpen(ConnectionInterface $conn) {
         // Store the new connection to send messages to later
         $this->clients->attach($conn);
@@ -36,16 +62,17 @@ class Chat implements MessageComponentInterface {
             case 'new':
 
                 if($this->GameModel->existInList($from, 'waiting_list') !== false)
-                    $from->send('соперник уже ищется');
+                    self::sender($from,'соперник уже ищется');
                 else if ($this->GameModel->existInList($from, 'games') !== false)
-                    $from->send('вы уже в игре');
+                    self::sender($from,'вы уже в игре');
                 else {
                     $this->GameModel->players[$from->resourceId]['conn'] = $from;
                     $this->GameModel->searchGame($from);
                 };
                 break;
+
             case 'qw':
-                print_r($this->GameModel->$arr[1]);
+                $this->GameModel->setMap();
                 break;
             default:
         }
