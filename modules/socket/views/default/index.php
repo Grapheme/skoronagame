@@ -5,13 +5,24 @@ use yii\helpers\Url;
 use app\helpers\LoaderFH;
 use yii\helpers\ArrayHelper;
 ?>
+<?
+$poz = [0,1,2,1,2,0,2,0,1];
 
+$arr = ['a','b','c'];
 
+print_r(array_intersect_key($arr,$poz));
+?>
 <?=Html::input('text','send_msg','',['id'=>"send_msg"])?>
 <span class="btn btn-success" id="send">Отправить</span>
 <span class="btn btn-success" id="new">NEW</span>
+<span class="btn btn-success" id="quiz">QUIZ ANS</span>
+<span class="btn btn-success" id="quest">QUEST ANS</span>
 
+<div id="sender"></div>
 <div id="color-box">MY COLOR</div>
+<div><span id="points">0</span> POINTS</div>
+
+<div id="question"></div>
 
 <table id="map">
     <tr>
@@ -79,25 +90,79 @@ $soc = <<<SCRIPT
             console.log("Connection closed, reconnect...");
             setTimeout(wsStart, 5000);
         };
+
     }
 
     wsStart();
 
+    var my_color;
+    var conquest = false;
 ///command ///
     function executeCommand(obj) {
 
         var obj = JSON.parse(obj);
         var data = obj.data;
 
+
         switch(data.action) {
 
             case ('sendmsg'):
+
+                $("#sender").text(data.msg);
                 console.log(data.msg);
                 break;
 
             case ('initgame'):
+
                $("#color-box").css("background",data.color);
-               setCastle(data.castle);
+               $("#points").text(data.points);
+               my_color = data.color;
+               SKGame.setCastle(data.castle);
+                break;
+
+            case ('segmentmap'):
+
+                gameStatus(data.color, 'Выберите территорию', 'Идет выбор территории');
+                SKGame.setMap(data.map);
+                $("#points").text(data.points);
+                break;
+
+            case ('status'):
+
+                SKGame.setMap(data.map);
+                $("#points").text(data.points);
+                break;
+
+            case ('quiz'):
+
+               $("#sender").text('Ответьте на вопрос');
+               $("#question").text(data.question);
+                break;
+
+            case ('quest'):
+
+                $("#sender").text('Ответьте на вопрос');
+                $("#question").text(data.question);
+                SKGame.setVariants(data.variants);
+                SKGame.selectRegion(data.region);
+                break;
+
+            case ('quest_passiv'):
+
+               $("#sender").text('Нападение на территорию соперника');
+               SKGame.selectRegion(data.region);
+                break;
+
+            case ('conquest'):
+
+               conquest = true;
+               gameStatus(data.color, 'Выберите территорию для нападения', 'Соперник нападает');
+               SKGame.setMapAttack(data.map);
+                break;
+
+            case ('endgame'):
+                SKGame.resetGame();
+                alert ('Конец игры!');
                 break;
 
         };
@@ -105,13 +170,69 @@ $soc = <<<SCRIPT
 
 //////////
 
+SKGame = {
 
-    function setCastle(data) {
+        setMap: function (data) {
 
-        for(var coord in data)
-        {
-            $("#"+coord+"map").css("background",data[coord]).append('*');
-        }
+            for(var coord in data)
+                $("#"+coord+"map").css({"background":data[coord], "opacity":"1"});
+        },
+
+        setCastle: function (data) {
+
+            for(var coord in data)
+                $("#"+coord+"map").css("background",data[coord]).append('*');
+        },
+
+        setMapAttack: function (data) {
+
+            for(var coord in data)
+                $("#"+data[coord]+"map").css("opacity","0.5");
+        },
+
+        resetMap: function() {
+
+            var i = 1;
+
+            while(i < 16) {
+                $("#"+i+"map").css({"background":'none', "opacity":"1"}).text(i);
+                i++;
+            }
+        },
+
+        selectRegion: function (data) {
+
+            $("#map td").css("opacity","1");
+            $("#"+data+"map").css("opacity","0.5");
+        },
+
+        setVariants: function(data) {
+
+            data = JSON.parse(data);
+
+            for(var variant in data)
+                $("#question").append(data[variant] + ' ('+ variant +')<br/>');
+        },
+
+         resetGame: function () {
+
+            msg.val('');
+            $("#points").text('');
+            SKGame.resetMap;
+            $("#color-box").css("background",'none');
+         },
+
+}
+
+    function gameStatus(color, active, passive) {
+
+        var text;
+        if(my_color == color)
+            text = active;
+        else
+            text = passive;
+
+        $("#sender").text(text);
     }
 
     function sendToInput(data) {
@@ -119,17 +240,45 @@ $soc = <<<SCRIPT
     }
 
     function send(msg) {
+        msg = JSON.stringify(msg);
         conn.send(msg);
     }
 
     $('#send').on('click',function() {
-        send(msg.val());
+        send({'action':msg.val()});
+        msg.val('');
+    });
+
+     $('#quiz').on('click',function() {
+        send({'action':'quiz','answer':msg.val()});
+        msg.val('');
+    });
+
+     $('#quest').on('click',function() {
+        send({'action':'quest','answer':msg.val()});
         msg.val('');
     });
 
     $('#new').on('click',function() {
-        send('new:');
+        send({'action':'new'});
     });
+
+    $('#map td').on('click',function() {
+        var id_map = parseInt(this.id);
+        var action;
+
+        if(conquest === true) action = 'conquest'; else action = 'segment';
+
+        send({'action':action,'map':id_map});
+    });
+
+///auto////
+
+    $(window).on('load',function() {
+       setTimeout(send({'action':'new'}), 5000);
+    });
+
+
 
 //////////
 SCRIPT;

@@ -146,4 +146,28 @@ class Questions extends \yii\db\ActiveRecord
         return $dp;
     }
 
+    public static function getQuiz(){
+
+        $model = Questions::find()
+            ->select(['question', 'answer', 'id'])
+            ->where(['type' => 'quiz'])
+            ->orderBy('RAND()')
+            ->asArray()
+            ->one();
+
+        return $model;
+    }
+
+    public static function getQuest(){
+
+        $model = Questions::find()
+            ->select(['question', 'answer', 'variants', 'id'])
+            ->where(['type' => 'quest'])
+            ->orderBy('RAND()')
+            ->asArray()
+            ->one();
+
+        return $model;
+    }
+
 }
