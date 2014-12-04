@@ -108,19 +108,19 @@ class Chat implements MessageComponentInterface {
                 break;
 
             case 'quiz':
-                $this->GameModel->answerQuiz($from->resourceId, $arr['answer']);
+                $this->GameModel->quiz->answerQuiz($from->resourceId, $arr['answer']);
                 break;
 
             case 'quest':
-                $this->GameModel->answerQuest($from->resourceId, $arr['answer']);
+                $this->GameModel->quest->answerQuest($from->resourceId, $arr['answer']);
                 break;
 
             case 'segment':
-                $this->GameModel->grabMap($from->resourceId, $arr['map']);
+                $this->GameModel->segment->grabMap($from->resourceId, $arr['map']);
                 break;
 
             case 'conquest':
-                $this->GameModel->startConquest($from->resourceId, $arr['map']);
+                $this->GameModel->conquest->startConquest($from->resourceId, $arr['map']);
                 break;
 
             case 'qw':

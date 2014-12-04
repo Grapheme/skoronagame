@@ -5,13 +5,7 @@ use yii\helpers\Url;
 use app\helpers\LoaderFH;
 use yii\helpers\ArrayHelper;
 ?>
-<?
-$poz = [0,1,2,1,2,0,2,0,1];
 
-$arr = ['a','b','c'];
-
-print_r(array_intersect_key($arr,$poz));
-?>
 <?=Html::input('text','send_msg','',['id'=>"send_msg"])?>
 <span class="btn btn-success" id="send">Отправить</span>
 <span class="btn btn-success" id="new">NEW</span>
@@ -73,7 +67,7 @@ $soc = <<<SCRIPT
 /// server///
     function wsStart() {
 
-        conn = new WebSocket('ws://localhost:8080');
+        conn = new WebSocket('ws://skoronagame:8080');
 
         conn.onopen = function(e) {
             sendToInput("Connection established!");
