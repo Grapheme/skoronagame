@@ -8,7 +8,7 @@ defined('RNTM_PATH') or define('RNTM_PATH',DATA_PATH.'/runtime');
 defined('DB_PATH') or define('DB_PATH',CONF_PATH.'/database');
 
 defined('ASSETS_PATH') or define('ASSETS_PATH',DATA_PATH.'/assets');
-defined('ASSETS_URL') or define('ASSETS_URL','/assets');
+defined('ASSETS_URL') or define('ASSETS_URL','/data/ssassets');
 
 
 defined('IMG_PATH') or define('IMG_PATH',DATA_PATH.'/images');
