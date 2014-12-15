@@ -3,6 +3,7 @@ namespace app\modules\admin\controllers;
 
 use app\helpers\LoaderFH;
 use app\models\Games;
+use app\models\Levels;
 use app\models\Questions;
 use app\modules\socket\models\Game;
 use app\modules\user\models\User;
@@ -149,10 +150,16 @@ class DefaultController extends Controller
 
     public function actionGamelog($id)
     {
-        $game = Games::find()->select('*, max(date_start) as "maxx"')->where('player = '.$id.' and date_start = "maxx"')->groupBy('player')->asArray()->all();
+        $game = [];
+        $levels = [];
+        $game = Games::getLastGame($id);
+
+        if(sizeof($game)>0)
+            $levels = Levels::getGameLevels($game['game'][0]['game']);
 
         return $this->render('gamelog', [
             'game'=>$game,
+            'levels'=>$levels,
         ]);
     }
 }

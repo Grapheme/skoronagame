@@ -63,4 +63,8 @@ class Levels extends \yii\db\ActiveRecord
             'date' => 'date',
         ];
     }
+
+    public static function getGameLevels($game) {
+        return Levels::find()->where('id_game = "'.$game.'"')->asArray()->all();
+    }
 }
