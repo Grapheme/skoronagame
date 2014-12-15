@@ -5,7 +5,7 @@ defined('CONF_PATH') or define('CONF_PATH',__DIR__.'/../../../conf');
 defined('BASE_PATH') or define('BASE_PATH',dirname(__FILE__).'/..');
 
 defined('RNTM_PATH') or define('RNTM_PATH',DATA_PATH.'/runtime');
-defined('DB_PATH') or define('DB_PATH',DATA_PATH.'/database');
+defined('DB_PATH') or define('DB_PATH',CONF_PATH.'/database');
 
 defined('ASSETS_PATH') or define('ASSETS_PATH',dirname(__FILE__).'/assets');
 defined('ASSETS_URL') or define('ASSETS_URL','/assets');
