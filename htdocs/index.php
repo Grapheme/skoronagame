@@ -10,6 +10,7 @@ defined('DB_PATH') or define('DB_PATH',DATA_PATH.'/database');
 defined('ASSETS_PATH') or define('ASSETS_PATH',dirname(__FILE__).'/assets');
 defined('ASSETS_URL') or define('ASSETS_URL','/assets');
 
+
 defined('IMG_PATH') or define('IMG_PATH',DATA_PATH.'/images');
 
 // comment out the following two lines when deployed to production
