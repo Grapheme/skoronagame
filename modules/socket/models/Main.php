@@ -13,6 +13,7 @@ use app\models\Questions;
 
 class Main {
 
+    public $debug = DEBUG;
     public $games;
     public $map;
     public $players;
@@ -25,7 +26,10 @@ class Main {
     public $conquest;
     public $quest;
     public $quiz;
+    public $bdlog;
+    public $bot;
     public $segment;
+    public $loop;
 
 //    public function __construct(&$games, &$map, &$points, &$players,$living_castle) {
 //
@@ -38,7 +42,7 @@ class Main {
 
     public function setParams(Main &$model) {
 
-        $attr = ['games', 'map', 'points', 'players', 'living_castle', 'turn_conquest', 'turn_map', 'conquest', 'quest', 'quiz', 'segment'];
+        $attr = ['games', 'map', 'points', 'players', 'living_castle', 'turn_conquest', 'turn_map', 'conquest', 'quest', 'quiz', 'segment','loop', 'bot', 'bdlog'];
 
         foreach($attr as $prop)
             $this->$prop = &$model->$prop;
@@ -46,15 +50,12 @@ class Main {
 
     public function sendInGameStatus($id_game, $msg) {
 
+        $info = $this->getInfoPlayers($id_game);
+
         foreach($this->games[$id_game]['players'] as $player_id=>$conn) {
 
             //пользователь находится в этой игре
-            if($this->isOnlinePlayer($player_id, $id_game)) {
-
-                $info = [
-                    'points' => $conn['points'],
-                    'map' => $this->games[$id_game]['map']
-                ];
+            if($this->isOnlinePlayer($player_id, $id_game) === true) {
 
                 $msg['info'] = $info;
                 $conn = $this->players[$player_id]['conn'];
@@ -62,6 +63,23 @@ class Main {
                 Chat::sender($conn, $msg, true);
             }
         }
+    }
+
+    public function getInfoPlayers($id_game) {
+
+        $rez=[];
+        foreach($this->games[$id_game]['players'] as $player_id=>$conn) {
+
+            $rez['players'][$conn['color']] = [
+                'nickname' => $conn['name'],
+                'points' => $conn['points'],
+                'type'  => ($this->isOnlinePlayer($player_id, $id_game) !== false)?'on' : 'off',
+                ];
+        }
+
+        $rez['map'] = $this->games[$id_game]['map'];
+
+        return $rez;
     }
 
     public function sendInGame($id_game, $msg, $players = false, $other = false) {
@@ -72,7 +90,7 @@ class Main {
         foreach($this->games[$id_game]['players'] as $player_id=>$conn) {
 
             //пользователь находится в этой игре
-            if($this->isOnlinePlayer($player_id, $id_game)) {
+            if($this->isOnlinePlayer($player_id, $id_game) === true) {
 
                 if ($players === false || in_array($player_id, $players))
                     $this->players[$player_id]['conn']->send($msg);
@@ -127,10 +145,21 @@ class Main {
         foreach($players as $id_conn => $val) {
 
             if(in_array($val['color'], $castles)) {
-                $rez[$id_conn] = ['points' => $val['points'], 'color' => $val['color']];
+                $rez[$id_conn] = ['points' => $val['points'], 'color' => $val['color'], 'type' => $val['type']];
             }
         }
         return $rez;
+    }
+
+    public function getIdbyColor($id_game, $color) {
+
+        $players = $this->games[$id_game]['players'];
+
+        foreach($players as $id_conn => $val) {
+
+            if($val['color'] == $color)
+                return $this->players[$id_conn]['usr'];
+        }
     }
 
     public function getPlayerOfRegion($region, $id_game) {
@@ -158,8 +187,13 @@ class Main {
 
         $player = isset($this->players[$id_conn]);
 
-        if($player && $this->players[$id_conn]['game']== $id_game)
-            return true;
+        if($player && $this->players[$id_conn]['game']== $id_game) {
+
+            if ($this->games[$id_game]['players'][$id_conn]['type'] == Game::BOT)
+                return Game::BOT;
+            else
+                return true;
+        }
 
         return false;
     }
@@ -167,21 +201,19 @@ class Main {
     public function addPoints($id_game, $id_conn, $points) {
 
         print_r('начисление очков'."\n");
-        print_r( $this->games[$id_game]['players']);
 
         $this->games[$id_game]['players'][$id_conn]['points'] += $points;
 
-        $lvl = sizeof($this->games[$id_game]['levels']) - 1;
+        $lvl = max(array_keys($this->games[$id_game]['levels']));
         $this->games[$id_game]['levels'][$lvl]['players'][$id_conn]['points'] += $points;
 
-        print_r( $this->games[$id_game]['players']);
     }
 
     //// GAME ////
 
     public function addLevel($id_game, $question, $answer, $variants = null, $id_question, $type, $other = false) {
 
-        $lvl = isset($this->games[$id_game]['levels'])? sizeof($this->games[$id_game]['levels']): 0;
+        $lvl = isset($this->games[$id_game]['levels'])? max(array_keys($this->games[$id_game]['levels'])) + 1: 0;
 
         $this->games[$id_game]['levels'][$lvl] = [
             'question'      => $question,
@@ -190,10 +222,13 @@ class Main {
             'id_question'   => $id_question,
             'time'          => time(),
             'type'          => $type,
+            'players'       => array_fill_keys(array_keys($this->games[$id_game]['players']),null),
         ];
 
         if($other !== false)
             $this->games[$id_game]['levels'][$lvl] = array_merge($this->games[$id_game]['levels'][$lvl], $other);
+
+        return $lvl;
     }
 
     public function isDuel($id_game,$lvl) {
@@ -209,6 +244,8 @@ class Main {
         $answers = array_column($this->games[$id_game]['levels'][$lvl]['players'],'answer');
         $players = sizeof($this->games[$id_game]['levels'][$lvl]['players']);
 
+        print_r($answers);
+        print_r($players);
         return (sizeof($answers) == $players)? true:false;
     }
 
@@ -233,30 +270,35 @@ class Main {
     public function checkPlayer ($conn_id, $lvl, $id_game, $type) {
 
         //если не игрок
-        if(!isset($this->players[$conn_id])) return false;
-
-        //если не должен отвечать
-        if($this->isOnlinePlayer($conn_id,$id_game)) {
-            echo 'игрок не онлайн в этой игре';
+        if(!isset($this->players[$conn_id])) {
+            echo "игрок не в списке игроков \n";
             return false;
         }
 
         //если не должен отвечать
-        if(!isset($this->games[$id_game]['levels'][$lvl]['players'][$conn_id])) {
-            echo 'игрок не должен отвечать';
+        if(!$this->isOnlinePlayer($conn_id,$id_game)) {
+            echo "игрок не онлайн в этой игре\n";
+            return false;
+        }
+
+        //если не должен отвечать
+        if(!array_key_exists($conn_id, $this->games[$id_game]['levels'][$lvl]['players'])) {
+            echo "игрок не должен отвечать\n";
             return false;
         }
 
         //если уже ответил
         if(isset($this->games[$id_game]['levels'][$lvl]['players'][$conn_id]['answer'])) {
-            echo 'уже отвечал';
+            echo "уже отвечал\n";
             return false;
         }
 
         //если не тот тип
         if($this->games[$id_game]['levels'][$lvl]['type']!== $type) {
-            echo 'игрок отвечает на другой тип вопроса';
+            echo "игрок отвечает на другой тип вопроса\n";
             return false;
         }
+
+        return true;
     }
 }

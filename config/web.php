@@ -93,6 +93,7 @@ $config = [
                 'signup' => 'user/default/signup',
                 'logout' => 'user/default/logout',
                 'profile' => 'user/default/profile',
+                'raiting' => 'user/default/raiting',
                 'game' => 'socket/default/index',
 //                '<_a:(about|error)>' => 'main/default/<_a>',
 //                '<_a:(login|logout)>' => 'user/default/<_a>',

@@ -7,7 +7,7 @@ use yii\helpers\Html;
     <br/>
     <?=Html::a('Начать игру',['/game'],['class'=>'btn btn-primary']);?>
     <br/>
-    <?=Html::a('Рейтинг',['#'],['class'=>'btn btn-primary']);?>
+    <?=Html::a('Рейтинг',['/raiting'],['class'=>'btn btn-primary']);?>
     <br/>
     <?=Html::a('Помощь',['#'],['class'=>'btn btn-primary']);?>
     <br/>

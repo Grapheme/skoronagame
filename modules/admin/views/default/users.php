@@ -15,6 +15,8 @@ use yii\helpers\ArrayHelper;
             'email',
             'winns',
             'points',
+            'm_winns',
+            'm_points',
             [
                 'label'=>'Рег',
                 'attribute' => 'ref',
@@ -25,6 +27,16 @@ use yii\helpers\ArrayHelper;
                 'value'=>function ($data) {
                     return Yii::$app->params['socParams'][$data->ref];
                 },
+            ],
+            [
+                'label'=>'Лог',
+                'format' => 'raw',
+                'enableSorting' => false,
+                'filter' => false,
+                'options'=>['style'=>'width:30px'],
+                'value'=>function ($data) {
+                        return '<div>'.Html::a('Смотреть лог',['default/gamelog','id'=>$data->id],['class'=>'btn btn-primary']).'</div>';
+                    },
             ],
 //            [
 //                'label'=>'Управление',

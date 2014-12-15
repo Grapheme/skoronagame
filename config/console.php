@@ -20,6 +20,7 @@ return [
             'ruleFile' => '@app/rbac/GroupRule.php', //Default path to rules.php | NEW CONFIGURATIONS
         ],
         'urlManager' => [
+            'baseUrl' => 'http://skoronagame:8888/',
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [

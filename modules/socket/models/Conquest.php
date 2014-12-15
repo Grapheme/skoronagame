@@ -43,6 +43,13 @@ class Conquest extends Game {
         $map = $this->frontMap($id_game, $color);
 
         $this->sendInGame($id_game,['conquest', $color, $map]);
+
+        //должен нападать бот
+        if($this->games[$id_game]['players'][$player]['type'] == Game::BOT){
+
+            //установка времени ответа боту
+            $this->bot->timerBot($id_game, ['conquest','startConquestBOT'], [$player]);
+        }
     }
 
     public function startConquest($conn_act, $region) {
@@ -78,6 +85,56 @@ class Conquest extends Game {
         print_r($map);
 
         echo "игрок хочет напасть на $region \n";
+
+        if(!in_array($region, $map)) {
+            echo "нападание на недоступную территорию\n";
+            return false;
+        }
+
+        if(isset($this->turn_conquest[$id_game]) && sizeof($this->turn_conquest[$id_game])!=0) {
+
+            print_r("изъятие из очереди игрока \n");
+
+            //изъятие из очереди
+            $player = array_shift($this->turn_conquest[$id_game]);
+
+            $this->quest->startQuest($id_game, [$player, $conn_pass], $region);
+        }
+    }
+
+    public function startConquestBOT($time, $conn_act) {
+
+        $id_game = $this->players[$conn_act]['game'];
+
+        $this->loop->cancelTimer($this->games[$id_game]['players'][$conn_act]['timer']);
+
+        //выбор на кого на пасть
+        $color = $this->getColorPlayer($conn_act, $id_game);
+        $map = $this->frontMap($id_game, $color);
+        $region = $map[array_rand($map)];
+
+        echo "карта возможного нападения бота\n";
+        print_r($map);
+
+        echo "бот хочет напасть на $region \n";
+
+        //номер обороняющегося игрока
+        $conn_pass = $this->getPlayerOfRegion($region, $id_game);
+        echo "обороняетя игрок ".$conn_pass."\n";
+
+        if(!$this->isOnlinePlayer($conn_pass, $id_game)){
+            print_r("Нападение на офлайн игрока'\n");
+            return false;
+        }
+
+        //проверка очередности
+        $player = $this->turn_conquest[$id_game];
+        $player = array_shift($player);
+
+        if($player != $conn_act) {
+            echo "нападание не в очереди\n";
+            return false;
+        }
 
         if(!in_array($region, $map)) {
             echo "нападание на недоступную территорию\n";
@@ -149,10 +206,17 @@ class Conquest extends Game {
             print_r("ид победителя $id_winn\n");
 
             //отразил нападение на замок
-            if ($castle !== false)
+            if ($castle !== false) {
                 $this->addPoints($id_game, $id_winn, $this->points['points_defence'] * $castle);
-            else
+
+                //пишем в базу
+                $this->bdlog->lvlGame($id_game, $lvl, Game::CSTL_DEF);
+            } else {
                 $this->addPoints($id_game, $id_winn, $this->points['points_defence']);
+
+                //пишем в базу
+                $this->bdlog->lvlGame($id_game, $lvl, Game::LCLT_DEF);
+            }
 
             $this->stepUp($id_game);
         } else {
@@ -171,11 +235,19 @@ class Conquest extends Game {
                     $this->games[$id_game]['living_castle'][$region] = $castle - 1;
 
                     $players = array_keys($this->games[$id_game]['levels'][$lvl]['players']);
+
+                    //пишем в базу
+                    $this->bdlog->lvlGame($id_game, $lvl, Game::CSTL_GRAB_LF);
+
                     $this->quest->startQuest($id_game, $players, $region);
                 } else {
                     print_r("жизнь последняя\n");
 
                     $this->castleConquest($id_winn, $id_game, $owner_region);
+
+                    //пишем в базу
+                    $this->bdlog->lvlGame($id_game, $lvl, Game::CSTL_GRAB);
+
                     $this->stepUp($id_game);
                 }
 
@@ -191,7 +263,12 @@ class Conquest extends Game {
                 //передача территории
                 $this->games[$id_game]['map'][$region] = $this->getColorPlayer($id_winn, $id_game);
 
+                //смена стоимости терриотрии
                 $this->games[$id_game]['region_cost'][$region] = $this->points['points_attackmap'];
+
+                //пишем в базу
+                $this->bdlog->lvlGame($id_game, $lvl, Game::LCLT_GRAB);
+
                 $this->stepUp($id_game);
             }
         }

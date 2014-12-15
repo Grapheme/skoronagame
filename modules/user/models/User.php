@@ -43,7 +43,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     {
         return [
             [['pass','email','nickname'], 'filter', 'filter' => 'trim'],
-            [['status','winns','points'], 'integer'],
+            [['status','winns','points','m_winns','m_points'], 'integer'],
 
             [['pass','role','status'], 'required'],
             [['pass'], 'string', 'length' => [8, 70]],
@@ -84,7 +84,9 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'status' => 'Status',
             'nickname' => 'Никнейм',
             'winns' => 'победы',
+            'm_winns' => 'победы(мес)',
             'points' => 'очки',
+            'm_points' => 'очки(мес)',
             'ref' => 'регистратор',
         ];
     }
@@ -251,6 +253,43 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         if(User::updateAll(['pass' => $password],'id = '.Yii::$app->user->id)) return true;
 
         return false;
+    }
+
+    public static function clearMonth() {
+
+        User::updateAll(['m_winns'=>0,'m_points'=>0]);
+    }
+
+    public static function getMplace($my_points) {
+
+        $place = User::find()
+            ->where('m_points > ' . $my_points . ' and role != "BAN" and role != "auto_ban"')
+            ->count('id');
+
+        return $place;
+    }
+
+    public static function getMtop() {
+
+        $top = User::find()->select(['id', 'nickname', 'm_points', 'm_winns'])->orderBy('m_points DESC')->limit(10)->asArray()->all();
+
+        return $top;
+    }
+
+    public static function getPlace($my_points) {
+
+        $place = User::find()
+            ->where('points > ' . $my_points . ' and role != "BAN" and role != "auto_ban"')
+            ->count('id');
+
+        return $place;
+    }
+
+    public static function getTop() {
+
+        $top = User::find()->select(['id', 'nickname', 'points', 'winns'])->orderBy('points DESC')->limit(10)->asArray()->all();
+
+        return $top;
     }
 
     public function search($params)

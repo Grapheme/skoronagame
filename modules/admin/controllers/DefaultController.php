@@ -2,7 +2,9 @@
 namespace app\modules\admin\controllers;
 
 use app\helpers\LoaderFH;
+use app\models\Games;
 use app\models\Questions;
+use app\modules\socket\models\Game;
 use app\modules\user\models\User;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
@@ -28,7 +30,7 @@ class DefaultController extends Controller
                 // 'only' => ['*'],
                 'rules' => [
                     [
-                        'actions' => ['question','index','delete','users'],
+                        'actions' => ['question','index','delete','users','gamelog'],
                         'allow' => true,
                         'roles' => ['moderator'],
                     ],
@@ -143,5 +145,14 @@ class DefaultController extends Controller
             return 'DELETED';}
 
         return 'error';
+    }
+
+    public function actionGamelog($id)
+    {
+        $game = Games::find()->select('*, max(date_start) as "maxx"')->where('player = '.$id.' and date_start = "maxx"')->groupBy('player')->asArray()->all();
+
+        return $this->render('gamelog', [
+            'game'=>$game,
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace app\modules\user\controllers;
 
+use app\models\Games;
 use app\modules\user\models\LoginForm;
 use app\modules\user\models\User;
 use yii\filters\AccessControl;
@@ -15,10 +16,10 @@ class DefaultController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout','signup','addnickname','profile','repass'],
+                'only' => ['logout','signup','addnickname','profile','repass','raiting'],
                 'rules' => [
                     [
-                        'actions' => ['logout','addnickname','profile','repass'],
+                        'actions' => ['logout','addnickname','profile','repass','raiting'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -169,6 +170,31 @@ class DefaultController extends Controller
         $model = User::profile();
 
         return $this->render('profile',['model' => $model]);
+    }
+
+    /**
+     * VIEW RAITING
+     * @return \yii\web\Response
+     */
+    public function actionRaiting()
+    {
+        $my_points = Yii::$app->user->identity->points;
+        $place = User::getPlace($my_points);
+
+        $top = User::getTop();
+
+        $my_mpoints = Yii::$app->user->identity->m_points;
+        $m_place = User::getMplace($my_mpoints);
+
+        $m_top = User::getMtop();
+
+        return $this->render('raiting',[
+            'top'       => $top,
+            'place'     => $place+1,
+            'm_top'     => $m_top,
+            'm_place'   => $m_place+1,
+            'identity'   => Yii::$app->user->identity,
+        ]);
     }
 
     /**

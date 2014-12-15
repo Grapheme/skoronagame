@@ -46,4 +46,31 @@ class SocketController extends Controller
         echo $this->port;
     }
 
+    public function actionSid($sid = false)
+    {
+        $usr = Chat::NO_PARAMS;
+
+        if($sid !== false) {
+
+            session_id($sid);
+            session_start();
+
+            $usr = isset($_SESSION['__id'])?$_SESSION['__id'].'|'.$_SESSION['nickname']:Chat::NO_AUTH;
+            session_write_close();
+
+        }
+        echo $usr;
+        return;
+    }
+
+    public function actionSes()
+    {
+     $sid = '5e2d32281d6aebadc9092cba4d3c085e';
+
+            session_id($sid);
+            session_start();
+
+            print_r($_SESSION);
+    }
+
 }

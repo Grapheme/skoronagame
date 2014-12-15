@@ -4,17 +4,42 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use app\helpers\LoaderFH;
 use yii\helpers\ArrayHelper;
-?>
 
+use app\models\Games;
+
+use yii\db\Expression;
+?>
+    <!--<span class="btn btn-success" id="send">Отправить</span>-->
 <?=Html::input('text','send_msg','',['id'=>"send_msg"])?>
-<span class="btn btn-success" id="send">Отправить</span>
-<span class="btn btn-success" id="new">NEW</span>
-<span class="btn btn-success" id="quiz">QUIZ ANS</span>
-<span class="btn btn-success" id="quest">QUEST ANS</span>
+    <span class="btn btn-success" id="quiz">QUIZ ANS</span>
+    <span class="btn btn-success" id="new">NEW</span>
+    <!--<span class="btn btn-success" id="quest">QUEST ANS</span>-->
+
+<span id="timer" >0</span>
+
+
+<?//
+//print_r(Yii::$app->getSession()->get('id'));
+//print_r($_COOKIE['PHPSESSID']);
+//print_r(Yii::$app->session->getId());
+//
+//$t =  '4f6e01e6542a95ea55d67c696420624430d457ee9e7dc76383496a797afdd54as%3A17%3A%22%5B13%2Cnull%2C2592000%5D%22%3B';
+//?>
 
 <div id="sender"></div>
-<div id="color-box">MY COLOR</div>
-<div><span id="points">0</span> POINTS</div>
+
+<table style="width: 400px;" >
+    <tr>
+        <td><div id="color-box"><?=Yii::$app->user->identity['nickname']?></div></td>
+        <td><div id="nickname1"></div></td>
+        <td><div id="nickname2"></div></td>
+    </tr>
+    <tr>
+        <td><span id="points">0</span></td>
+        <td><span id="points1"></span></td>
+        <td><span id="points2"></span></td>
+    </tr>
+</table>
 
 <div id="question"></div>
 
@@ -42,13 +67,17 @@ use yii\helpers\ArrayHelper;
     </tr>
 </table>
 
+<div id="rezult"></div>
+
+
+
 <br/>
 <?=Html::textarea('textarea','',['id'=>"log_input",'rows'=>30,'style'=>"width:600px;"])?>
 
     <style>
         #map td {
-            width: 35px;
-            height: 35px;
+            width: 50px;
+            height: 50px;
         }
 
         #color-box {
@@ -61,6 +90,20 @@ $soc = <<<SCRIPT
 
     var msg = $('#send_msg');
     var log = $('#log_input');
+    var timer = $('#timer');
+    var question = $("#question");
+    var sender = $("#sender");
+
+    var colorbox = $("#color-box");
+    var points = $("#points");
+
+    var nickname1 = $("#nickname1");
+    var nickname2 = $("#nickname2");
+
+    var points1 = $("#points1");
+    var points2 = $("#points2");
+
+    var rezult = $("#rezult");
 
     var conn = null;
 
@@ -91,6 +134,7 @@ $soc = <<<SCRIPT
 
     var my_color;
     var conquest = false;
+
 ///command ///
     function executeCommand(obj) {
 
@@ -102,14 +146,14 @@ $soc = <<<SCRIPT
 
             case ('sendmsg'):
 
-                $("#sender").text(data.msg);
+                sender.text(data.msg);
                 console.log(data.msg);
                 break;
 
             case ('initgame'):
 
-               $("#color-box").css("background",data.color);
-               $("#points").text(data.points);
+               colorbox.css("background",data.color);
+               SKGame.setPoint(data.points);
                my_color = data.color;
                SKGame.setCastle(data.castle);
                 break;
@@ -118,45 +162,54 @@ $soc = <<<SCRIPT
 
                 gameStatus(data.color, 'Выберите территорию', 'Идет выбор территории');
                 SKGame.setMap(data.map);
-                $("#points").text(data.points);
+                SKGame.setPoint(data.points);
                 break;
 
             case ('status'):
 
+                question.text('');
                 SKGame.setMap(data.map);
-                $("#points").text(data.points);
+//                SKGame.setPoint(data.points);
+                SKGame.setPlayers(data.players);
                 break;
 
             case ('quiz'):
 
-               $("#sender").text('Ответьте на вопрос');
-               $("#question").text(data.question);
+                sender.text('Ответьте на вопрос');
+                question.text(data.question);
+                SKGame.startTimer(data.time);
                 break;
 
             case ('quest'):
 
-                $("#sender").text('Ответьте на вопрос');
-                $("#question").text(data.question);
+                sender.text('Ответьте на вопрос');
+                question.text(data.question);
                 SKGame.setVariants(data.variants);
                 SKGame.selectRegion(data.region);
+                SKGame.startTimer(data.time);
                 break;
 
             case ('quest_passiv'):
 
-               $("#sender").text('Нападение на территорию соперника');
-               SKGame.selectRegion(data.region);
+                question.text('');
+                sender.text('Нападение на территорию соперника');
+                SKGame.selectRegion(data.region);
                 break;
 
             case ('conquest'):
 
-               conquest = true;
-               gameStatus(data.color, 'Выберите территорию для нападения', 'Соперник нападает');
-               SKGame.setMapAttack(data.map);
+                question.text('');
+                conquest = true;
+                gameStatus(data.color, 'Выберите территорию для нападения', 'Соперник нападает');
+                SKGame.setMapAttack(data.map);
                 break;
 
             case ('endgame'):
+
+                question.text('');
                 SKGame.resetGame();
-                alert ('Конец игры!');
+                debugger;
+                SKGame.setRezult(data.rezult);
                 break;
 
         };
@@ -164,7 +217,12 @@ $soc = <<<SCRIPT
 
 //////////
 
-SKGame = {
+window.SKGame = {
+        cfg: {
+            time    :   10,
+            timer   :   10,
+            players :   null,
+        },
 
         setMap: function (data) {
 
@@ -172,10 +230,44 @@ SKGame = {
                 $("#"+coord+"map").css({"background":data[coord], "opacity":"1"});
         },
 
+        setPoint: function (point) {
+
+            points.text(point);
+        },
+
         setCastle: function (data) {
 
             for(var coord in data)
                 $("#"+coord+"map").css("background",data[coord]).append('*');
+        },
+
+        setPlayers: function (data) {
+
+            SKGame.cfg.players = data;
+
+            var i = 1;
+            for(var player in SKGame.cfg.players) {
+
+                if(player == my_color) {
+                    SKGame.setPoint(SKGame.cfg.players[player]['points'])
+                } else {
+
+                    var pl = eval('points'+i);
+                    pl.text(SKGame.cfg.players[player]['points']);
+
+                    var pl = eval('nickname'+i);
+                    pl.text(SKGame.cfg.players[player]['nickname']);
+                    pl.css('background',player);
+
+                    var type = SKGame.cfg.players[player]['type'];
+
+                    if(type == 'off')
+                        pl.css('opacity','0.5');
+
+                    i++;
+                }
+
+            }
         },
 
         setMapAttack: function (data) {
@@ -205,16 +297,63 @@ SKGame = {
             data = JSON.parse(data);
 
             for(var variant in data)
-                $("#question").append(data[variant] + ' ('+ variant +')<br/>');
+                question.append('<br/><span class="variant" data-var='+variant+'>' + data[variant] + '</span>');
+        },
+
+        setRezult: function(data) {
+
+            var rez='';
+            var i = 1
+            while (i < 4) {
+                for(var player in data[i]) {
+
+                    nickname = SKGame.cfg.players[data[i][player].color]['nickname'];
+                    rez+= nickname +' '+ data[i][player].points + ' +' + data[i][player].raiting + '<br/>';
+                    i++;
+                }
+
+            }
+
+            rezult.text(rez);
         },
 
          resetGame: function () {
 
             msg.val('');
-            $("#points").text('');
-            SKGame.resetMap;
-            $("#color-box").css("background",'none');
+            points.text('');
+            SKGame.resetMap();
+            colorbox.css('background','none');
+
+            nickname1.css('background','none').text();
+            nickname2.css('background','none').text();
+
+            points1.text();
+            points2.text();
          },
+
+        startTimer: function (time) {
+
+            SKGame.cfg.time  = time;
+            timer.text(time);
+
+            SKGame.cfg.timer = setInterval(SKGame.tickTimer , 1000);
+        },
+
+        stopTimer: function () {
+
+                timer.text('');
+                clearInterval(SKGame.cfg.timer);
+        },
+
+        tickTimer: function () {
+
+            SKGame.cfg.time  = SKGame.cfg.time - 1;
+
+            if(SKGame.cfg.time <= 0) {
+                SKGame.stopTimer();
+            } else
+                timer.text(SKGame.cfg.time);
+        },
 
 }
 
@@ -226,7 +365,7 @@ SKGame = {
         else
             text = passive;
 
-        $("#sender").text(text);
+        sender.text(text);
     }
 
     function sendToInput(data) {
@@ -245,11 +384,19 @@ SKGame = {
 
      $('#quiz').on('click',function() {
         send({'action':'quiz','answer':msg.val()});
+        SKGame.stopTimer();
         msg.val('');
     });
 
-     $('#quest').on('click',function() {
-        send({'action':'quest','answer':msg.val()});
+//     $('#quest').on('click',function() {
+//        send({'action':'quest','answer':msg.val()});
+//        SKGame.stopTimer();
+//        msg.val('');
+//    });
+
+    $('#question').on('click','.variant',function() {
+        send({'action':'quest','answer':this.attributes['data-var'].value});
+        SKGame.stopTimer();
         msg.val('');
     });
 
@@ -271,8 +418,6 @@ SKGame = {
     $(window).on('load',function() {
        setTimeout(send({'action':'new'}), 5000);
     });
-
-
 
 //////////
 SCRIPT;

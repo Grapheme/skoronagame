@@ -64,4 +64,20 @@ class Server {
         return $ps;
     }
 
+    public static function getUsrId($sessionId) {
+
+        $usr = shell_exec('php '.Yii::$app->basePath.'/yii socket/sid '.$sessionId);
+
+        $usr = explode('|',$usr);
+        return $usr;
+    }
+
+    public static function getSid($conn) {
+
+        $sessionId = isset($conn->WebSocket->request->getCookies()['PHPSESSID'])?
+            $conn->WebSocket->request->getCookies()['PHPSESSID'] : false;
+
+        return $sessionId;
+    }
+
 }

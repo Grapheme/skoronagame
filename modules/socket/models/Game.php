@@ -17,8 +17,17 @@ use app\modules\socket\models\Main;
 
 class Game extends Main{
 
+    const BOT = 'bot';
+    const USER = 'user';
 
-    public $debug = true;
+    const CSTL_DEF = 'CSTL_DEF';
+    const LCLT_DEF = 'LCLT_DEF';
+    const CSTL_GRAB = 'CSTL_GRAB';
+    const CSTL_GRAB_LF = 'CSTL_GRAB_LF';
+    const LCLT_GRAB = 'LCLT_GRAB';
+    const SEGMENT = 'SEGMENT';
+    const REPEAT = 'REPEAT';
+
     public $waiting_list = [];
     public $games = [];
     public $players;
@@ -28,6 +37,19 @@ class Game extends Main{
     public $turn_conquest = [];
 
     public $colors = ['red','green','blue','orange','gray','yellow','pink'];
+    public $bots = [
+        'names' => ['Roza','Podsolnuh','Klever'],
+        'quiz'  => 40,
+        'quest' => 50,
+        'min_time'  => 3,
+        'max_time'  => 7,
+    ];
+
+    public $raiting = [
+        '1' =>  100,
+        '2' =>  50,
+    ];
+
     public $map = [
         1 => [2,7,6],
         2 => [1,3,7,6,8],
@@ -55,8 +77,9 @@ class Game extends Main{
     ];
 
     public $answer_time = 10;
-    public $quest_time = 1000;
-    public $quiz_time = 10;
+    public $quest_time = 15;
+    public $quiz_time = 15;
+    public $server_time = 10;
 
     public $living_castle = 3;
 
@@ -70,6 +93,8 @@ class Game extends Main{
         $this->quest = new Quest($this);
         $this->segment = new Segment($this);
         $this->conquest = new Conquest($this);
+        $this->bot = new Bot($this);
+        $this->bdlog = new BDlog($this);
     }
 
     public function existInList(ConnectionInterface $conn, $list = 'games') {
@@ -115,7 +140,7 @@ class Game extends Main{
 
         $color_castle = $castle;
 
-        foreach($players as $key=>&$val) {
+        foreach($players as $key => &$val) {
 
             //установка номера игры
             $this->players[$key]['game'] = $game_id;
@@ -125,10 +150,12 @@ class Game extends Main{
             $val['color'] = $color;
             $val['points'] = $this->points['points_castle'];
 
-            Chat::sender($this->players[$key]['conn'], ['initgame', $castle, $color, $this->points['points_castle']]);
+            if ($val['type'] == self::USER)
+                Chat::sender($this->players[$key]['conn'], ['initgame', $castle, $color, $this->points['points_castle']]);
         }
 
         $this->games[$game_id]['players']= $players;
+
         //отправить игру в бд !!!!!!!!!!!!!
     }
 
@@ -181,15 +208,14 @@ class Game extends Main{
         //выход на этапе подбора игроков
         if(isset($this->players[$conn_id])) {
 
-
-            //убрать из списка игроков
-            unset ($this->players[$conn_id]);
-
             //remove from waiting_list
             $wait = $this->existInList($conn,'waiting_list');
 
             //ожидал игры
             if ($wait !== false) {
+
+                //убрать из списка игроков
+                unset ($this->players[$conn_id]);
 
                 print_r("вышел на этапе подбора игроков\n");
                 if(sizeof($this->waiting_list[$wait]['players']) == 1){
@@ -212,9 +238,16 @@ class Game extends Main{
 
                 //не все земли распределены
                 if($size_map != $this->map_elements) {
+
                     print_r("вышел на этапе распределения земель\n");
+
                     //замена игрока ботом
+                    $this->bot->playerToBot($conn_id);
+                    print_r("игрок $conn_id заменен ботом\n");
                 } else {
+
+                    //убрать из списка игроков
+                    unset ($this->players[$conn_id]);
 
                     print_r("вышел на этапе игры\n");
 
@@ -236,14 +269,30 @@ class Game extends Main{
 
     ////// SEARCH GAME //////
 
-    public function searchGame(ConnectionInterface $conn) {
+    public function searchGame(ConnectionInterface $conn = null) {
 
-        if(isset($this->waiting_list[0])){
+        if(isset($this->waiting_list[0])) {
 
-            $this->sendInList($conn, 'Подключился игрок ID'.$conn->resourceId,'waiting_list');
+            if(sizeof($conn) > 0) {
+                print_r("connect not bot \n");
 
-            //добавляем игрока в список ожидания
-            $this->waiting_list[0]['players'][$conn->resourceId] = [];
+                $this->sendInList($conn, 'Подключился игрок ID' . $this->players[$conn->resourceId]['nickname'], 'waiting_list');
+
+                //добавляем игрока в список ожидания
+                $this->waiting_list[0]['players'][$conn->resourceId] = ['type' => self::USER, 'name' => $this->players[$conn->resourceId]['nickname']];
+
+
+            } else {
+                print_r("connect bot \n");
+
+                while(sizeof($this->waiting_list[0]['players']) != 3) {
+
+                    $bot = $this->bot->getBot();
+
+                    //добавляем бота в список ожидания
+                    $this->waiting_list[0]['players'][$bot['id']] = ['type' => self::BOT, 'name' => $bot['nickname']];
+                }
+            }
 
             echo "добавляется игрок в лист ожидания\nвсего в листе: ".sizeof($this->waiting_list[0]['players'])."\n";
             print_r(array_keys($this->waiting_list[0]['players']));
@@ -254,6 +303,8 @@ class Game extends Main{
 
                 $game_id = md5(time());
                 $this->games[$game_id]['players'] = $this->waiting_list[0]['players'];
+                print_r($this->games[$game_id]['players']);
+                print_r($this->waiting_list[0]['players']);
                 unset($this->waiting_list[0]);
 
                 //установка параметров игры игрокам
@@ -262,7 +313,9 @@ class Game extends Main{
                 $this->stepUp($game_id);
 
                 //START
-                echo 'START';
+                echo "START \n";
+                $this->bdlog->startGame($game_id);
+
 
             } else {
                 $this->waiting_list[0]['timer_col'] = 0;
@@ -273,7 +326,7 @@ class Game extends Main{
             $timer = $this->loop->addPeriodicTimer(5,function() {$this->sendTime();});
 
             $this->waiting_list[0] = [
-                'players'   => [$conn->resourceId => []],
+                'players'   => [$conn->resourceId => ['type' => self::USER, 'name' => $this->players[$conn->resourceId]['nickname']]],
                 'timer_col' => 0,
                 'timer'     => $timer];
 
@@ -289,18 +342,21 @@ class Game extends Main{
             echo "выполнился таймер с пустым листом ожидания\n";
         }
 
-        if($this->waiting_list[0]['timer_col'] == 3){
+        //таймер выполнился 3 раза
+        if($this->waiting_list[0]['timer_col'] == 1) {
 
             $this->loop->cancelTimer($this->waiting_list[0]['timer']);
 
-            $msg = Chat::send_format('Соперников не нашлось попробуйте еще раз');
-
-            foreach($this->waiting_list[0]['players'] as $player_id => $conn) {
-                $this->players[$player_id]['conn']->send($msg);
-                $this->closeGame($this->players[$player_id]['conn']);
-            }
-
-            unset($this->waiting_list[0]);
+            //игра с ботами
+            $this->searchGame();
+//            $msg = Chat::send_format('Соперников не нашлось попробуйте еще раз');
+//
+//            foreach($this->waiting_list[0]['players'] as $player_id => $conn) {
+//                $this->players[$player_id]['conn']->send($msg);
+//                $this->closeGame($this->players[$player_id]['conn']);
+//            }
+//
+//            unset($this->waiting_list[0]);
 
         } else {
 
@@ -320,16 +376,55 @@ class Game extends Main{
         $top_players = $this->topPointPlayers($players);
 
         print_r("КОНЕЦ ИГРЫ\n");
+
+        $top = array_column($top_players,'points');
+
+        //распределение мест
+       $i = 0;
+       while ($i < 2) {
+
+           $points = pos($top);
+
+           $mas = array_keys($top,$points);
+
+           foreach ($mas as $val) {
+               $top_players[$val]['place'] = $i + 1;
+               $top_players[$val]['raiting']= $this->raiting[$i+1];
+               unset($top[$val]);
+           }
+
+            $i++;
+       }
+
         print_r($top_players);
 
+        //пишем в базу
+        $this->bdlog->endGameBD($id_game, $top_players);
 
-        $this->sendInGameStatus($id_game,['endgame']);
+        //сообщение в игру с результатами
+        $rezult = [];
+        foreach($top_players as $val) {
+
+            $place = isset($val['place'])? $val['place'] : 3;
+
+            $rezult[$place][] = ['color' => $val['color'], 'points' => $val['points'], 'raiting' => isset($val['raiting'])?$val['raiting']:0];
+        }
+        $this->sendInGameStatus($id_game,['endgame', $rezult]);
+
+        //убрать игроков из игры
+        $players = $this->getPlayersGame($id_game);
+        foreach ($players as $key => $val) {
+            unset($this->players[$key]);
+        }
+
+        //убрать игру
+        unset($this->games[$id_game]);
     }
 
     public function topPointPlayers ($arr) {
 
         usort($arr, function ($a, $b) {
-            return ($a['points'] < $b['points']) ? -1 : 1;
+            return ($a['points'] > $b['points']) ? -1 : 1;
             }
         );
 
