@@ -136,9 +136,9 @@ class HttpClient extends AbstractClient
 			$this->extraHeaders['Content-type'] = 'Content-type: application/x-www-form-urlencoded';
 		}
 
-		// Some of services requires Users-Agent header (e.g. GitHub)
-		if (!isset($this->extraHeaders['Users-Agent'])) {
-			$this->extraHeaders['Users-Agent'] = 'Users-Agent: yii2-eauth';
+		// Some of services requires User-Agent header (e.g. GitHub)
+		if (!isset($this->extraHeaders['User-Agent'])) {
+			$this->extraHeaders['User-Agent'] = 'User-Agent: yii2-eauth';
 		}
 
 		$this->extraHeaders['Host'] = 'Host: ' . $this->endpoint->getHost();
@@ -193,12 +193,9 @@ class HttpClient extends AbstractClient
 		if ($this->forceSSL3) {
 			curl_setopt($ch, CURLOPT_SSLVERSION, 3);
 		}
-        print_r($ch);
-        die();
+
 		$response = curl_exec($ch);
 		$responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-
 
 		if (YII_DEBUG) {
 			Yii::trace('EAuth http response: ' . PHP_EOL . var_export($response, true), __NAMESPACE__);

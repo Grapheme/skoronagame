@@ -64,6 +64,7 @@ class OdnoklassnikiOAuth2Service extends Service
 		$this->attributes['city'] = $info['location']['city'];
 		$this->attributes['ref'] = $this->name;
 
+		$this->attributes['id'] = $info['uid'];
 		$this->attributes['name'] = $info['first_name'] . ' ' . $info['last_name'];
 
 		return true;

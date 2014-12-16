@@ -42,7 +42,7 @@ class VKontakteOAuth2Service extends Service
 		$info = $this->makeSignedRequest('users.get.json', array(
 			'query' => array(
 				'uids' => $tokenData['params']['user_id'],
-				'fields' => 'bdate,city', // uid, first_name and last_name is always available
+				'fields' => '', // uid, first_name and last_name is always available
 				//'fields' => 'nickname, sex, bdate, city, country, timezone, photo, photo_medium, photo_big, photo_rec',
 			),
 		));
@@ -53,30 +53,22 @@ class VKontakteOAuth2Service extends Service
 		$this->attributes['name'] = $info['first_name'] . ' ' . $info['last_name'];
 		$this->attributes['url'] = 'http://vk.com/id' . $info['uid'];
 
-        /*if (!empty($info['nickname']))
-            $this->attributes['username'] = $info['nickname'];
-        else
-            $this->attributes['username'] = 'id'.$info['uid'];
+		/*if (!empty($info['nickname']))
+			$this->attributes['username'] = $info['nickname'];
+		else
+			$this->attributes['username'] = 'id'.$info['uid'];
 
-        $this->attributes['gender'] = $info['sex'] == 1 ? 'F' : 'M';
+		$this->attributes['gender'] = $info['sex'] == 1 ? 'F' : 'M';
 
-        $this->atibutes['city'] = $info['city'];
-        /*$this->attributes['country'] = $info['country'];
+		$this->attributes['city'] = $info['city'];
+		$this->attributes['country'] = $info['country'];
 
-        $this->attributes['timezone'] = timezone_name_from_abbr('', $info['timezone']*3600, date('I'));;
+		$this->attributes['timezone'] = timezone_name_from_abbr('', $info['timezone']*3600, date('I'));;
 
-        $this->attributes['photo'] = $info['photo'];
-        $this->attributes['photo_medium'] = $info['photo_medium'];
-        $this->attributes['photo_big'] = $info['photo_big'];
-        $this->attributes['photo_rec'] = $info['photo_rec'];*/
-
-
-        $this->attributes['pass'] = $info['uid'];
-        $this->attributes['b_date'] = $info['bdate'];
-        $this->attributes['f_name'] = $info['first_name'];
-        $this->attributes['l_name'] = $info['last_name'];
-        $this->attributes['city'] = $info['city']['title'];
-        $this->attributes['ref'] = $this->name;
+		$this->attributes['photo'] = $info['photo'];
+		$this->attributes['photo_medium'] = $info['photo_medium'];
+		$this->attributes['photo_big'] = $info['photo_big'];
+		$this->attributes['photo_rec'] = $info['photo_rec'];*/
 
 		return true;
 	}

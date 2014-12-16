@@ -681,7 +681,7 @@ abstract class LightOpenIDProvider
     /**
      * Sends an positive assertion.
      * @param String $identity the OP-Local Identifier that is being authenticated.
-     * @param Array $attributes Users attributes to be sent.
+     * @param Array $attributes User attributes to be sent.
      */
     protected function positiveResponse($identity, $attributes)
     {

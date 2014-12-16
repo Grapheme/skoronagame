@@ -19,9 +19,9 @@ try {
 </form>
 <?php
     } elseif($openid->mode == 'cancel') {
-        echo 'Users has canceled authentication!';
+        echo 'User has canceled authentication!';
     } else {
-        echo 'Users ' . ($openid->validate() ? $openid->identity . ' has ' : 'has not ') . 'logged in.';
+        echo 'User ' . ($openid->validate() ? $openid->identity . ' has ' : 'has not ') . 'logged in.';
     }
 } catch(ErrorException $e) {
     echo $e->getMessage();
