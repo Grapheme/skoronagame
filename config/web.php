@@ -36,8 +36,8 @@ $config = [
                 'vkontakte' => array(
                     // register your app here: https://vk.com/editapp?act=create&site=1
                     'class' => 'nodge\eauth\services\VKontakteOAuth2Service',
-                    'clientId' => '3688869',
-                    'clientSecret' => 'U0RpXo9X5xMPnkhEkRJe',
+                    'clientId' => '4684077',
+                    'clientSecret' => 'FMOFqVQ94nlJDA5aeuuU',
                 ),
                 'mailru' => array(
                     // register your app here: http://api.mail.ru/sites/my/add
