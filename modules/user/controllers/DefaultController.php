@@ -54,7 +54,7 @@ class DefaultController extends Controller
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
             $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('/login'));
 
-            print_r($eauth->authenticate());
+            var_dump($eauth->authenticate());
             try {
                 if ($eauth->authenticate()) {
 
