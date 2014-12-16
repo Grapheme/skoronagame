@@ -63,7 +63,7 @@ class DefaultController extends Controller
                     Yii::$app->getUser()->login($identity);
 
                     // special redirect with closing popup window
-                    $eauth->redirect();
+//                    $eauth->redirect();
                 }
                 else {
                     print_r('NO AUTH');
@@ -77,7 +77,7 @@ class DefaultController extends Controller
 
                 // close popup window and redirect to cancelUrl
 //              $eauth->cancel();
-                $eauth->redirect($eauth->getCancelUrl());
+//                $eauth->redirect($eauth->getCancelUrl());
             }
         }
 
