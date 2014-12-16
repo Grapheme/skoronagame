@@ -15,7 +15,7 @@ class Server {
 
     public static function setPID() {
 
-        file_put_contents(Yii::getAlias("@app/PID"), posix_getpid());
+        file_put_contents(Yii::getAlias("@app/htdocs/PID"), posix_getpid());
     }
 
     public static function getPID() {
@@ -32,7 +32,7 @@ class Server {
 
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            unlink(Yii::getAlias("@app/PID"));
+            unlink(Yii::getAlias("@app/htdocs/PID"));
             echo('Сервер успешно остановлен!');
         } else {
             die("already stopped\r\n");
