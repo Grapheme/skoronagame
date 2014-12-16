@@ -236,7 +236,6 @@ abstract class ServiceBase extends Object implements IAuthService
 	 */
 	public function authenticate()
 	{
-        print_r('auth start');
 		return $this->getIsAuthenticated();
 	}
 
