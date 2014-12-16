@@ -55,6 +55,8 @@ class DefaultController extends Controller
 
             try {
                 if ($eauth->authenticate()) {
+
+                    print_r('YES');
 //                  var_dump($eauth->getIsAuthenticated(), $eauth->getAttributes()); exit;
 
                     $identity = User::findByEAuth($eauth);
@@ -64,6 +66,7 @@ class DefaultController extends Controller
                     $eauth->redirect();
                 }
                 else {
+                    print_r('NO AUTH');
                     // close popup window and redirect to cancelUrl
                     $eauth->cancel();
                 }
