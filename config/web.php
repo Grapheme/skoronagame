@@ -39,12 +39,6 @@ $config = [
                     'clientId' => '4684077',
                     'clientSecret' => 'FMOFqVQ94nlJDA5aeuuU',
                 ),
-                'mailru' => array(
-                    // register your app here: http://api.mail.ru/sites/my/add
-                    'class' => 'nodge\eauth\services\MailruOAuth2Service',
-                    'clientId' => '...',
-                    'clientSecret' => '...',
-                ),
                 'odnoklassniki' => array(
                     // register your app here: http://dev.odnoklassniki.ru/wiki/pages/viewpage.action?pageId=13992188
                     // ... or here: http://www.odnoklassniki.ru/dk?st.cmd=appsInfoMyDevList&st._aid=Apps_Info_MyDev
@@ -52,9 +46,9 @@ $config = [
 //                    'clientId' => '1098102784',
 //                    'clientPublic' => 'CBAJLEHCEBABABABA',
 //                    'clientSecret' => 'F3FF18C9B870008AD62D5506',
-                    'clientId' => '1106209280',
-                    'clientSecret' => '9F95774CCE7A6D40D2384A48',
-                    'clientPublic' => 'CBALGQOCEBABABABA',
+                    'clientId' => '1112908800',
+                    'clientSecret' => '238085C90EBBC9D7620AD532',
+                    'clientPublic' => 'CBAFKGFDEBABABABA',
                     'title' => 'Odnoklas.',
                 ),
             ),

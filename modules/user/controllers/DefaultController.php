@@ -56,7 +56,7 @@ class DefaultController extends Controller
 
             try {
                 if ($eauth->authenticate()) {
-//                  var_dump($eauth->getIsAuthenticated(), $eauth->getAttributes()); exit;
+                  var_dump($eauth->getIsAuthenticated(), $eauth->getAttributes()); exit;
 
                     $identity = User::findByEAuth($eauth);
                     Yii::$app->getUser()->login($identity);
@@ -70,6 +70,7 @@ class DefaultController extends Controller
                 }
             }
             catch (\nodge\eauth\ErrorException $e) {
+                print_r('error');
                 // save error to show it later
                 Yii::$app->getSession()->setFlash('error', 'EAuthException: '.$e->getMessage());
 
