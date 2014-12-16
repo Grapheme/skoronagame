@@ -50,6 +50,10 @@ class DefaultController extends Controller
 
         if (isset($serviceName)) {
             /** @var $eauth \nodge\eauth\ServiceBase */
+            print_r($serviceName);
+
+            print_r(Yii::$app->getUser()->getReturnUrl());
+
             $eauth = Yii::$app->get('eauth')->getIdentity($serviceName);
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
             $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('site/login'));
