@@ -49,12 +49,17 @@ class DefaultController extends Controller
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
         if (isset($serviceName)) {
             /** @var $eauth \nodge\eauth\ServiceBase */
+
+            print_r('получение eauth');
             $eauth = Yii::$app->get('eauth')->getIdentity($serviceName);
 
+            print_r('устанвка redirect');
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
+
+            print_r('устанвка cancel');
             $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('/login'));
 
-            var_dump($eauth->authenticate());
+            print_r('метод authenticate');
             try {
                 if ($eauth->authenticate()) {
 
