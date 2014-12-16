@@ -214,6 +214,8 @@ class ServiceProxy extends AbstractService
 	 */
 	public function getAuthorizationUri(array $additionalParameters = array())
 	{
+        print_r('getAuthorizationUri');
+
 		$parameters = array_merge($additionalParameters, array(
 			'type' => 'web_server',
 			'client_id' => $this->credentials->getConsumerId(),
