@@ -47,16 +47,11 @@ class DefaultController extends Controller
     public function actionLogin()
     {
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
-
         if (isset($serviceName)) {
             /** @var $eauth \nodge\eauth\ServiceBase */
-            print_r($serviceName);
-
-            print_r(Yii::$app->getUser()->getReturnUrl());
-
             $eauth = Yii::$app->get('eauth')->getIdentity($serviceName);
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
-            $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('site/login'));
+            $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('/login'));
 
             try {
                 if ($eauth->authenticate()) {
@@ -74,7 +69,6 @@ class DefaultController extends Controller
                 }
             }
             catch (\nodge\eauth\ErrorException $e) {
-                print_r('error');
                 // save error to show it later
                 Yii::$app->getSession()->setFlash('error', 'EAuthException: '.$e->getMessage());
 
@@ -83,6 +77,7 @@ class DefaultController extends Controller
                 $eauth->redirect($eauth->getCancelUrl());
             }
         }
+
         //////
         if (!Yii::$app->user->isGuest)
             return $this->goHome();

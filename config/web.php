@@ -40,12 +40,7 @@ $config = [
                     'clientSecret' => 'FMOFqVQ94nlJDA5aeuuU',
                 ),
                 'odnoklassniki' => array(
-                    // register your app here: http://dev.odnoklassniki.ru/wiki/pages/viewpage.action?pageId=13992188
-                    // ... or here: http://www.odnoklassniki.ru/dk?st.cmd=appsInfoMyDevList&st._aid=Apps_Info_MyDev
                     'class' => 'nodge\eauth\services\OdnoklassnikiOAuth2Service',
-//                    'clientId' => '1098102784',
-//                    'clientPublic' => 'CBAJLEHCEBABABABA',
-//                    'clientSecret' => 'F3FF18C9B870008AD62D5506',
                     'clientId' => '1112908800',
                     'clientSecret' => '238085C90EBBC9D7620AD532',
                     'clientPublic' => 'CBAFKGFDEBABABABA',
@@ -79,6 +74,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'login/<service:odnoklassniki|facebook|vkontakte>' => 'site/login',
                 '' => 'main/site/index',
                 '/<id:\d+>' => 'main/site/index/',
                 'contact' => 'contact/default/index',
