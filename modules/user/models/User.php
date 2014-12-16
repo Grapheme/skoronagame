@@ -117,7 +117,6 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             throw new ErrorException('EAuth user should be authenticated before creating identity.');
         }
 
-        print_r('findByEAuth');
         $id = $service->getServiceName().'-'.$service->getId();
         $attributes = array(
             'id' => $id,
