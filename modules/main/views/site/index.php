@@ -1,6 +1,7 @@
 <?
 use yii\helpers\Html;
 ?>
+<?if(!Yii::$app->user->isGuest) print_r(Yii::$app->user)?>
     <?=Yii::$app->user->isGuest?
         Html::a('Войти/Регистрация',['/login'],['class'=>'btn btn-primary']):
         Html::a('Выйти',['/logout'],['class'=>'btn btn-primary']);?>
