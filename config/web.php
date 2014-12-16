@@ -124,7 +124,7 @@ $config = [
                 ],
                 [
                     'class' => 'yii\log\FileTarget',
-                    'logFile' => '@app/runtime/logs/eauth.log',
+                    'logFile' => RNTM_PATH.'/logs/eauth.log',
                     'categories' => array('nodge\eauth\*'),
                     'logVars' => array(),
                 ],
