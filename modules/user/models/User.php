@@ -102,8 +102,8 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             return new self(Yii::$app->getSession()->get('user-'.$id));
         }
         else {
-//            return static::findOne(['id' => $id]);
-            return isset(self::$users[$id]) ? new self(self::$users[$id]) : null;
+            return static::findOne(['id' => $id]);
+//            return isset(self::$users[$id]) ? new self(self::$users[$id]) : null;
         }
 
     }

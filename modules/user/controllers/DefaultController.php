@@ -54,6 +54,7 @@ class DefaultController extends Controller
             $eauth = Yii::$app->get('eauth')->getIdentity($serviceName);
 
             print_r('устанвка redirect');
+            print_r(Yii::$app->getUser()->getReturnUrl());
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
 
             print_r('устанвка cancel');
@@ -79,6 +80,8 @@ class DefaultController extends Controller
                 }
             }
             catch (\nodge\eauth\ErrorException $e) {
+
+                print_r('ERROR');
                 // save error to show it later
                 Yii::$app->getSession()->setFlash('error', 'EAuthException: '.$e->getMessage());
 
