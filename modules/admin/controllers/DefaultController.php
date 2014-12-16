@@ -7,6 +7,7 @@ use app\models\Levels;
 use app\models\Questions;
 use app\models\Settings;
 use app\modules\socket\models\Game;
+use app\modules\socket\models\Server;
 use app\modules\user\models\User;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
@@ -166,6 +167,11 @@ class DefaultController extends Controller
 
     public function actionSettings()
     {
+        $sess = Yii::$app->session->getId();
+        print_r($sess);
+
+        print_r(Server::getUsrId($sess));
+
         $settings = Settings::getAllSettings();
 
         return $this->render('settings', ['settings' => $settings]);
