@@ -30,8 +30,8 @@ $config = [
                 'facebook' => array(
                     // register your app here: https://developers.facebook.com/apps/
                     'class' => 'nodge\eauth\services\FacebookOAuth2Service',
-                    'clientId' => '...',
-                    'clientSecret' => '...',
+                    'clientId' => '965925440102624',
+                    'clientSecret' => 'b1dc604aed4e137b7767764cd1f7c92a',
                 ),
                 'vkontakte' => array(
                     // register your app here: https://vk.com/editapp?act=create&site=1
