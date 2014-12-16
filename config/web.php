@@ -122,6 +122,12 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'logFile' => '@app/runtime/logs/eauth.log',
+                    'categories' => array('nodge\eauth\*'),
+                    'logVars' => array(),
+                ],
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
