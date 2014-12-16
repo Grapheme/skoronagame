@@ -49,6 +49,9 @@ use app\assets\AppAsset;
                 Yii::$app->user->can('admin') ?
                     ['label' => 'SERVER', 'url' => ['/socket/default/server']]:'',
 
+                !Yii::$app->user->isGuest ?
+                    ['label' => 'Settings', 'url' => ['/admin/default/settings']]:'',
+
                 Yii::$app->user->isGuest ?
                     ['label' => 'Login', 'url' => ['/user/default/login']]:
                     ['label' => 'Logout (' .Yii::$app->user->identity->email . ')',

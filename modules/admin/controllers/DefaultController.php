@@ -5,6 +5,7 @@ use app\helpers\LoaderFH;
 use app\models\Games;
 use app\models\Levels;
 use app\models\Questions;
+use app\models\Settings;
 use app\modules\socket\models\Game;
 use app\modules\user\models\User;
 use yii\data\ActiveDataProvider;
@@ -31,7 +32,7 @@ class DefaultController extends Controller
                 // 'only' => ['*'],
                 'rules' => [
                     [
-                        'actions' => ['question','index','delete','users','gamelog'],
+                        'actions' => ['question','index','delete','users','gamelog','settings'],
                         'allow' => true,
                         'roles' => ['moderator'],
                     ],
@@ -161,5 +162,12 @@ class DefaultController extends Controller
             'game'=>$game,
             'levels'=>$levels,
         ]);
+    }
+
+    public function actionSettings()
+    {
+        $settings = Settings::getAllSettings();
+
+        return $this->render('settings', ['settings' => $settings]);
     }
 }
