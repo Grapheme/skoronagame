@@ -18,6 +18,7 @@ class Bot extends Game {
 
     public function __construct(Game &$model) {
         $this->setParams($model);
+        $this->settings();
     }
 
     public function getBot() {

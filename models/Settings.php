@@ -29,7 +29,7 @@ class Settings extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'value', 'desc'], 'string', 'max' => 40]
+            [['name', 'value', 'desc', 'type'], 'string', 'max' => 40]
         ];
     }
 
@@ -58,5 +58,10 @@ class Settings extends \yii\db\ActiveRecord
         }
 
         return $settings;
+    }
+
+    public static function setParam($param,$value){
+
+        return Settings::updateAll(['value' => $value],['name' => $param]);
     }
 }

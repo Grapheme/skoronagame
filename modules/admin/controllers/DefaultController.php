@@ -167,12 +167,24 @@ class DefaultController extends Controller
 
     public function actionSettings()
     {
-        $sess = Yii::$app->session->getId();
-        print_r($sess);
-
-        print_r(Server::getUsrId($sess));
 
         $settings = Settings::getAllSettings();
+
+        if(Yii::$app->request->isPost) {
+            Yii::$app->cache->delete('settings');
+
+            foreach ($settings as &$setting) {
+
+                $value = Yii::$app->request->Post($setting['name']);
+
+                if($value && $value != $setting['value']) {
+
+                    if(Settings::setParam($setting['name'], $value))
+                        $setting['value']= $value;
+                }
+            }
+        }
+
 
         return $this->render('settings', ['settings' => $settings]);
     }

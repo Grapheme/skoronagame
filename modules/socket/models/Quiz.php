@@ -18,6 +18,7 @@ class Quiz extends Game {
 
     public function __construct(Game &$model) {
         $this->setParams($model);
+        $this->settings();
     }
 
     public function startQuiz($id_game, $duel = false) {

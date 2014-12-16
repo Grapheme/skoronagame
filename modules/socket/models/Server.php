@@ -15,12 +15,12 @@ class Server {
 
     public static function setPID() {
 
-        file_put_contents(Yii::getAlias("@app/htdocs/PID"), posix_getpid());
+        file_put_contents(Yii::getAlias(PATH_PID), posix_getpid());
     }
 
     public static function getPID() {
 
-        $path_pid = Yii::getAlias("@app/PID");
+        $path_pid = Yii::getAlias(PATH_PID);
         $pid = @file_get_contents($path_pid);
 
         return $pid;
@@ -32,7 +32,7 @@ class Server {
 
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            unlink(Yii::getAlias("@app/htdocs/PID"));
+            unlink(Yii::getAlias(PATH_PID));
             echo('Сервер успешно остановлен!');
         } else {
             die("already stopped\r\n");

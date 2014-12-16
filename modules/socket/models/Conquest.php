@@ -18,6 +18,7 @@ class Conquest extends Game {
 
     public function __construct(Game &$model) {
         $this->setParams($model);
+        $this->settings();
     }
 
     public function stepConquest($id_game) {

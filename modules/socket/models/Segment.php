@@ -18,6 +18,7 @@ class Segment extends Game {
 
     public function __construct(Game &$model) {
         $this->setParams($model);
+        $this->settings();
     }
 
     public function segmentMap ($game_id) {

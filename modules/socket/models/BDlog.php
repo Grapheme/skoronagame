@@ -71,7 +71,8 @@ class BDlog extends Game {
 
             $color = $this->games[$id_game]['players'][$key]['color'];
             $type = $this->games[$id_game]['players'][$key]['type'];
-            if(isset($type)) $val['type'] = $type;
+
+            if(is_array($val)) $val['type'] = $type;
             $pl_answer[$color] = $val;
         }
 

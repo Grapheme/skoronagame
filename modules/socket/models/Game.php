@@ -2,6 +2,7 @@
 
 namespace app\modules\socket\models;
 
+use app\models\Settings;
 use Evenement\EventEmitterInterface;
 use Ratchet\Wamp\Exception;
 use Yii;
@@ -37,13 +38,29 @@ class Game extends Main{
     public $turn_conquest = [];
 
     public $colors = ['red','green','blue','orange','gray','yellow','pink'];
+
     public $bots = [
-        'names' => ['Roza','Podsolnuh','Klever'],
-        'quiz'  => 40,
-        'quest' => 50,
+        'names'     => ['Roza','Podsolnuh','Klever','Mak'],
+        'quiz'      => 40,
+        'quest'     => 50,
         'min_time'  => 3,
         'max_time'  => 7,
     ];
+
+    public $points = [
+        'points_castle'     => 1000,
+        'points_segmentmap' => 200,
+        'points_attackmap'  => 400,
+        'points_defaultmap' => 200,
+        'points_defence'    => 100,
+    ];
+
+    public $answer_time = 10;
+    public $quest_time = 15;
+    public $quiz_time = 15;
+    public $server_time = 10;
+
+    public $living_castle = 3;
 
     public $raiting = [
         '1' =>  100,
@@ -68,26 +85,13 @@ class Game extends Main{
         15 => [9,10,14]
     ];
 
-    public $points = [
-        'points_castle'     => 1000,
-        'points_segmentmap' => 200,
-        'points_attackmap'  => 400,
-        'points_defaultmap' => 200,
-        'points_defence'    => 100,
-    ];
-
-    public $answer_time = 10;
-    public $quest_time = 15;
-    public $quiz_time = 15;
-    public $server_time = 10;
-
-    public $living_castle = 3;
-
     public $map_elements = 15;
 
     public function __construct($loop) {
 
+        Yii::$app->cache->delete('settings');
         $this->loop = $loop;
+        $this->settings();
 
         $this->quiz = new Quiz($this);
         $this->quest = new Quest($this);
@@ -95,6 +99,31 @@ class Game extends Main{
         $this->conquest = new Conquest($this);
         $this->bot = new Bot($this);
         $this->bdlog = new BDlog($this);
+    }
+
+    public function settings() {
+
+        $settings = Settings::getAllSettings();
+        $settings = array_column($settings,'value','name');
+
+        $this->bots['names']    = explode("\r\n",$settings['bot_names']);
+        $this->bots['quiz']     = $settings['bot_quiz'];
+        $this->bots['quest']    = $settings['bot_quest'];
+        $this->bots['min_time'] = $settings['bot_min_time'];
+        $this->bots['max_time'] = $settings['bot_max_time'];
+
+        $this->points['points_castle']      = $settings['points_castle'];
+        $this->points['points_segmentmap']  = $settings['points_segmentmap'];
+        $this->points['points_attackmap']   = $settings['points_attackmap'];
+        $this->points['points_defaultmap']  = $settings['points_defaultmap'];
+        $this->points['points_defence']     = $settings['points_defence'];
+
+//        $this->answer_time  = $settings['answer_time'];
+        $this->quest_time   = $settings['quest_time'];
+        $this->quiz_time    = $settings['quiz_time'];
+        $this->server_time  = $settings['server_time'];
+
+        $this->living_castle = $settings['living_castle'];
     }
 
     public function existInList(ConnectionInterface $conn, $list = 'games') {

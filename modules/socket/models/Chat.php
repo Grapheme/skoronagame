@@ -13,7 +13,7 @@ use yii\helpers\Url;
 
 class Chat implements MessageComponentInterface {
 
-    const NO_AUTH = 'auth';
+    const NO_AUTH = 'no auth';
     const NO_PARAMS = 'params';
 
     protected $clients;

@@ -18,6 +18,7 @@ class Quest extends Game {
 
     public function __construct(Game &$model) {
         $this->setParams($model);
+        $this->settings();
     }
 
     public function startQuest($id_game, $players, $region) {
