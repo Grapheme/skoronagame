@@ -71,7 +71,7 @@ class DefaultController extends Controller
                     Yii::$app->getUser()->login($identity);
 
                     // special redirect with closing popup window
-//                    $eauth->redirect();
+                    $eauth->redirect();
                 }
                 else {
                     print_r('NO AUTH');
