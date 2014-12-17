@@ -245,7 +245,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $refer = User::refDecode($refer);
 
             //указан существующий реферал
-            if($refer && User::find()->where(['id' => $refer])->exists()) {
+            if($refer && User::find()->where(['id' => $refer])->count() > 0) {
                 $this->refer = $refer;
             }
 
@@ -277,7 +277,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 
             $refer = User::refDecode($refer);
             //указан существующий реферал
-            if($refer && User::find()->where(['id' => $refer])->exists()) {
+            if($refer && User::find()->where(['id' => $refer])->count() > 0) {
                 $model->refer = $refer;
             }
         }
