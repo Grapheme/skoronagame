@@ -14,6 +14,7 @@ use yii\data\ActiveDataProvider;
  * @property string $pass
  * @property string $role
  * @property integer $status
+ * @property integer $refer
  * @property string $nickname
  */
 
@@ -42,7 +43,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     {
         return [
             [['pass','email','nickname'], 'filter', 'filter' => 'trim'],
-            [['status','winns','points','m_winns','m_points'], 'integer'],
+            [['status','winns','points','m_winns','m_points', 'refer'], 'integer'],
 
             [['pass','role','status'], 'required'],
             [['pass'], 'string', 'length' => [8, 70]],
@@ -89,6 +90,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'points' => 'очки',
             'm_points' => 'очки(мес)',
             'ref' => 'регистратор',
+            'refer' => 'реферал',
         ];
     }
 
@@ -108,6 +110,24 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         }
 
     }
+
+    public static function refCode($id=false) {
+
+        $id = ($id)?:Yii::$app->user->getId();
+        $key = Yii::$app->params['key'];
+
+        return Yii::$app->security->encryptByKey($id, $key);
+    }
+
+    public static function refDecode($code) {
+
+        if($code === false) return false;
+
+        $key = Yii::$app->params['key'];
+
+        return Yii::$app->security->decryptByKey($code, $key);
+    }
+
     /**
      * @param \nodge\eauth\ServiceBase $service
      * @return User
@@ -210,7 +230,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
      * @param bool $email
      * @return bool
      */
-    public function signup($email = false) {
+    public function signup($email = false, $refer = false) {
 
         $this->setScenario('signup');
         $this->load(Yii::$app->request->post());
@@ -221,6 +241,13 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         }
 
         if($this->validate()){
+
+            $refer = User::refDecode($refer);
+
+            //указан существующий реферал
+            if($refer && User::find()->where(['id' => $refer])->exists()) {
+                $this->refer = $refer;
+            }
 
             $this->pass=$this->generatePassword($this->pass);
             $this->role = 'user';
@@ -239,14 +266,21 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 
     }
 
-    public static function signupSoc($identity) {
+    public static function signupSoc($identity, $refer = false) {
 
         $ref = \Yii::$app->params['socParams'][$identity['service']];
 
         $model = User::find()->where(['pass'=>$identity['id'], 'ref' => $ref])->one();
 
-        if(sizeof($model) == 0)
+        if(sizeof($model) == 0) {
             $model = new User();
+
+            $refer = User::refDecode($refer);
+            //указан существующий реферал
+            if($refer && User::find()->where(['id' => $refer])->exists()) {
+                $model->refer = $refer;
+            }
+        }
 
         $model->setScenario('signup_soc');
         $model->name = $identity['name'];

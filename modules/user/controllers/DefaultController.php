@@ -1,6 +1,7 @@
 <?php
 namespace app\modules\user\controllers;
 
+use app\helpers\LoaderFH;
 use app\models\Games;
 use app\modules\user\models\LoginForm;
 use app\modules\user\models\User;
@@ -9,6 +10,7 @@ use yii\filters\VerbFilter;
 use yii\web\Controller;
 use Yii;
 use app\modules\admin\views;
+
 class DefaultController extends Controller
 {
     public function behaviors()
@@ -44,9 +46,14 @@ class DefaultController extends Controller
         ];
     }
 
-    public function actionLogin()
-    {
+    public function actionLogin() {
+
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
+
+        $ref = Yii::$app->request->get('ref');
+
+        $meta = LoaderFH::metaTag($ref);
+
         if (isset($serviceName)) {
             /** @var $eauth \nodge\eauth\ServiceBase */
 
@@ -60,7 +67,7 @@ class DefaultController extends Controller
                     $identity = User::findByEAuth($eauth);
 
 //                    print_r($identity->profile);
-                    if(User::signupSoc($identity->profile)) {
+                    if(User::signupSoc($identity->profile, $ref)) {
                         $model = new LoginForm();
                         $model->username = $identity->profile['id'];
                         $model->password = $identity->profile['id'];
@@ -123,6 +130,7 @@ class DefaultController extends Controller
         return $this->render('login', [
             'model' => $model,
             'user' => $user,
+            'meta' => $meta,
         ]);
     }
 

@@ -6,6 +6,12 @@ use app\helpers\LoaderFH;
 $this->title = 'Авторизация';
 ?>
 
+<?
+$this->registerMetaTag(['property' => 'og:title','content' => $meta['title']]);
+$this->registerMetaTag(['property' => 'og:description','content' => $meta['description']]);
+$this->registerMetaTag(['property' => 'og:image','content' => $meta['image']]);
+?>
+
 <?php echo \nodge\eauth\Widget::widget(array('action' => '/login')); ?>
 
 <table>

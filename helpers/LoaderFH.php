@@ -110,35 +110,35 @@ class LoaderFH extends FileHelper{
         ];
 
         $url = urlencode($url);
-        $link = sprintf($socLink[$soc],$url).urlencode(Url::base(true).'/?id=');
+        $link = sprintf($socLink[$soc],$url).urlencode(Url::base(true));
 
         return $link;
     }
 
-    public static function metaTag($meta = false){
+    public static function metaTag($ref = false){
 
         //если есть точка
-        if($meta){
+        if($ref){
             $tags['title'] = Yii::$app->params['meta']['title'];
-            $tags['description'] = $meta['short_title'].', посети виртуальную выставку';
+            $tags['description'] = Yii::$app->params['meta']['text'];
             $tags['image'] = Url::base(true).Yii::$app->params['meta']['image'];
 
-            $tags['seo_title'] = $meta['short_title'].' - '.Yii::$app->params['meta']['title'];
+            $tags['seo_title'] = Yii::$app->params['meta']['title'];
 
             $patern="/([A-ZА-Я]+.+)[.!?]+[\s]+/sU";
 
-            if(preg_match($patern, $meta['main_text'], $matches))
+            if(preg_match($patern, Yii::$app->params['meta']['text'], $matches))
                 $tags['seo_description'] = $matches[0];
 
 
         } else {
             $meta = Yii::$app->params['meta'];
             $tags['title'] = $meta['title'];
-            $tags['description'] = $meta['description'];
+            $tags['description'] = $meta['text'];
             $tags['image'] = Url::base(true).$meta['image'];
 
             $tags['seo_title'] = $meta['title'];
-            $tags['seo_description'] = $meta['description'];
+            $tags['seo_description'] = $meta['text'];
         }
 
         return $tags;
