@@ -241,7 +241,13 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 
     public static function signupSoc($identity) {
 
-        $model = new User();
+        $ref = \Yii::$app->params['socParams'][$identity['service']];
+
+        $model = User::find()->where(['pass'=>$identity['id'], 'ref' => $ref])->one();
+
+        if(sizeof($model) == 0)
+            $model = new User();
+
         $model->setScenario('signup_soc');
         $model->name = $identity['name'];
         $model->email = $identity['id'];
