@@ -27,10 +27,10 @@ use app\modules\user\models\User;
     <br/>
     ПРИГЛАСИТЬ ДРУЗЕЙ
 
-
     <div class='social-like'>
         <?=Html::a('VK', LoaderFH::shareLink('vk',Url::toRoute(['/login', 'ref'=>User::refCode()],true)))?>
-<!--        <a class="vk" href="--><?//=LoaderFH::shareLink('vk')?><!--" data-url="--><?//=LoaderFH::shareLink('vk')?><!--">VK</a>-->
+        <?=Html::a('OK', LoaderFH::shareLink('ok',Url::toRoute(['/login', 'ref'=>User::refCode()],true)))?>
+        <?=Html::a('FB', LoaderFH::shareLink('fb',Url::toRoute(['/login', 'ref'=>User::refCode()],true)))?>
     </div>
 </div>
 

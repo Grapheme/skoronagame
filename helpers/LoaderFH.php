@@ -2,6 +2,7 @@
 
 namespace app\helpers;
 
+use app\modules\user\models\User;
 use yii\helpers\FileHelper;
 use app\helpers\ImageHandler;
 use yii\helpers\Url;
@@ -119,7 +120,7 @@ class LoaderFH extends FileHelper{
 
         //если есть точка
         if($ref){
-            $tags['title'] = Yii::$app->params['meta']['title'];
+            $tags['title'] = Yii::$app->params['meta']['title'].' '.User::refDecode($ref);
             $tags['description'] = Yii::$app->params['meta']['text'];
             $tags['image'] = Url::base(true).Yii::$app->params['meta']['image'];
 
