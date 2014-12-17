@@ -65,7 +65,15 @@ class DefaultController extends Controller
                         $model->username = $identity->profile['id'];
                         $model->password = $identity->profile['id'];
                         $model->ref = \Yii::$app->params['socParams'][$identity->profile['service']];
-                        $model->login();
+
+                        if($model->login()) {
+
+                            //check of status
+                            if (Yii::$app->user->identity['status'] == 1)
+                                $eauth->redirect('/user/default/addnickname');
+                            else
+                                $eauth->redirect();
+                        }
                     }
 
 //                    Yii::$app->getUser()->login($identity);
