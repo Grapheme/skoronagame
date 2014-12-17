@@ -60,11 +60,11 @@ class DefaultController extends Controller
                     $identity = User::findByEAuth($eauth);
 
 //                    print_r($identity->profile);
-                    if(User::signupSoc($identity)) {
+                    if(User::signupSoc($identity->profile)) {
                         $model = new LoginForm();
-                        $model->username = $identity['id'];
-                        $model->password = $identity['id'];
-                        $model->ref = \Yii::$app->params['socParams'][$identity['service']];
+                        $model->username = $identity->profile['id'];
+                        $model->password = $identity->profile['id'];
+                        $model->ref = \Yii::$app->params['socParams'][$identity->profile['service']];
                         $model->login();
                     }
 
