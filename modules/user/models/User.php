@@ -278,8 +278,9 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $refer = User::refDecode($refer);
             //указан существующий реферал
             if($refer && User::find()->where(['id' => $refer])->count() > 0) {
-                $model->refer = $refer;
-            }
+                $model->refer = 0;
+            } else
+                $model->refer = 1;
         }
 
         $model->setScenario('signup_soc');
