@@ -188,9 +188,15 @@ class DefaultController extends Controller
      */
     public function actionProfile()
     {
-        $model = User::profile();
+        //check of status
+        if (Yii::$app->user->identity['status'] == 1)
 
-        return $this->render('profile',['model' => $model]);
+            $this->redirect('/user/default/addnickname');
+        else {
+
+            $model = User::profile();
+            return $this->render('profile', ['model' => $model]);
+        }
     }
 
     /**

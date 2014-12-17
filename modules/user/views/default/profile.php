@@ -15,7 +15,7 @@ use yii\widgets\ActiveForm;
         НАГРАДЫ
     --------------------
     <br/>
-    <?=Html::a('Сменить пароль',['/user/default/repass'])?>
+    <?= Yii::$app->user->identity['ref'] == 'site'? Html::a('Сменить пароль',['/user/default/repass']):''?>
     <br/>
     ЗВУК
     <br/>

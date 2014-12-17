@@ -56,10 +56,10 @@ class FacebookOAuth2Service extends Service
 		$this->attributes['url'] = $info['link'];
 
         $this->attributes['pass'] = $info['id'];
-        $this->attributes['b_date'] = $info['birthday'];
+//        $this->attributes['b_date'] = $info['birthday'];
         $this->attributes['f_name'] = $info['first_name'];
         $this->attributes['l_name'] = $info['last_name'];
-        $this->attributes['city'] = $info['location']['name'];
+//        $this->attributes['city'] = $info['location']['name'];
 
 		return true;
 	}

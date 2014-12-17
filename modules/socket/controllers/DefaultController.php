@@ -54,7 +54,11 @@ class DefaultController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        //check of status
+        if (Yii::$app->user->identity['status'] == 1)
+            $this->redirect('/user/default/addnickname');
+        else
+            return $this->render('index');
     }
 
     public function actionServer()
