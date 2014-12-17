@@ -3,8 +3,8 @@
 return [
     'adminEmail' => 'admin@example.com',
     'socParams' => [
-        'site' => 'сайт',
-        'vk' => 'VK',
-        'fb' => 'FB',
-        'ok' => 'OK'],
+        'site' => 'site',
+        'vkontakte' => 'VK',
+        'facebook' => 'FB',
+        'odnoklassniki' => 'OK'],
 ];

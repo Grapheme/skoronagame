@@ -64,7 +64,7 @@ class DefaultController extends Controller
                         $model = new LoginForm();
                         $model->username = $identity['id'];
                         $model->password = $identity['id'];
-                        $model->ref = User::service($identity['service']);
+                        $model->ref = \Yii::$app->params['socParams'][$identity['service']];
                         $model->login();
                     }
 
