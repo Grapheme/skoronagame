@@ -26,12 +26,6 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     public $pass2;
     public $authKey;
     public $accessToken;
-    public static $service =
-        [
-        'odnoklassniki' => 'OK',
-        'vkontakte' => 'VK',
-        'facebook' => 'FB',
-        ];
 
 
     /**
@@ -97,6 +91,21 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'm_points' => 'очки(мес)',
             'ref' => 'регистратор',
         ];
+    }
+
+    /**
+     * Social service attr
+     */
+    public static function service($serv)
+    {
+        $service =
+            [
+                'odnoklassniki' => 'OK',
+                'vkontakte' => 'VK',
+                'facebook' => 'FB',
+            ];
+
+        return !isset($service[$serv])?:$service[$serv];
     }
 
     /**
@@ -252,7 +261,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         $model->setScenario('signup_soc');
         $model->name = $identity['name'];
         $model->email = $identity['id'];
-        $model->ref = User::$service[$identity['service']];
+        $model->ref = User::service($identity['service']);
         $model->pass = $identity['id'];
 
         if($model->validate()){
