@@ -4,7 +4,7 @@ return [
     'adminEmail' => 'admin@example.com',
     'key' => 'SKorona',
     'meta' => [
-        'image' => DATA_PATH.'/logo.jpg',
+        'image' => '/data/logo.jpg',
         'title' => 'Сибирская Корона',
         'text' => 'Играй и узнавай',
     ],
