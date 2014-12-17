@@ -29,7 +29,7 @@ use app\modules\user\models\User;
 
 
     <div class='social-like'>
-        <?=Html::a('VK', LoaderFH::shareLink('vk',Url::to(['/login', 'ref'=>User::refCode()])))?>
+        <?=Html::a('VK', LoaderFH::shareLink('vk',Url::toRoute(['/login', 'ref'=>User::refCode()],true)))?>
 <!--        <a class="vk" href="--><?//=LoaderFH::shareLink('vk')?><!--" data-url="--><?//=LoaderFH::shareLink('vk')?><!--">VK</a>-->
     </div>
 </div>
