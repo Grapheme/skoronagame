@@ -110,7 +110,7 @@ class LoaderFH extends FileHelper{
         ];
 
         $url = urlencode($url);
-        $link = sprintf($socLink[$soc],$url).urlencode(Url::base(true));
+        $link = sprintf($socLink[$soc],$url);
 
         return $link;
     }
