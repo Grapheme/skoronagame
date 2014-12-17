@@ -66,7 +66,7 @@ $config = [
             'class' => 'yii\rbac\PhpManager',
             'defaultRoles' => ['user', 'moderator', 'admin'],
             'itemFile' => '@vova07/rbac/data/items.php',
-            'assignmentFile' => '@app/htdocs/assign.php',//'@vova07/rbac/data/assignments.php',
+            'assignmentFile' => DATA_PATH.'/assign.php',//'@vova07/rbac/data/assignments.php',
             'ruleFile' => '@vova07/rbac/data/rules.php',
         ],
         'urlManager' => [
