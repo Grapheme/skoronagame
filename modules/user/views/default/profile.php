@@ -2,6 +2,9 @@
 use yii\helpers\Html;
 use app\helpers\LoaderFH;
 use yii\widgets\ActiveForm;
+use yii\helpers\Url;
+use app\modules\user\models\User;
+
 ?>
 <div class="site-login">
     <h1>Личный кабинет</h1>
@@ -24,14 +27,14 @@ use yii\widgets\ActiveForm;
     <br/>
     ПРИГЛАСИТЬ ДРУЗЕЙ
 
-    <?=\app\modules\user\models\User::refCode()?>
 
     <div class='social-like'>
-        <?=Html::a('VK', LoaderFH::shareLink('vk'))?>
+        <?=Html::a('VK', LoaderFH::shareLink('vk',Url::toRoute(['/login', 'ref'=>User::refCode()])))?>
 <!--        <a class="vk" href="--><?//=LoaderFH::shareLink('vk')?><!--" data-url="--><?//=LoaderFH::shareLink('vk')?><!--">VK</a>-->
     </div>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
     $('.social-like a').on('click',function(){
         var lefto = screen.availWidth/2-150;
