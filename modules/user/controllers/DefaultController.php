@@ -50,28 +50,20 @@ class DefaultController extends Controller
         if (isset($serviceName)) {
             /** @var $eauth \nodge\eauth\ServiceBase */
 
-            print_r('получение eauth');
             $eauth = Yii::$app->get('eauth')->getIdentity($serviceName);
-
-            print_r('устанвка redirect');
-            print_r(Yii::$app->getUser()->getReturnUrl());
             $eauth->setRedirectUrl(Yii::$app->getUser()->getReturnUrl());
-
-            print_r('устанвка cancel');
             $eauth->setCancelUrl(Yii::$app->getUrlManager()->createAbsoluteUrl('/login'));
 
-            print_r('метод authenticate');
             try {
                 if ($eauth->authenticate()) {
 
-                    print_r('YES');
-//                  var_dump($eauth->getIsAuthenticated(), $eauth->getAttributes()); exit;
-
                     $identity = User::findByEAuth($eauth);
-                    Yii::$app->getUser()->login($identity);
+                    print_r($identity);
+
+//                    Yii::$app->getUser()->login($identity);
 
                     // special redirect with closing popup window
-                    $eauth->redirect();
+//                    $eauth->redirect();
                 }
                 else {
                     print_r('NO AUTH');
