@@ -58,12 +58,20 @@ class DefaultController extends Controller
                 if ($eauth->authenticate()) {
 
                     $identity = User::findByEAuth($eauth);
-                    print_r($identity);
+
+//                    print_r($identity->profile);
+                    if(User::signupSoc($identity)) {
+                        $model = new LoginForm();
+                        $model->username = $identity['id'];
+                        $model->password = $identity['id'];
+                        $model->ref = User::$service[$identity['service']];
+                        $model->login();
+                    }
 
 //                    Yii::$app->getUser()->login($identity);
 
                     // special redirect with closing popup window
-//                    $eauth->redirect();
+                    $eauth->redirect();
                 }
                 else {
                     print_r('NO AUTH');

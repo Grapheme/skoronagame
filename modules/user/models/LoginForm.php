@@ -16,6 +16,7 @@ class LoginForm extends Model
     public $rememberMe = true;
 
     private $_user = false;
+    public $ref = 'site';
 
     /**
      * @return array the validation rules.
@@ -68,6 +69,13 @@ class LoginForm extends Model
 
 //        print_r($usr->getId());
 
+        if($this->ref != 'site') {
+            $usr = $this->getUser();
+            $rez = Yii::$app->user->login($usr, $this->rememberMe ? 3600*24*30 : 0);
+            if ($rez) Yii::$app->session['nickname'] = $usr->nickname;
+            return $rez;
+        }
+
         if ($this->validate()) {
 
             $usr = $this->getUser();
@@ -87,8 +95,9 @@ class LoginForm extends Model
      */
     public function getUser()
     {
+        $ref = $this->ref;
         if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+            $this->_user = User::findByUsername($this->username, $ref);
         }
 
         return $this->_user;

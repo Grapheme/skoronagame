@@ -26,6 +26,11 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     public $pass2;
     public $authKey;
     public $accessToken;
+    public static $service = [
+        'odnoklassniki' => 'OK',
+        'vkontakte' => 'VK',
+        'facebook' => 'FB',
+    ];
 
 
     /**
@@ -53,7 +58,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 
             [['email'], 'required', 'message' => 'e-mail обязателен для заполнения'],
             [['email'], 'unique', 'message' => 'e-mail уже зарегистрирован'],
-            [['email'], 'string', 'max' => 100],
+            [['email','name'], 'string', 'max' => 100],
 
             [['role','ref'], 'string', 'max' => 10],
 
@@ -67,6 +72,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     {
         $scenarios = parent::scenarios();
         $scenarios['signup'] = ['pass','email'];
+        $scenarios['signup_soc'] = ['pass','name'];
         $scenarios['site_reg'] = ['email'];
         $scenarios['repass'] = ['pass','pass2'];
         return $scenarios;
@@ -83,6 +89,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'role' => 'Role',
             'status' => 'Status',
             'nickname' => 'Никнейм',
+            'name' => 'Имя',
             'winns' => 'победы',
             'm_winns' => 'победы(мес)',
             'points' => 'очки',
@@ -150,9 +157,9 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
      * @param  string      $username
      * @return static|null
      */
-    public static function findByUsername($username)
+    public static function findByUsername($username, $ref = 'site')
     {
-        return User::findOne(['email' => $username]);
+        return User::findOne(['email' => $username, 'ref' => $ref]);
     }
 
 
@@ -230,6 +237,31 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $auth->assign($adminRole, $this->getId());
 
             if($email) MainHelper::mailSend('Вы зарегистрировались на сайте ххх: </br>Логин: '.$this->email.'</br>Пароль: '.$pass, $this->email);
+
+            return true;
+        }
+
+        return false;
+
+    }
+
+    public static function signupSoc($identity) {
+
+        $model = new User();
+        $model->setScenario('signup_soc');
+        $model->name = $identity['name'];
+        $model->email = $identity['id'];
+        $model->ref = User::$service[$identity['service']];
+        $model->pass = $identity['id'];
+
+        if($model->validate()){
+
+            $model->role = 'user';
+            $model->save(false);
+
+            $auth = Yii::$app->authManager;
+            $adminRole = $auth->getRole('user');
+            $auth->assign($adminRole, $model->getId());
 
             return true;
         }
