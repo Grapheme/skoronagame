@@ -251,7 +251,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         $model->setScenario('signup_soc');
         $model->name = $identity['name'];
         $model->email = $identity['id'];
-        $model->ref = User::$service[$identity['service']];
+        $model->ref = self::$service[$identity['service']];
         $model->pass = $identity['id'];
 
         if($model->validate()){
