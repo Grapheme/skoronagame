@@ -236,17 +236,19 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         $this->load(Yii::$app->request->post());
 
         if($email){
-            $pass = Yii::$app->security->generateRandomString(7);
+            $pass = Yii::$app->security->generateRandomString(8);
             $this->pass = $pass;
         }
 
         if($this->validate()){
-
-            $refer = User::refDecode($refer);
-
-            //указан существующий реферал
-            if($refer && User::find()->where(['id' => $refer])->count() > 0) {
+            if($refer) {
+                $refer = User::refDecode($refer);
                 $this->refer = $refer;
+
+                //указан существующий реферал
+                if ($refer && User::find()->where(['id' => $refer])->count() > 0) {
+                    $this->refer = $refer;
+                }
             }
 
             $this->pass=$this->generatePassword($this->pass);
@@ -276,11 +278,12 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $model = new User();
 
             $refer = User::refDecode($refer);
+            $model->refer = $refer;
+
             //указан существующий реферал
             if($refer && User::find()->where(['id' => $refer])->count() > 0) {
                 $model->refer = 0;
-            } else
-                $model->refer = 1;
+            }
         }
 
         $model->setScenario('signup_soc');

@@ -51,7 +51,6 @@ class DefaultController extends Controller
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
 
         $ref = Yii::$app->request->get('ref');
-
         $meta = LoaderFH::metaTag($ref);
 
         if (isset($serviceName)) {
@@ -113,19 +112,21 @@ class DefaultController extends Controller
         $model = new LoginForm();
         $user = new User();
 
-        if(isset($_POST['LoginForm']))
+        if(isset($_POST['LoginForm'])) {
 
-            if ($model->load(Yii::$app->request->post()) && $model->login()){
+            if ($model->load(Yii::$app->request->post()) && $model->login()) {
 
                 //check of status
-                if(Yii::$app->user->identity['status'] == 1)
+                if (Yii::$app->user->identity['status'] == 1)
                     $this->redirect('/user/default/addnickname');
                 else
                     return $this->goBack();
             }
-        else
-            if ($user->signup(true))
-                return $this->goBack();
+        } else {
+
+            if ($user->signup(true, $ref))
+                return $this->goHome();
+        }
 
         return $this->render('login', [
             'model' => $model,

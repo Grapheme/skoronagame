@@ -13,7 +13,7 @@ class MainHelper {
         if(!$from)$from = Yii::$app->params['adminEmail'];
 
         Yii::$app->mailer
-            ->compose('contact/test')
+            ->compose()
             ->setFrom($from)
             ->setTo($to)
             ->setSubject($subject)
