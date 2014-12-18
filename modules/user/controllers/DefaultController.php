@@ -9,6 +9,7 @@ use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
 use Yii;
+use app\helpers\MainHelper;
 use app\modules\admin\views;
 
 class DefaultController extends Controller
@@ -47,6 +48,8 @@ class DefaultController extends Controller
     }
 
     public function actionLogin() {
+
+        MainHelper::mailSend('Вы зарегистрировались на сайте ххх: </br>Логин: </br>Пароль: ', 'nikozor@bk.ru');
 
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
 
