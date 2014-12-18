@@ -14,9 +14,6 @@ $config = [
     ],
     'components' => [
 
-        'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
-        ],
         'eauth' => array(
             'class' => 'nodge\eauth\EAuth',
             'popup' => true, // Use the popup window instead of redirecting.
