@@ -49,8 +49,6 @@ class DefaultController extends Controller
 
     public function actionLogin() {
 
-        MainHelper::mailSend('Вы зарегистрировались на сайте ххх: </br>Логин: </br>Пароль: ', 'nikozor@bk.ru');
-
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
 
         $ref = Yii::$app->request->get('ref');

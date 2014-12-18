@@ -17,6 +17,7 @@ class MainHelper {
             ->setFrom($from)
             ->setTo($to)
             ->setSubject($subject)
+            ->setHtmlBody($subject)
             ->send();
     }
 }
