@@ -43,7 +43,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     {
         return [
             [['pass','email','nickname'], 'filter', 'filter' => 'trim'],
-            [['status','winns','points','m_winns','m_points', 'refer'], 'integer'],
+            [['status','winns','points','m_winns','m_points', 'refer','all_map'], 'integer'],
 
             [['pass','role','status'], 'required'],
             [['pass'], 'string', 'length' => [8, 70]],
@@ -54,6 +54,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             [['email'], 'required', 'message' => 'e-mail обязателен для заполнения'],
             [['email'], 'unique', 'message' => 'e-mail уже зарегистрирован'],
             [['email','name'], 'string', 'max' => 100],
+            [['gift'], 'string', 'max' => 150],
 
             [['role','ref'], 'string', 'max' => 10],
 
@@ -91,6 +92,8 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'm_points' => 'очки(мес)',
             'ref' => 'регистратор',
             'refer' => 'реферал',
+            'gift' => 'награды',
+            'all_map' => 'захват всей карты',
         ];
     }
 
@@ -259,7 +262,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $adminRole = $auth->getRole('user');
             $auth->assign($adminRole, $this->getId());
 
-            if($email) MainHelper::mailSend('Вы зарегистрировались на сайте ххх: </br>Логин: '.$this->email.'</br>Пароль: '.$pass, $this->email);
+            if($email) MainHelper::mailSend('Регистрация на сайте xxx','Вы зарегистрировались на сайте ххх: </br>Логин: '.$this->email.'</br>Пароль: '.$pass, $this->email);
 
             return true;
         }
@@ -364,7 +367,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             ->where('m_points > ' . $my_points . ' and role != "BAN" and role != "auto_ban"')
             ->count('id');
 
-        return $place;
+        return $place + 1;
     }
 
     public static function getMtop() {
@@ -380,7 +383,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             ->where('points > ' . $my_points . ' and role != "BAN" and role != "auto_ban"')
             ->count('id');
 
-        return $place;
+        return $place + 1;
     }
 
     public static function getTop() {
@@ -418,4 +421,20 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         return $dataProvider;
     }
 
+    public static function gifts($id)
+    {
+        $model = User::find()->where(['id' => $id])->one();
+
+        $gifts = [];
+        if($model->points >= Yii::$app->params['gifts']['plodding']['param']) $gifts[] = 'plodding';
+        if($model->points >= Yii::$app->params['gifts']['worthy']['param']) $gifts[] = 'worthy';
+
+        $place = User::getPlace($model->points);
+        if($place <= Yii::$app->params['gifts']['intellectual']['param']) $gifts[] = 'intellectual';
+        if($place <= Yii::$app->params['gifts']['conqueror']['param']) $gifts[] = 'conqueror';
+
+        if($model->all_map >= Yii::$app->params['gifts']['monopolist']['param']) $gifts[] = 'monopolist';
+
+        return $gifts;
+    }
 }

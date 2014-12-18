@@ -227,9 +227,9 @@ class DefaultController extends Controller
 
         return $this->render('raiting',[
             'top'       => $top,
-            'place'     => $place+1,
+            'place'     => $place,
             'm_top'     => $m_top,
-            'm_place'   => $m_place+1,
+            'm_place'   => $m_place,
             'identity'   => Yii::$app->user->identity,
         ]);
     }

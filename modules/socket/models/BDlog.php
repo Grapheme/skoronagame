@@ -99,10 +99,16 @@ class BDlog extends Game {
             $place = isset($val['place'])?$val['place']:'';
             $raiting = isset($val['raiting'])?$val['raiting']:'';
 
+            $all_map = sizeof(array_unique($this->games[$id_game]['map']));
+
             if($val['type'] != Game::BOT) {
 
                 $id = $this->getIdbyColor($id_game, $val['color']);
                 $field = ['points' => $val['points'], 'm_points' => $val['points']];
+
+                //если захватил всю карту
+                if($all_map == 1 && $val['color'] == $this->games[$id_game]['map']['1'])
+                    $field['all_map'] = 1;
 
                 if($place == 1) {
                     $field['winns'] = 1;
@@ -110,6 +116,11 @@ class BDlog extends Game {
                 }
 
                 User::updateAllCounters($field, ['id' => $id]);
+
+                //награды пользователю
+                $gifts = User::gifts($id);
+                if(sizeof($gifts) > 0)
+                    User::updateAll(['gift' => json_encode($gifts)], ['id' => $id]);
             }
 
             $today = time();

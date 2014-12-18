@@ -9,14 +9,14 @@ use Yii;
 
 class MainHelper {
 
-    public static function mailSend($subject,$to,$from = false){
+    public static function mailSend($title, $subject,$to,$from = false){
         if(!$from)$from = Yii::$app->params['adminEmail'];
 
         Yii::$app->mailer
             ->compose('main/reg')
             ->setFrom($from)
             ->setTo($to)
-            ->setSubject($subject)
+            ->setSubject($title)
             ->setHtmlBody($subject)
             ->send();
     }

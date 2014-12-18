@@ -6,6 +6,7 @@ use yii\helpers\Url;
 use app\modules\user\models\User;
 
 ?>
+
 <div class="site-login">
     <h1>Личный кабинет</h1>
     <br/>
@@ -17,6 +18,16 @@ use app\modules\user\models\User;
     <br/>
     --------------------
         НАГРАДЫ
+
+    <?
+    if(!empty(Yii::$app->user->identity['gift'])) {
+
+        $gift = json_decode(Yii::$app->user->identity['gift'],true);
+
+        foreach($gift as $item)
+            echo Yii::$app->params['gifts'][$item]['title'].'<br/>';
+    }
+    ?>
     --------------------
     <br/>
     <?= Yii::$app->user->identity['ref'] == 'site'? Html::a('Сменить пароль',['/user/default/repass']):''?>
