@@ -29,10 +29,10 @@ use yii\db\Expression;
 $sessid = Yii::$app->getSession()->getId();
 $path = Yii::$app->getSession()->getSavePath();
 
-Yii::$app->session->close();
-$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
+$cmd = 'ps '.Yii::$app->request->get('pid');
+//$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
 $usr = shell_exec($cmd);
-Yii::$app->session->open();
+
 echo 'результат';
 
 print_r('<br/>');

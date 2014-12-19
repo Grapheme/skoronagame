@@ -66,7 +66,10 @@ class Server {
 
     public static function getUsrId($sessionId) {
 
-        $usr = shell_exec('php '.Yii::$app->basePath.'/yii socket/sid '.$sessionId);
+        $path = SES_PATH;
+        $cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessionId.' $sessionpath '.$path;
+
+        $usr = shell_exec($cmd);
 
         $usr = explode('|',$usr);
         return $usr;
