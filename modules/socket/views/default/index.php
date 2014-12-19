@@ -29,15 +29,15 @@ use yii\db\Expression;
 $sessid = Yii::$app->getSession()->getId();
 $path = Yii::$app->getSession()->getSavePath();
 
-$cmd = 'ps |grep "socket"';
+//$cmd = 'ps |grep "socket"';
 //$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
-$usr = shell_exec($cmd);
+//$usr = shell_exec($cmd);
 
 echo 'результат';
 
 print_r('<br/>');
 
-print_r($usr);
+print_r($path);
 //?>
 
 <div id="sender"></div>
