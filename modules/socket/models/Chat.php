@@ -79,7 +79,7 @@ class Chat implements MessageComponentInterface {
         }
 
         //пользователь с разных сессий (пока разрешено)
-        $usrArr = array_column($this->sessions,'usr');
+        $usrArr = MainHelper::array_column($this->sessions,'usr');
         if(in_array($usr,$usrArr)) {
             print_r("попытка играть одним пользователем в разных сессиях \n");
         }
@@ -183,11 +183,11 @@ class Chat implements MessageComponentInterface {
                     $this->GameModel->players[$from->resourceId]['conn'] = $from;
 
                     //определение имени игрока
-                    $sess = array_column($this->sessions,'nickname', 'RID');
+                    $sess = MainHelper::array_column($this->sessions,'nickname', 'RID');
                     $name = $sess[$from->resourceId];
 
                     //определение id игрока
-                    $sess = array_column($this->sessions,'usr', 'RID');
+                    $sess = MainHelper::array_column($this->sessions,'usr', 'RID');
                     $usr = $sess[$from->resourceId];
 
                     $this->GameModel->players[$from->resourceId]['nickname'] = $name;

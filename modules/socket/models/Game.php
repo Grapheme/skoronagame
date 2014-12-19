@@ -102,10 +102,13 @@ class Game extends Main{
         $this->bdlog = new BDlog($this);
     }
 
+    /**
+     *
+     */
     public function settings() {
 
         $settings = Settings::getAllSettings();
-        $settings = array_column($settings,'value','name');
+        $settings = MainHelper::array_column($settings,'value','name');
 
         $this->bots['names']    = explode("\r\n",$settings['bot_names']);
         $this->bots['quiz']     = $settings['bot_quiz'];
@@ -407,7 +410,7 @@ class Game extends Main{
 
         print_r("КОНЕЦ ИГРЫ\n");
 
-        $top = array_column($top_players,'points');
+        $top = MainHelper::array_column($top_players,'points');
 
         //распределение мест
        $i = 0;

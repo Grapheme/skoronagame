@@ -241,7 +241,7 @@ class Main {
     public function isLastPlayer($id_game,$lvl) {
 
         //если ответ последнего игрока, подводим итоги вопроса
-        $answers = array_column($this->games[$id_game]['levels'][$lvl]['players'],'answer');
+        $answers = MainHelper::array_column($this->games[$id_game]['levels'][$lvl]['players'],'answer');
         $players = sizeof($this->games[$id_game]['levels'][$lvl]['players']);
 
         print_r($answers);
