@@ -16,9 +16,13 @@ defined('CONF_PATH') or define('CONF_PATH',__DIR__.'/../../conf');
 
 defined('DB_PATH') or define('DB_PATH',CONF_PATH.'/database');
 
+defined('SES_PATH') or define('SES_PATH','/srv/www/skoronagame/tmp');
+
 //defined('DATA_PATH') or define('DATA_PATH',__DIR__.'/data');
 //
 //defined('DB_PATH') or define('DB_PATH',DATA_PATH.'/database');
+//
+//defined('SES_PATH') or define('SES_PATH','/Applications/MAMP/tmp/php');
 
 
 defined('DEBUG') or define('DEBUG',true);
