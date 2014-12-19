@@ -43,13 +43,19 @@ class Conquest extends Game {
 
         $map = $this->frontMap($id_game, $color);
 
-        $this->sendInGame($id_game,['conquest', $color, $map]);
+        $this->sendInGame($id_game,['conquest', $color, $map, $this->select_time]);
 
         //должен нападать бот
         if($this->games[$id_game]['players'][$player]['type'] == Game::BOT){
 
             //установка времени ответа боту
             $this->bot->timerBot($id_game, ['conquest','startConquestBOT'], [$player]);
+        } else {
+
+            //установка максимального времени ожидания
+            $time = time();
+            $timer = $this->loop->addPeriodicTimer($this->select_time + $this->server_time,function() use($id_game, $time){$this->timeoutConquest($id_game, $time);});
+            $this->games[$id_game]['timer'] = $timer;
         }
     }
 
@@ -94,6 +100,9 @@ class Conquest extends Game {
 
         if(isset($this->turn_conquest[$id_game]) && sizeof($this->turn_conquest[$id_game])!=0) {
 
+            print_r("остановка таймера\n");
+            $this->loop->cancelTimer($this->games[$id_game]['timer']);
+
             print_r("изъятие из очереди игрока \n");
 
             //изъятие из очереди
@@ -101,6 +110,21 @@ class Conquest extends Game {
 
             $this->quest->startQuest($id_game, [$player, $conn_pass], $region);
         }
+    }
+
+    public function timeoutConquest($id_game,$timer) {
+
+        $tm = time()-$timer;
+
+        print_r("сработал таймер конца времени выбра территориии нападения через $tm секунд\n");
+        if($tm < $this->select_time + $this->quest_time) return;
+
+        print_r("остановка таймера\n");
+        $this->loop->cancelTimer($this->games[$id_game]['timer']);
+
+        //изъятие из очереди
+        $player = array_shift($this->turn_conquest[$id_game]);
+        $this->stepUp($id_game);
     }
 
     public function startConquestBOT($time, $conn_act) {
@@ -143,6 +167,9 @@ class Conquest extends Game {
         }
 
         if(isset($this->turn_conquest[$id_game]) && sizeof($this->turn_conquest[$id_game])!=0) {
+
+            print_r("остановка таймера\n");
+            $this->loop->cancelTimer($this->games[$id_game]['timer']);
 
             print_r("изъятие из очереди игрока \n");
 

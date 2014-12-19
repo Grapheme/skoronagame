@@ -37,6 +37,16 @@ return [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
+                    'logFile' => DATA_PATH.'/runtime/logs/console.log'
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['sserver'],
+                    'logVars' => [null],
+                    'logFile' => DATA_PATH.'/runtime/logs/sserver.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 20,
                 ],
             ],
         ],

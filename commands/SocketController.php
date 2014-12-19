@@ -73,4 +73,10 @@ class SocketController extends Controller
             print_r($_SESSION);
     }
 
+    public function actionTest()
+    {
+        Yii::info('test','sserver');
+        print_r(time());
+    }
+
 }

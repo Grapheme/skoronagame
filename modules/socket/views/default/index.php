@@ -202,6 +202,7 @@ $soc = <<<SCRIPT
                 conquest = true;
                 gameStatus(data.color, 'Выберите территорию для нападения', 'Соперник нападает');
                 SKGame.setMapAttack(data.map);
+                SKGame.startTimer(data.time);
                 break;
 
             case ('endgame'):
@@ -385,6 +386,7 @@ window.SKGame = {
      $('#quiz').on('click',function() {
         send({'action':'quiz','answer':msg.val()});
         SKGame.stopTimer();
+        question.html();
         msg.val('');
     });
 
@@ -397,6 +399,7 @@ window.SKGame = {
     $('#question').on('click','.variant',function() {
         send({'action':'quest','answer':this.attributes['data-var'].value});
         SKGame.stopTimer();
+        question.html();
         msg.val('');
     });
 
@@ -408,7 +411,11 @@ window.SKGame = {
         var id_map = parseInt(this.id);
         var action;
 
-        if(conquest === true) action = 'conquest'; else action = 'segment';
+        if(conquest === true) {
+            action = 'conquest';
+            SKGame.stopTimer();
+        } else
+            action = 'segment';
 
         send({'action':action,'map':id_map});
     });

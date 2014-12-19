@@ -56,6 +56,7 @@ class Game extends Main{
     ];
 
     public $answer_time = 10;
+    public $select_time = 10;
     public $quest_time = 15;
     public $quiz_time = 15;
     public $server_time = 10;

@@ -131,6 +131,7 @@ class Chat implements MessageComponentInterface {
             case ('conquest'):
                 $rez['color'] = $data[1];
                 $rez['map'] = $data[2];
+                $rez['time'] = $data[3];
                 break;
 
             case ('endgame'):

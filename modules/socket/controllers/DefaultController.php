@@ -77,6 +77,9 @@ class DefaultController extends Controller
                 case 'kill':
                     $cr->run('socket/kill');
                     break;
+                case 'test':
+                    $cr->run('socket/test');
+                    break;
             }
 
             $this->redirect('server');
