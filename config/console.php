@@ -8,6 +8,7 @@ $db = require(__DIR__ . '/db.php');
 return [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
+    'runtimePath' =>DATA_PATH.'/runtime',
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
     'components' => [
@@ -31,6 +32,7 @@ return [
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
+//            'cachePath' => DATA_PATH.'/runtime/cache',
         ],
         'log' => [
             'targets' => [
