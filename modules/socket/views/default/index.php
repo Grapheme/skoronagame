@@ -27,10 +27,10 @@ use yii\db\Expression;
 
 
 $sessid = Yii::$app->getSession()->getId();
-print_r(Yii::$app->getSession()->getSavePath());
-//phpinfo();
+$path = Yii::$app->getSession()->getSavePath();
+
 Yii::$app->session->close();
-$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid '.$sessid;
+$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
 $usr = shell_exec($cmd);
 Yii::$app->session->open();
 echo 'результат';
