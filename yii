@@ -10,18 +10,20 @@
 
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 
+defined('DATA_PATH') or define('DATA_PATH',__DIR__.'/../../data');
+
+defined('CONF_PATH') or define('CONF_PATH',__DIR__.'/../../conf');
+
+defined('DB_PATH') or define('DB_PATH',CONF_PATH.'/database');
+
 //defined('DATA_PATH') or define('DATA_PATH',__DIR__.'/data');
 //
 //defined('DB_PATH') or define('DB_PATH',DATA_PATH.'/database');
-//
-//defined('DEBUG') or define('DEBUG',true);
 
-defined('DATA_PATH') or define('DATA_PATH',__DIR__);
-
-defined('DB_PATH') or define('DB_PATH',__DIR__.'../conf/database');
 
 defined('DEBUG') or define('DEBUG',true);
 
+defined('PATH_PID') or define('PATH_PID',DATA_PATH.'/PID');
 
 // fcgi doesn't have STDIN and STDOUT defined by default
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
