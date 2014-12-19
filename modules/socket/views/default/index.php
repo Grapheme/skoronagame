@@ -29,7 +29,7 @@ use yii\db\Expression;
 $sessid = Yii::$app->getSession()->getId();
 $path = Yii::$app->getSession()->getSavePath();
 
-$cmd = 'ps '.Yii::$app->request->get('pid');
+$cmd = 'ps |grep "socket"';
 //$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
 $usr = shell_exec($cmd);
 
