@@ -22,7 +22,7 @@ class SocketController extends Controller
         $loop = EventLoop\Factory::create();
 
         $socket = new Socket\Server($loop);
-        $socket->listen(8888);
+        $socket->listen(8888, '0.0.0.0');
 
         $server = new IoServer(
             new HttpServer(
