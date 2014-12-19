@@ -24,6 +24,19 @@ use yii\db\Expression;
 //print_r(Yii::$app->session->getId());
 //
 //$t =  '4f6e01e6542a95ea55d67c696420624430d457ee9e7dc76383496a797afdd54as%3A17%3A%22%5B13%2Cnull%2C2592000%5D%22%3B';
+
+
+$sessid = Yii::$app->getSession()->getId();
+
+Yii::$app->session->close();
+$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid '.$sessid;
+$usr = shell_exec($cmd);
+Yii::$app->session->open();
+echo 'результат';
+
+print_r('<br/>');
+
+print_r($usr);
 //?>
 
 <div id="sender"></div>
