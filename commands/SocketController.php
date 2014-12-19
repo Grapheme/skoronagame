@@ -53,7 +53,7 @@ class SocketController extends Controller
 
         if($sid !== false) {
 
-            session_save_path($sessionpath);
+//            session_save_path($sessionpath);
 
             session_id($sid);
             session_start();
