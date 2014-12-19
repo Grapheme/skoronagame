@@ -5,7 +5,7 @@ use yii\helpers\Url;
 use app\helpers\LoaderFH;
 use yii\helpers\ArrayHelper;
 
-use app\models\Games;
+use app\models\Gamess;
 
 use yii\db\Expression;
 ?>
@@ -124,7 +124,7 @@ $soc = <<<SCRIPT
 /// server///
     function wsStart() {
 
-        conn = new WebSocket('ws://skoronagame:8080');
+        conn = new WebSocket('ws://skoronagame.dev.pichesky.ru:8888');
 
         conn.onopen = function(e) {
             sendToInput("Connection established!");

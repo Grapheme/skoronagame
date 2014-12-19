@@ -11,7 +11,7 @@ use Ratchet\ConnectionInterface;
 use React\EventLoop;
 use app\models\Questions;
 use app\models\Levels;
-use app\models\Games;
+use app\models\Gamess;
 use yii\db\Expression;
 
 use app\modules\socket\models\Game;
@@ -30,7 +30,7 @@ class BDlog extends Game {
 
         foreach($players as $key => $val) {
 
-                $model = new Games();
+                $model = new Gamess();
                 $model->game = $id_game;
                 $model->date_start = $time;
 
@@ -88,7 +88,7 @@ class BDlog extends Game {
 
         print_r("Занесение результатов в БД\n");
 
-        $month = Games::find()->select(['date_start'=>'MONTH(date_start)'])->orderBy('id DESC')->one()->toArray()['date_start'];
+        $month = Gamess::find()->select(['date_start'=>'MONTH(date_start)'])->orderBy('id DESC')->one()->toArray()['date_start'];
         $today = date('m', time());
         if($today != $month) {
             User::clearMonth();
@@ -124,7 +124,7 @@ class BDlog extends Game {
             }
 
             $today = time();
-            Games::updateAll(
+            Gamess::updateAll(
                 [
                     'place'     =>  $place,
                     'points'    =>  $val['points'],

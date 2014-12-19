@@ -2,7 +2,7 @@
 namespace app\modules\user\controllers;
 
 use app\helpers\LoaderFH;
-use app\models\Games;
+use app\models\Gamess;
 use app\modules\user\models\LoginForm;
 use app\modules\user\models\User;
 use yii\filters\AccessControl;

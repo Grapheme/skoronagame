@@ -2,7 +2,7 @@
 namespace app\modules\admin\controllers;
 
 use app\helpers\LoaderFH;
-use app\models\Games;
+use app\models\Gamess;
 use app\models\Levels;
 use app\models\Questions;
 use app\models\Settings;
@@ -154,7 +154,7 @@ class DefaultController extends Controller
     {
         $game = [];
         $levels = [];
-        $game = Games::getLastGame($id);
+        $game = Gamess::getLastGame($id);
 
         if(sizeof($game)>0)
             $levels = Levels::getGameLevels($game['game'][0]['game']);

@@ -18,7 +18,7 @@ use yii\db\Connection;
  * @property string $date_start
  * @property string $date_stop
  */
-class Games extends \yii\db\ActiveRecord {
+class Gamess extends \yii\db\ActiveRecord {
 
     /**
      * @inheritdoc
@@ -30,7 +30,7 @@ class Games extends \yii\db\ActiveRecord {
 
     public function getGame()
     {
-        return $this->hasMany(Games::className(), ['game' => 'game']);
+        return $this->hasMany(Gamess::className(), ['game' => 'game']);
     }
 
     /**
@@ -68,7 +68,7 @@ class Games extends \yii\db\ActiveRecord {
 
     public static function getLastGame($id) {
 
-        $game = Games::find()
+        $game = Gamess::find()
             ->select('game, max(date_start) as mdate')
             ->where('player = '.$id)
             ->orderBy("mdate DESC")
