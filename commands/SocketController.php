@@ -49,7 +49,6 @@ class SocketController extends Controller
     public function actionSid($sid = false, $sessionpath = '')
     {
 
-
         $usr = Chat::NO_PARAMS;
 
         if($sid !== false) {
@@ -62,7 +61,7 @@ class SocketController extends Controller
             $usr = isset($_SESSION['__id'])?$_SESSION['__id'].'|'.$_SESSION['nickname']:Chat::NO_AUTH;
             session_write_close();
 
-            session_save_path();
+//            session_save_path();
         }
         echo $usr;
         return;
