@@ -27,6 +27,7 @@ use yii\db\Expression;
 
 
 $sessid = Yii::$app->getSession()->getId();
+print_r(Yii::$app->getSession()->getSavePath());
 //phpinfo();
 Yii::$app->session->close();
 $cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid '.$sessid;

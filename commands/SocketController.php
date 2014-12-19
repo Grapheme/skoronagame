@@ -48,6 +48,7 @@ class SocketController extends Controller
 
     public function actionSid($sid = false)
     {
+        echo session_save_path();
         $usr = Chat::NO_PARAMS;
 
         if($sid !== false) {
