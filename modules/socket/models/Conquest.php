@@ -169,7 +169,8 @@ class Conquest extends Game {
         if(isset($this->turn_conquest[$id_game]) && sizeof($this->turn_conquest[$id_game])!=0) {
 
             print_r("остановка таймера\n");
-            $this->loop->cancelTimer($this->games[$id_game]['timer']);
+            if(isset($this->games[$id_game]['timer']))
+                $this->loop->cancelTimer($this->games[$id_game]['timer']);
 
             print_r("изъятие из очереди игрока \n");
 

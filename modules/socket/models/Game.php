@@ -467,19 +467,19 @@ class Game extends Main{
     ///// STEP UP GAME /////
     public function stepUp($game_id) {
 
-        $size_map = sizeof($this->games[$game_id]['map']);
-        //пропустить распределение земель
-        if($this->debug && $size_map != $this->map_elements){
-            $colors = array_values($this->games[$game_id]['castle']);
-
-            $i=1;
-            while ($i <= 15) {
-                $color = array_rand($colors, 1);
-                if(!isset($this->games[$game_id]['map'][$i]))
-                    $this->games[$game_id]['map'][$i] = $colors[$color];
-                $i++;
-            }
-        }
+//        $size_map = sizeof($this->games[$game_id]['map']);
+//        //пропустить распределение земель
+//        if($this->debug && $size_map != $this->map_elements){
+//            $colors = array_values($this->games[$game_id]['castle']);
+//
+//            $i=1;
+//            while ($i <= 15) {
+//                $color = array_rand($colors, 1);
+//                if(!isset($this->games[$game_id]['map'][$i]))
+//                    $this->games[$game_id]['map'][$i] = $colors[$color];
+//                $i++;
+//            }
+//        }
 
         $this->sendInGameStatus($game_id,['status']);
 

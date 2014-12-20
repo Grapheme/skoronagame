@@ -33,11 +33,6 @@ $path = Yii::$app->getSession()->getSavePath();
 //$cmd = PHP_BINDIR . '/php '.Yii::$app->basePath.'/yii socket/sid $sid '.$sessid.' $sessionpath '.$path;
 //$usr = shell_exec($cmd);
 
-echo 'результат';
-
-print_r('<br/>');
-
-print_r($path);
 //?>
 
 <div id="sender"></div>
@@ -92,6 +87,7 @@ print_r($path);
         #map td {
             width: 50px;
             height: 50px;
+            font-weight: bold;
         }
 
         #color-box {
@@ -125,6 +121,7 @@ $soc = <<<SCRIPT
     function wsStart() {
 
         conn = new WebSocket('ws://skoronagame.dev.pichesky.ru:8888');
+//        conn = new WebSocket('ws://skoronagame:8080');
 
         conn.onopen = function(e) {
             sendToInput("Connection established!");
@@ -149,7 +146,7 @@ $soc = <<<SCRIPT
     var my_color;
     var conquest = false;
 
-///command ///
+///command from server///
     function executeCommand(obj) {
 
         var obj = JSON.parse(obj);
@@ -158,12 +155,14 @@ $soc = <<<SCRIPT
 
         switch(data.action) {
 
+            //пришло сообщение
             case ('sendmsg'):
 
                 sender.text(data.msg);
                 console.log(data.msg);
                 break;
 
+            //инициализировать игру
             case ('initgame'):
 
                colorbox.css("background",data.color);
@@ -172,6 +171,7 @@ $soc = <<<SCRIPT
                SKGame.setCastle(data.castle);
                 break;
 
+            //раздел территории
             case ('segmentmap'):
 
                 gameStatus(data.color, 'Выберите территорию', 'Идет выбор территории');
@@ -179,6 +179,7 @@ $soc = <<<SCRIPT
                 SKGame.setPoint(data.points);
                 break;
 
+            //обновление показателей игры
             case ('status'):
 
                 question.text('');
@@ -187,6 +188,7 @@ $soc = <<<SCRIPT
                 SKGame.setPlayers(data.players);
                 break;
 
+            //пришел квиз воарос
             case ('quiz'):
 
                 sender.text('Ответьте на вопрос');
@@ -194,6 +196,7 @@ $soc = <<<SCRIPT
                 SKGame.startTimer(data.time);
                 break;
 
+            //пришел вопрос с выбором ответа
             case ('quest'):
 
                 sender.text('Ответьте на вопрос');
@@ -203,6 +206,7 @@ $soc = <<<SCRIPT
                 SKGame.startTimer(data.time);
                 break;
 
+            //соберники бьются
             case ('quest_passiv'):
 
                 question.text('');
@@ -210,6 +214,7 @@ $soc = <<<SCRIPT
                 SKGame.selectRegion(data.region);
                 break;
 
+            //выбор терриории нападения
             case ('conquest'):
 
                 question.text('');
@@ -219,6 +224,7 @@ $soc = <<<SCRIPT
                 SKGame.startTimer(data.time);
                 break;
 
+            //конец игры
             case ('endgame'):
 
                 question.text('');
