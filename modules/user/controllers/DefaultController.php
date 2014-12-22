@@ -19,10 +19,10 @@ class DefaultController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout','signup','addnickname','profile','repass','raiting'],
+                'only' => ['logout','signup','addnickname','profile','repass'],
                 'rules' => [
                     [
-                        'actions' => ['logout','addnickname','profile','repass','raiting'],
+                        'actions' => ['logout','addnickname','profile','repass'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -215,13 +215,21 @@ class DefaultController extends Controller
      */
     public function actionRaiting()
     {
-        $my_points = Yii::$app->user->identity->points;
-        $place = User::getPlace($my_points);
+        $guest = Yii::$app->user->isGuest;
+        $place = false;
+        $m_place = false;
+
+        if(!$guest) {
+            $my_points = Yii::$app->user->identity->points;
+            $place = User::getPlace($my_points);
+        }
 
         $top = User::getTop();
 
-        $my_mpoints = Yii::$app->user->identity->m_points;
-        $m_place = User::getMplace($my_mpoints);
+        if(!$guest) {
+            $my_mpoints = Yii::$app->user->identity->m_points;
+            $m_place = User::getMplace($my_mpoints);
+        }
 
         $m_top = User::getMtop();
 

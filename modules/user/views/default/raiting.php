@@ -13,7 +13,9 @@ use yii\widgets\ActiveForm;
     <?endforeach;?>
     </ul>
 
-    Мое место <?=$place?> <?=$identity->nickname?>  <?=$identity->winns?>   <?=$identity->points?>
+    <?if($place):?>
+        Мое место <?=$place?> <?=$identity->nickname?>  <?=$identity->winns?>   <?=$identity->points?>
+    <?endif?>
 </div>
 
 <div class="site-login">
@@ -27,5 +29,7 @@ use yii\widgets\ActiveForm;
     <?endforeach;?>
     </ul>
 
-    Мое место <?=$m_place?> <?=$identity->nickname?>  <?=$identity->m_winns?>   <?=$identity->m_points?>
+    <?if($m_place):?>
+        Мое место <?=$m_place?> <?=$identity->nickname?>  <?=$identity->m_winns?>   <?=$identity->m_points?>
+    <?endif?>
 </div>
