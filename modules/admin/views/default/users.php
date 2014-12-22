@@ -22,7 +22,7 @@ use yii\helpers\ArrayHelper;
                 'attribute' => 'ref',
                 'format' => 'html',
                 'options'=>['style'=>'width:70px'],
-                'filter' => Yii::$app->params['socParams'],
+                'filter' => array_flip(Yii::$app->params['socParams']),
 
                 'value'=>function ($data) {
                     return $data->ref;
