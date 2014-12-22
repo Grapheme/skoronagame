@@ -276,8 +276,10 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         $ref = \Yii::$app->params['socParams'][$identity['service']];
 
         $model = User::find()->where(['pass'=>$identity['id'], 'ref' => $ref])->one();
+        $new = false;
 
         if(sizeof($model) == 0) {
+            $new = true;
             $model = new User();
 
             $refer = User::refDecode($refer);
@@ -306,9 +308,11 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             $model->role = 'user';
             $model->save(false);
 
-            $auth = Yii::$app->authManager;
-            $adminRole = $auth->getRole('user');
-            $auth->assign($adminRole, $model->getId());
+            if($new) {
+                $auth = Yii::$app->authManager;
+                $adminRole = $auth->getRole('user');
+                $auth->assign($adminRole, $model->getId());
+            }
 
             return true;
         }
