@@ -148,6 +148,8 @@ class DefaultController extends Controller
             return $this->goHome();
         }
 
+        Yii::$app->cache->delete('EAuth.services');
+
         Yii::$app->user->logout();
 
         return $this->goHome();
