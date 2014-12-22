@@ -111,7 +111,7 @@ class EAuth extends Object
 				);
 			}
 			if (isset($cache)) {
-				$cache->set('EAuth.services', $services, $this->cacheExpire);
+//				$cache->set('EAuth.services', $services, $this->cacheExpire);
 			}
 		}
 		return $services;
