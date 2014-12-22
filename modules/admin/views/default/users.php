@@ -25,7 +25,7 @@ use yii\helpers\ArrayHelper;
                 'filter' => Yii::$app->params['socParams'],
 
                 'value'=>function ($data) {
-                    return Yii::$app->params['socParams'][$data->ref];
+                    return $data->ref;
                 },
             ],
             [
