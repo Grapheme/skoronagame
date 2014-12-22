@@ -49,6 +49,8 @@ class DefaultController extends Controller
 
     public function actionLogin() {
 
+        if(!Yii::$app->user->isGuest) return;
+
         $serviceName = Yii::$app->getRequest()->getQueryParam('service');
 
         $ref = Yii::$app->request->get('ref');
