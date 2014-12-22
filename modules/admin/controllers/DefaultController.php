@@ -56,7 +56,7 @@ class DefaultController extends Controller
         $is_new = true;
         $quiz = true;
 
-        if ($model = Questions::findOne(['id' => $id])){
+        if ($model = Questions::findOne(['id' => $id])) {
 
             if($model->type != 'quiz'){
                 $quiz = false;
@@ -74,9 +74,9 @@ class DefaultController extends Controller
 
             $model->load(Yii::$app->request->post());
 
-            if($model->validate()){
-                $rez = $quiz? $model->addQuiz() : $model->addQuest();
-                if($rez) $this->redirect('/admin/default/index');
+            if ($model->validate()) {
+                $rez = $quiz ? $model->addQuiz() : $model->addQuest();
+                if ($rez) $this->redirect('/admin/default/index');
             }
         }
 
@@ -89,6 +89,7 @@ class DefaultController extends Controller
 
     public function actionIndex()
     {
+
         $model = new Questions();
         $dp = new ActiveDataProvider([
             'query' => Questions::find(),
@@ -99,7 +100,20 @@ class DefaultController extends Controller
 
         $dp = $model->search(Yii::$app->request->getQueryParams());
 
-        if($param = Yii::$app->request->get('export')){
+        //IMPORT
+        $import_rez = false;
+        if (Yii::$app->request->post('Questions')) {
+
+            $model->setScenario('import');
+
+            if($model->validate()) {
+                $file = UploadedFile::getInstance($model,'import_file');
+
+                $import_rez = Questions::parseFileImport($file->tempName);
+            }
+        }
+
+        if($param = Yii::$app->request->get('export')) {
 
             $par = Questions::exportQuestions($param);
 
@@ -121,8 +135,9 @@ class DefaultController extends Controller
         }
 
             return $this->render('index', [
-            'dp' => $dp,
-            'model' => $model]);
+            'dp'            => $dp,
+            'model'         => $model,
+            'import_rez'    => $import_rez]);
     }
 
     public function actionUsers()

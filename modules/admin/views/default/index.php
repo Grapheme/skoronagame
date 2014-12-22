@@ -4,9 +4,53 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use app\helpers\LoaderFH;
 use yii\helpers\ArrayHelper;
+use yii\widgets\ActiveForm;
+
+use kartik\widgets\FileInput;
 ?>
 
-<?=Html::a('EXPORT',['default/index','export' => 'all'],['class'=>'btn btn-primary']);?>
+
+<?//    echo '<label class="control-label">IMPORT</label>';
+//    echo FileInput::widget([
+//    'name' => 'attachment_3',
+//    'pluginLoading' => false,
+//    'options' => ['multiple' => false],
+//    'pluginOptions' => ['allowedPreviewTypes' => false, 'allowedFileTypes' => ['text'], 'allowedFileExtensions' => ['txt']],
+//    ]);?>
+<div class="row">
+    <div class="col-lg-6">
+        <?=Html::a('EXPORT',['default/index','export' => 'all'],['class'=>'btn btn-primary']);?>
+    </div>
+
+    <div class="col-lg-6">
+        <?php $form = ActiveForm::begin([
+        'id' => 'login-form',
+//        'enableAjaxValidation' => true,
+        'options' => ['enctype' => 'multipart/form-data'],
+        'fieldConfig' => [
+        'template' => "{input}<div class=\"col-lg-8\">{error}</div>",
+        ],
+        ]); ?>
+
+            <div class="input-group">
+                <?= $form->field($model,'import_file')->fileInput(['class' => 'form-control'])?>
+
+                <span class="input-group-btn" style="vertical-align: top;">
+                    <?= Html::submitButton('IMPORT',['class'=>'btn btn-primary']) ?>
+                </span>
+            </div>
+        <?php ActiveForm::end(); ?>
+
+        <?if($import_rez !== false):?>
+            Импортировано <?=$import_rez['all']-sizeof($import_rez['err'])?> из <?=$import_rez['all']?> <br/>
+            Ошибки: <br/>
+            <?foreach ($import_rez['err'] as $str => $err):?>
+                Строка <?=$str?> Ошибки: <?=$err?> <br/>
+            <?endforeach?>
+        <?endif?>
+
+    </div>
+</div>
 
     <?php echo GridView::widget([
         'dataProvider' => $dp,

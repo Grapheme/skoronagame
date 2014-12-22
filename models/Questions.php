@@ -21,6 +21,7 @@ use yii\db\Connection;
 class Questions extends \yii\db\ActiveRecord
 {
     public $variant;
+    public $import_file;
     /**
      * @inheritdoc
      */
@@ -38,12 +39,23 @@ class Questions extends \yii\db\ActiveRecord
             [['variants'], 'string', 'length'=>[10,200]],
             [['variant'], 'validateVariant'],
 
-            [['answer'], 'integer'],
+            [['answer'], 'integer', 'message'=>'Верный ответ должен быть числом'],
             [['answer'], 'required', 'message'=>'Правильный ответ должен быть отмечен'],
 
-            [['question'], 'string', 'max' => 200],
-            [['type'], 'string', 'max' => 10]
+            [['question'], 'string', 'length'=>[3,200]],
+            [['type'], 'string', 'max' => 10],
+
+            [['import_file'], 'file', 'extensions' => 'txt, csv', 'mimeTypes' => 'text/csv, text/plain', 'wrongExtension' => 'Разрешенные форматы: {extensions}'],
+
+            [['variants', 'question' ,'answer'], 'filter', 'filter' => 'trim']
         ];
+    }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios['import'] = ['import_file'];
+        return $scenarios;
     }
 
     public function validateVariant($attribute, $params)
@@ -79,6 +91,52 @@ class Questions extends \yii\db\ActiveRecord
 
         $rez = ['answer' => $answer, 'variant' => json_encode($variant, JSON_UNESCAPED_UNICODE)];
         return $rez;
+    }
+
+    public static function parseStrImport($str){
+
+        $model = new Questions();
+        $delimiter = ';';
+        $var_delimiter = '|';
+
+        $text = explode($delimiter, $str);
+
+        if (sizeof($text) < 3) {
+            $model->addError('variant', 'не хватает параметров');
+            return json_encode($model->getErrors(),JSON_UNESCAPED_UNICODE);
+        }
+
+        $model->question = isset($text[0])? $text[0]:null;
+        $model->variants = empty($text[1])? null : json_encode(explode($var_delimiter,$text[1]));
+        $model->answer = isset($text[2])? $text[2]:null;
+        $model->type =  empty($text[1])? 'quiz' : 'quest';
+
+        if(!$model->save()) {
+            return json_encode($model->getErrors(),JSON_UNESCAPED_UNICODE);
+        }
+
+        return true;
+    }
+
+    public static function parseFileImport($file){
+
+        $handle = fopen ($file, "r");
+        $str = 0;
+        $bad = [];
+
+        while (!feof ($handle)) {
+            $buffer = fgets($handle, 4096);
+            $str++;
+
+            $answer = Questions::parseStrImport($buffer);
+
+            if($answer !== true)
+                $bad[$str] = $answer;
+        }
+
+        fclose ($handle);
+
+        return ['all' => $str, 'err' => $bad];
     }
 
     public function addQuest(){
