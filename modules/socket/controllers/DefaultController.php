@@ -30,12 +30,17 @@ class DefaultController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['server'],
+                'only' => ['server','index'],
                 'rules' => [
                     [
                         'actions' => ['server'],
                         'allow' => true,
                         'roles' => ['admin'],
+                    ],
+                    [
+                        'actions' => ['index'],
+                        'allow' => true,
+                        'roles' => ['@'],
                     ],
                 ],
             ],
