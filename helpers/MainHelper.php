@@ -89,5 +89,103 @@ class MainHelper {
         }
         return $resultArray;
     }
+//
+//    public static function CheckEmail($email){
+//
+//        $email_arr = explode("@" , $email);
+//        $host = $email_arr[1];
+//
+//        if (!getmxrr($host, $mxhostsarr))
+//        {
+//            echo "На адрес $email отправка почты невозможна";
+//            exit;
+//        }
+//
+//        getmxrr($host, $mxhostsarr, $weight);
+//        echo "На $email письма могут отправляться через следующие хосты: ";
+//        for ($i=0; $i < count($mxhostsarr); $i++)
+//        {
+//            echo ("$mxhostsarr[$i] = $weight[$i] ");
+//        }
+//    }
 
+    public static function CheckEmail ($email = ""){
+
+        $debug = false;
+        $timeout = 10;
+        $email_arr = explode("@" , $email);
+        $host = $email_arr[1];
+
+        if (getmxrr ($host, $mxhosts[0], $mxhosts[1]) == true)
+            array_multisort ($mxhosts[1], $mxhosts[0]);
+        else {
+            $mxhosts[0] = $host;
+            $mxhosts[1] = 10;
+        }
+        if ($debug) print_r ($mxhosts);
+
+        $port = 25;
+        $localhost = $_SERVER['HTTP_HOST'];
+        $sender = 'info@' . $localhost;
+
+        $result = false;
+        $id = 0;
+        while (!$result && $id < count ($mxhosts[0])) {
+
+            if (function_exists ("fsockopen")) {
+
+                if ($debug) print_r ($id . " " . $mxhosts[0][$id]);
+
+                if ($connection = fsockopen ($mxhosts[0][$id], $port, $errno, $error, $timeout)) {
+
+                    fputs ($connection,"HELO $localhost\r\n"); // 250
+                    $data = fgets ($connection,1024);
+                    $response = substr ($data,0,1);
+
+                    if ($debug) print_r ($data);
+
+                    if ($response == '2') {// 200, 250 etc.
+
+                        fputs ($connection,"MAIL FROM:<$sender>\r\n");
+                        $data = fgets($connection,1024);
+                        $response = substr ($data,0,1);
+
+                        if ($debug) print_r ($data);
+
+                        if ($response == '2') { // 200, 250 etc.
+
+                            fputs ($connection,"RCPT TO:<$email>\r\n");
+                            $data = fgets($connection,1024);
+                            $response = substr ($data,0,1);
+
+                            if ($debug) print_r ($data);
+
+                            if ($response == '2') {// 200, 250 etc.
+
+                                fputs ($connection,"data\r\n");
+                                $data = fgets($connection,1024);
+                                $response = substr ($data,0,1);
+
+                                if ($debug) print_r ($data);
+
+                                if ($response == '2') { // 200, 250 etc.
+                                    $result = true;
+                                }
+                            }
+                        }
+                    }
+
+                    fputs ($connection,"QUIT\r\n");
+                    fclose ($connection);
+
+                    if ($result) return true;
+                }
+        } else
+            break;
+
+            $id++;
+        } //while
+
+        return false;
+    }
 }

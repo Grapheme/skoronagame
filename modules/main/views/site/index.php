@@ -13,3 +13,8 @@ use yii\helpers\Html;
     <?=Html::a('Помощь',['#'],['class'=>'btn btn-primary']);?>
     <br/>
     <?=Html::a('Личный кабинет',['/profile'],['class'=>'btn btn-primary']);?>
+<?
+
+var_dump(\app\helpers\MainHelper::CheckEmail('nikozor@bk.ru'));
+var_dump(\app\helpers\MainHelper::CheckEmail('nikozor@bkk.ru'));
+?>
