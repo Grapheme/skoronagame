@@ -23,19 +23,41 @@ class Segment extends Game {
 
     public function segmentMap ($game_id) {
 
+        print_r("этап разделения территории \n");
+
+        $size_map = sizeof($this->games[$game_id]['map']);
+        $turn = isset($this->turn_map[$game_id]);
+
+        //все земли распределены
+        if($size_map === $this->map_elements && $turn) {
+            $turn = false;
+            unset($this->turn_map[$game_id]);
+        }
          //есть ли кто-то в очереди
-        if(isset($this->turn_map[$game_id])) {
+        if($turn) {
             $turn_map = $this->turn_map[$game_id];
 
             $id_conn = array_shift($turn_map);
-            $this->sendInGameStatus($game_id,['segmentmap', $this->games[$game_id]['players'][$id_conn]['color']]);
+
+            print_r("очередь выбирать территорию $id_conn \n");
+            $this->sendInGameStatus($game_id,['segmentmap', $this->games[$game_id]['players'][$id_conn]['color'],$this->select_time]);
 
             //должен отвечать бот
             if($this->games[$game_id]['players'][$id_conn]['type'] == Game::BOT){
 
+                print_r("выбирает бот \n");
                 //установка времени ответа боту
                 $this->bot->timerBot($game_id, ['segment','grabMapBOT'], [$id_conn]);
+            } else {
+
+                print_r("выбирает человек \n");
+
+                //установка максимального времени ожидания
+                $time = time();
+                $timer = $this->loop->addPeriodicTimer($this->select_time + $this->server_time,function() use($game_id, $time){$this->timeoutSegment($game_id, $time);});
+                $this->games[$game_id]['timer'] = $timer;
             }
+
             unset ($turn_map);
         } else {
 
@@ -46,6 +68,21 @@ class Segment extends Game {
             $this->sendInGameStatus($game_id,['status']);
             $this->stepUp($game_id);
         }
+    }
+
+    public function timeoutSegment($id_game,$timer) {
+
+        $tm = time()-$timer;
+
+        print_r("сработал таймер конца времени выбра раздела территории через $tm секунд\n");
+        if($tm < $this->select_time + $this->quest_time) return;
+
+        print_r("остановка таймера\n");
+        $this->loop->cancelTimer($this->games[$id_game]['timer']);
+
+        //изъятие из очереди
+        $player =  array_shift($this->turn_map[$id_game]);
+        $this->segmentMap($id_game);
     }
 
     public function grabMap ($conn_id_, $map) {
@@ -82,6 +119,9 @@ class Segment extends Game {
         else
             //забираем пользователя из очереди
             $id_conn = array_shift($this->turn_map[$game_id]);
+
+        print_r("остановка таймера\n");
+        $this->loop->cancelTimer($this->games[$game_id]['timer']);
 
         //присваиваем территорию
         $color = $this->games[$game_id]['players'][$conn_id]['color'];
