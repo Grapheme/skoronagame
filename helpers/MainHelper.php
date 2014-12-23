@@ -112,9 +112,18 @@ class MainHelper {
     public static function CheckEmail ($email = ""){
 
         $debug = false;
+
         $timeout = 10;
-        $email_arr = explode("@" , $email);
-        $host = $email_arr[1];
+//        $email_arr = explode("@" , $email);
+//        $host = $email_arr[1];
+        $host = substr (strstr ($email, '@'), 1);
+
+        $domain_rules = array ("aol.com", "bigfoot.com", "brain.net.pk", "breathemail.net",
+            "compuserve.com", "dialnet.co.uk", "glocksoft.com", "home.com",
+            "msn.com", "rocketmail.com", "uu.net", "yahoo.com", "yahoo.de");
+
+        if (in_array (strtolower ($host), $domain_rules)) return false;
+        $host .= ".";
 
         if (getmxrr ($host, $mxhosts[0], $mxhosts[1]) == true)
             array_multisort ($mxhosts[1], $mxhosts[0]);
