@@ -109,40 +109,4 @@ class MainHelper {
 //        }
 //    }
 
-    public static function CheckEmail ($email = "", $spam=false){
-
-        $host= substr(strstr($email, '@'), 1) . ".";
-        if (!getmxrr($host, $mxhosts )) $mxhosts= array($host);
-        $localhost= $_SERVER['HTTP_HOST'];
-        $sender= "info@$localhost";
-        $result= false;
-        foreach ($mxhosts as $host)
-        {
-            if ($connection= @fsockopen($host, 25, $errno, $error, 10))
-            {
-                fputs($connection,"HELO $localhost\r\n"); // 250
-                $response= fgets($connection,1024);
-                if ($response[0] == '2') // 200, 250 etc.
-                {
-                    fputs($connection,"MAIL FROM:<$sender>\r\n");
-                    $response= fgets($connection,1024);
-                    if ($response[0] == '2') // 200, 250 etc.
-                    {
-                        fputs($connection,"RCPT TO:<$email>\r\n");
-                        $response= fgets($connection,1024);
-                        if ($response[0] == '2') // 200, 250 etc.
-                        {
-                            fputs ($connection,"data\r\n");
-                            $response= fgets($connection,1024);
-                            if ($response[0] == '2') $result= true;
-                        }
-                    }
-                }
-                @fputs ($connection,"QUIT\r\n");
-                fclose ($connection);
-                if ($result) return true;
-            }
-        }
-        return false;
-    }
 }
