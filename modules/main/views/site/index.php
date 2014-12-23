@@ -16,5 +16,5 @@ use yii\helpers\Html;
 <?
 
 var_dump(\app\helpers\MainHelper::CheckEmail('nikozor@bk.ru'));
-var_dump(\app\helpers\MainHelper::CheckEmail('nikozor@bkk.ru'));
+var_dump(\app\helpers\MainHelper::CheckEmail('IIISpikerIII@ggmail.com'));
 ?>
