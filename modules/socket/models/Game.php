@@ -346,6 +346,8 @@ class Game extends Main{
 
                 $game_id = md5(time());
                 $this->games[$game_id]['players'] = $this->waiting_list[0]['players'];
+                $this->games[$game_id]['last_lvl'] = false;
+
                 print_r($this->games[$game_id]['players']);
                 print_r($this->waiting_list[0]['players']);
                 unset($this->waiting_list[0]);
@@ -416,7 +418,7 @@ class Game extends Main{
 
         $players = $this->getPointsPlayers($id_game);
 
-        $top_players = $this->topPointPlayers($players);
+        $top_players = Game::topPointPlayers($players);
 
         print_r("КОНЕЦ ИГРЫ\n");
 
@@ -464,7 +466,7 @@ class Game extends Main{
         unset($this->games[$id_game]);
     }
 
-    public function topPointPlayers ($arr) {
+    public static function topPointPlayers ($arr) {
 
         usort($arr, function ($a, $b) {
             return ($a['points'] > $b['points']) ? -1 : 1;

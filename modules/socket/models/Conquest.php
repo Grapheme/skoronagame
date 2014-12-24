@@ -28,6 +28,13 @@ class Conquest extends Game {
             $this->turn_conquest[$id_game] = Conquest::turnConquest($this->getPlayersGame($id_game));
         }
 
+        //формируем очередь для последнего левела
+        if(sizeof($this->turn_conquest[$id_game]) == 0 && $this->games[$id_game]['last_lvl'] === false) {
+
+            $this->turn_conquest[$id_game] = Conquest::turnConquest($this->getPlayersGame($id_game));
+            $this->games[$id_game]['last_lvl'] = true;
+        }
+
         //остался один замок либо закончились левелы
         if(sizeof($this->turn_conquest[$id_game]) == 0 || sizeof($this->games[$id_game]['castle']) == 1) {
 
@@ -197,6 +204,14 @@ class Conquest extends Game {
             $rez[] = $id_players[$val];
 
         return $rez;
+    }
+
+    public static function turnLastLvl($players) {
+
+        //определение очередности ходов
+        $players = array_values(Game::topPointPlayers($players));
+
+        return $players;
     }
 
     public static function turnConquestRem(&$turn, $player) {
