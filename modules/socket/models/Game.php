@@ -34,6 +34,9 @@ class Game extends Main{
     public $players;
     public $loop;
 
+    public $timer_settings;
+    public $settings_time = 1800;
+
     public $turn_map = [];
     public $turn_conquest = [];
 
@@ -94,6 +97,8 @@ class Game extends Main{
         $this->loop = $loop;
         $this->settings();
 
+        $this->timer_settings = $this->loop->addPeriodicTimer($this->settings_time,function() {$this->settings();});
+
         $this->quiz = new Quiz($this);
         $this->quest = new Quest($this);
         $this->segment = new Segment($this);
@@ -127,7 +132,12 @@ class Game extends Main{
         $this->quiz_time    = $settings['quiz_time'];
         $this->server_time  = $settings['server_time'];
 
+        $this->settings_time  = $settings['settings_time'];
+
         $this->living_castle = $settings['living_castle'];
+
+        if(!empty($this->timer_settings)) $this->loop->cancelTimer($this->timer_settings);
+        $this->timer_settings = $this->loop->addPeriodicTimer($this->settings_time,function() {$this->settings();});
     }
 
     public function existInList(ConnectionInterface $conn, $list = 'games') {
