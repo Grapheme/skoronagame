@@ -82,6 +82,10 @@ class Segment extends Game {
 
         //изъятие из очереди
         $player =  array_shift($this->turn_map[$id_game]);
+
+        if(sizeof($this->turn_map[$id_game]) == 0)
+            unset($this->turn_map[$id_game]);
+
         $this->segmentMap($id_game);
     }
 
