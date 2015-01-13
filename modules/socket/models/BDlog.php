@@ -123,7 +123,7 @@ class BDlog extends Game {
                     User::updateAll(['gift' => json_encode($gifts)], ['id' => $id]);
             }
 
-            $today = time();
+            $today = date('Y-m-d H:i:s',time());
             Gamess::updateAll(
                 [
                     'place'     =>  $place,
