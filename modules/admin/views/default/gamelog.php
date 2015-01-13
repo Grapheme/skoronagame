@@ -112,10 +112,18 @@ use app\modules\socket\models\Game;
         <tr>
             <td></td>
             <td><?=$color?></td>
-            <td><?=($type == 'quiz')?$player['answer']:$ans[$player['answer']]?></td>
-            <td><?=$player['time']?> сек.</td>
-            <td><?=$player['points']?></td>
-            <td><?=isset($player['type'])?$player['type']:''?></td>
+
+            <?if(!empty($player)):?>
+                <td><?=(is_null($player['answer']))?
+                        'без ответа':
+                        (($type == 'quiz')? $player['answer'] : $ans[$player['answer']])?>
+                </td>
+                <td><?=$player['time']?> сек.</td>
+                <td><?=$player['points']?></td>
+                <td><?=isset($player['type'])?$player['type']:''?></td>
+            <?else:?>
+                <td colspan="4">Вне игры</td>
+            <?endif?>
         </tr>
         <?endforeach;?>
 
