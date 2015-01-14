@@ -8,7 +8,7 @@ $db = require(__DIR__ . '/db.php');
 return [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
-    'runtimePath' =>DATA_PATH.'/runtime',
+    'runtimePath' => DATA_PATH.'/runtime',
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
     'components' => [
@@ -49,6 +49,12 @@ return [
                     'logFile' => DATA_PATH.'/runtime/logs/sserver.log',
                     'maxFileSize' => 1024 * 2,
                     'maxLogFiles' => 20,
+                ],
+                [
+                    'class' =>  'yii\log\DbTarget',
+                    'levels' => ['info','error', 'warning'],
+                    'categories' => ['sserver','yii\base\*'],
+                    'logVars' => ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'],
                 ],
             ],
         ],
