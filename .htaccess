@@ -18,5 +18,5 @@ php_value upload_max_filesize 10M
 ## Disable Apache server authorisation for subdirectory
 ## http://www.shkodenko.kiev.ua/index.php?lang_id=1&content_id=223
 ##
-#Satisfy Any
-#Allow from all
+Satisfy Any
+Allow from all
