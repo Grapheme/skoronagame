@@ -20,6 +20,7 @@ $app = new Illuminate\Foundation\Application;
 $env = $app->detectEnvironment(array(
 	'az' => array('Acer_5742G'),
 	'vkharseev' => array('DNS'),
+	'digitalocean' => array('www.grapheme.ru'),
 	'kd' => array('DobriyMac.local'),
 	'at' => array('MacBook-Pro-Tommy.local'),
 ));
