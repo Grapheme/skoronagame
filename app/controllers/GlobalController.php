@@ -17,10 +17,7 @@ class GlobalController extends \BaseController {
 			if($validator->passes()):
 				if(Auth::attempt(array('email'=>Input::get('login'),'password'=>Input::get('password'),'active'=>1),(bool)Input::get('remember'))):
 					if(Auth::check()):
-						#$json_request['redirect'] = link::auth(AuthAccount::getStartPage());
-                        #$redirect = link::auth();
-                        $redirect = AuthAccount::getGroupStartUrl();
-						$json_request['redirect'] = $redirect;
+						$json_request['redirect'] = AuthAccount::getStartPage();
 						$json_request['status'] = TRUE;
 					endif;
 				else:

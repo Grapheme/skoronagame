@@ -15,5 +15,11 @@ class GroupsTableSeeder extends Seeder{
 			'desc' => 'Администраторы',
 			'dashboard' => 'admin'
 		));
+
+        Group::create(array(
+			'name' => 'game',
+			'desc' => 'Игроки',
+			'dashboard' => 'game'
+		));
 	}
 }

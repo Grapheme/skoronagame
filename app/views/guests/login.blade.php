@@ -40,23 +40,12 @@
 						@include('guests.forms.sign-in')
 					</div>
 				</div>
-
-                {{--
-    			@if(Allow::module('users') || 1)
-				<div class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
-					<div class="well no-padding">
-						@include('guests.forms.sign-up')
-					</div>
-				</div>
-			    @endif
-                --}}
-
 			</div>
 		</div>
 	</div>
 
 @if(Config::get('app.use_scripts_local'))
-	{{HTML::script('js/vendor/jquery.min.js');}}
+	{{HTML::script('private/js/vendor/jquery.min.js');}}
 @else
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="{{asset('private/js/vendor/jquery.min.js');}}"><\/script>')</script>

@@ -2,8 +2,8 @@
 
 return array(
 
-    'theme_path' => URL::to('/theme/site/dist'),
-    'mobile_theme_path' => URL::to('/theme/mobile/dist'),
+    'theme_path' => 'theme',
+    'mobile_theme_path' => NULL,
 
     'paginate_limit' => 30,
 

@@ -123,7 +123,7 @@ class AdminUsersController extends BaseController {
 
 			$json_request['responseText'] = "Пользователь добавлен";
 			#$json_request['responseText'] = print_r(Input::get('actions'), 1);
-			$json_request['redirect'] = link::auth($this->module['rest'].'/edit/'.$user->id);
+			$json_request['redirect'] = URL::action('AdminUsersController@getEdit',array('user'=>$user->id));
 			$json_request['status'] = TRUE;
 
 		} else {
@@ -171,10 +171,7 @@ class AdminUsersController extends BaseController {
             "group_id" => Input::get('group_id'),
         );
         
-        $rules_update = User::$rules_update;
-        $rules_update['email'] .= ',' . $user->id;
-        
-		$validation = Validator::make($input, $rules_update);
+		$validation = Validator::make($input,User::$rules_update);
 		if($validation->passes()):
 
             ## Update user

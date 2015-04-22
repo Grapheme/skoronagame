@@ -1,4 +1,3 @@
-
 <aside id="left-panel">
 	<nav>
 		<ul>

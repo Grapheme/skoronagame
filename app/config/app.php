@@ -20,10 +20,7 @@ return array(
 	'url' => '#',
 	'timezone' => 'UTC',
 
-    'locales' => array(
-        'ru' => 'Русский',
-        #'en' => 'English',
-    ),
+    'locales' => array('ru' => 'Русский'),
 	'locale' => 'ru',
 
 

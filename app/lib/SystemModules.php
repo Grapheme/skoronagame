@@ -12,7 +12,7 @@ class SystemModules {
         $mod_info = Config::get('mod_info');
         $mod_menu = Config::get('mod_menu');
         #Helper::dd($mod_info);
-        #Helper::d($mod_menu);
+        #Helper::dd($mod_menu);
 
         $dic_entities = array();
         if (class_exists('AdminDicvalsController')) {
@@ -39,7 +39,6 @@ class SystemModules {
                 #Helper::dd($mod_menu);
             }
         }
-
         ## If exists menu elements...
         if (isset($mod_menu) && is_array($mod_menu) && count($mod_menu)) {
             #foreach( $mod_menu as $mod_name => $menu_elements ) {

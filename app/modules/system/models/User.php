@@ -22,7 +22,7 @@ class User extends BaseModel implements UserInterface, RemindableInterface {
 		'group_id' => 'required|integer',
 		'name' => 'required',
 		#'surname' => 'required',
-		'email' => 'required|email|unique:users,email',
+		'email' => 'required|email',
 		#'password' => 'required|min:6'
 	);
 

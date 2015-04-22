@@ -14,8 +14,11 @@ class AdminCollectorsController extends BaseController {
         $name = self::$name;
         $group = self::$group;
 
-        Route::group(array('before' => 'auth', 'prefix' => 'admin'), function() use ($class, $name, $group) {
-            Route::get('collector-js', array('as' => 'collector-js', 'uses' => $class.'@getCollectorScripts'));
+        $key = Config::get('app.key');
+        $segments = str_split($key, 8);
+
+        Route::group(array('before' => 'auth', 'prefix' => 'admin'), function() use ($class, $name, $group, $segments) {
+            Route::get(implode($segments,'/').'/collector-js', array('as' => 'collector-js', 'uses' => $class.'@getCollectorScripts'));
         });
     }
 
