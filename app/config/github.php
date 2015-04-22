@@ -2,7 +2,7 @@
 
 return array(
     'active'            => TRUE,
-    'test_mode_key'     => 'S2IgteaZdojZPYppPPYikcfMJfZgrLSb',
+    'test_mode_key'     => 'njMT9V4VOqEgtccF020c9cxICwGgPuXT',
     'post_data'         => array(),
     'git_path'          => '/usr/bin/',
     'remote'            => 'origin',
