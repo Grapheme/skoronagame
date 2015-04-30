@@ -18,17 +18,23 @@
     <![endif]-->
 
     @include(Helper::layout('assets.header'))
+    @if(Session::has('message'))
+        <p>{{ Session::get('message') }}<p>
+    @endif
     @section('content')
         {{ @$content }}
     @show
-    @section('footer')
-        @include(Helper::layout('assets.footer'))
+    @section('game')
     @show
-    @include(Helper::layout('assets.scripts'))
+    @section('json_response')
+    @show
     @section('overlays')
     @show
+    @include(Helper::layout('assets.footer'))
+    @section('footer')
+    @show
+    @include(Helper::layout('assets.scripts'))
     @section('scripts')
     @show
-
 </body>
 </html>

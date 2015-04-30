@@ -55,14 +55,19 @@ Route::filter('auth.basic', function(){
 
 Route::filter('admin.auth', function(){
 
-	if(!AuthAccount::isAdminLoggined()):
-		return Redirect::to('/');
+    if(Auth::check() && Auth::user()->group_id == 2):
+        #
+    else:
+        return Redirect::route('login')->with('redirect_to',Request::path());
 	endif;
 });
 
 Route::filter('user.auth', function(){
-	if(!AuthAccount::isUserLoggined()):
-		return Redirect::to('/');
+
+	if(Auth::check() && Auth::user()->group_id == 3):
+        Sessions::setUserLastActivity();
+    else:
+		return Redirect::route('mainpage')->with('message','Сначала авторизуйтесь.');
 	endif;
 });
 
@@ -89,7 +94,6 @@ Route::filter('guest', function(){
 
 Route::filter('auth2login', function(){
     if(Auth::check()) {
-        #Helper::dd(Request::path() . ' != ' . AuthAccount::getStartPage());
         if (Request::path() != AuthAccount::getStartPage())
             return Redirect::to(AuthAccount::getStartPage());
     } else {

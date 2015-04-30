@@ -75,6 +75,7 @@ class GlobalController extends \BaseController {
 	public function logout(){
 
 		Auth::logout();
+        Sessions::destroyUserSession();
 		return Redirect::to('/');
 	} // функция завершения сеанса пользователя
 

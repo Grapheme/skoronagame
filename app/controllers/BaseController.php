@@ -46,7 +46,7 @@ class BaseController extends Controller {
         #return static::__CLASS__;
         #return get_class(__CLASS__);
         #echo __DIR__;
-        #return basename(__DIR__).".views.";   
+        #return basename(__DIR__).".views.";
         return static::$group.".views." . ($postfix ? $postfix."." : "");
     }
 

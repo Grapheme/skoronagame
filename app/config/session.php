@@ -3,7 +3,7 @@
 return array(
 	'driver' => 'database',
 	'lifetime' => 120,
-	'expire_on_close' => false,
+	'expire_on_close' => true,
 	'files' => storage_path().'/sessions',
 	'connection' => null,
 	'table' => 'sessions',

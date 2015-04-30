@@ -13,6 +13,7 @@ class CreateSessionTable extends Migration {
     			$table->string('id')->unique();
     			$table->text('payload');
     			$table->integer('last_activity');
+                $table->integer('user_id')->unsigned();
     		});
             echo(' + ' . $this->table . PHP_EOL);
         } else {
