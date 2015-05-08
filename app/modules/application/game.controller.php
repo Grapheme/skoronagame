@@ -45,6 +45,8 @@ class GameController extends BaseController {
         });
 
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
+            Route::post('profile/password-save', array('as'=>'profile-password-save','uses'=>$class.'@ProfilePasswordSave'));
+
             Route::post('get-game', array('as'=>'get-game','uses'=>$class.'@getGame'));
             Route::post('question/get-quiz', array('as'=>'get-quiz-question','uses'=>$class.'@getQuizQuestion'));
             Route::post('question/send-answer', array('as'=>'send-answer-question','uses'=>$class.'@sendAnswerQuestion'));
@@ -146,6 +148,21 @@ class GameController extends BaseController {
             $json_request['responseText'] = 'Неверно заполнены поля';
         endif;
         return Response::json($this->json_request,200);
+    }
+    /****************************************************************************/
+    public function ProfilePasswordSave(){
+
+        if (!Request::ajax()) return App::abort(404);
+        $json_request = array('status'=>FALSE,'responseText'=>'','redirect'=> FALSE);
+        if (Hash::check(Input::get('old_password'), Auth::user()->password)):
+            $user = Auth::user();
+            $user->password = Hash::make(Input::get('password'));
+            $user->save();
+            $json_request['status'] = TRUE;
+        else:
+            $json_request['responseText'] = 'Неверно указанный старый пароль';
+        endif;
+        return Response::json($json_request,200);
     }
     /****************************************************************************/
     /********************************* GAME *************************************/

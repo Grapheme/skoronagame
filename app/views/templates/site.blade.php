@@ -25,10 +25,6 @@
             @show
         </div>
     </div>
-    @section('game')
-    @show
-    @section('json_response')
-    @show
     @include(Helper::layout('assets.footer'))
     @section('footer')
     @show
