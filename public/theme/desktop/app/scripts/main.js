@@ -77,18 +77,24 @@ if (_skoronagame_.open_frame) {
 
 $('form').submit(function(e){
   e.preventDefault();
-  var _href=$(this).attr('action');
-  var _method=$(this).attr('method');
+  var _href = $(this).attr('action');
+  var _method = $(this).attr('method');
+  var _popup = $(this).attr('data-result');
   $.ajax({
     type: _method,
     url: _href,
     data: $(this).serialize(),
     success: function (response) {
       console.log(response)
-      //if (response.status == 'ok') {
-      open_popup = $(this).attr('data-result');
-        openFrame(open_popup);
-      //}
+      if (response.status == true) {
+      //open_popup = $(this).attr('data-result');
+        if (response.redirect) {
+          location.href=response.redirect
+        }
+        openFrame(_popup);
+      } else if (response.status == false) {
+        alert('responseText')
+      }
     },
     error: function (xhr, textStatus, errorThrown) {
       console.log(xhr)
