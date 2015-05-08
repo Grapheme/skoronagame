@@ -85,9 +85,10 @@ $('form').submit(function(e){
     data: $(this).serialize(),
     success: function (response) {
       console.log(response)
-      if (response.status == 'ok') {
-        openFrame(response.open_frame);
-      }
+      //if (response.status == 'ok') {
+      open_popup = $(this).attr('data-result');
+        openFrame(open_popup);
+      //}
     },
     error: function (xhr, textStatus, errorThrown) {
       console.log(xhr)
