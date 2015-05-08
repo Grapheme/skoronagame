@@ -1,0 +1,417 @@
+extends layout
+
+block content
+  #map
+    .areas
+      #area-12.area
+        .undeground
+        .ground
+        .countur
+          include ./images/12_contyr.svg
+        .glow
+          include ./images/12_glow.svg
+        .objects
+    img.bg(src="/images/bg.jpg")
+    
+  .popup-wrapper
+    .popup-holder
+      .popup#login
+        .title Войти в игру
+        form(action="json/login.json")
+          input(name="email" type="email" placeholder="Ваш e-mail")
+          input(name="password" type="password" placeholder="Введите пароль")
+          button(type="submit") Отправить
+        a.left.caps(href="#register") Зарегестрироваться
+        a.right.caps(href="#password-forgot") Забыли пароль?
+        .cf
+        br
+        hr
+        .socials
+          a(href="")
+            img(src="images/ico-vk.png")
+          a(href="")
+            img(src="images/ico-ok.png")
+          a(href="")
+            img(src="images/ico-fb.png")
+      .popup#register
+        .title Регистрация
+        form
+          input(name="email" type="email" placeholder="Ваш e-mail")
+          button(type="submit") Отправить
+      .popup#password-forgot
+        .title Получить пароль
+        form
+          input(name="email" type="email" placeholder="Ваш e-mail")
+          button(type="submit") Отправить
+      .popup#new-password
+        .title Новый пароль
+        form
+          input(name="old_password" type="password" placeholder="Введите пароль")
+          input(name="password" type="password" placeholder="Новый пароль")
+          .i
+            .text-wrapper
+              .text.
+                Задайте сложный пароль, используя заглавные
+                и строчные буквы (A-Z, a-z), цифры (0-9).
+                Длина пароля должны быть не мение 6 символов.
+          input(name="ver_password" type="password" placeholder="Повторный ввод нового пароля")
+          button(type="submit") Отправить
+      .popup#authorisation-send
+        .note.
+          На ваш e-mail отправлено письмо<br>
+          с паролем для входа в игру
+      .popup#name
+        .title Имя игрока
+        form
+          input(name="text" type="text" placeholder="Введите имя")
+          .i
+            .text-wrapper
+              .text.
+                “Имя” должно быть уникальным,
+                может содержать кириллические
+                и латинские буквы, цифры, знак пробела.
+                Длина не более 12 символов.
+          button(type="submit") Отправить
+      .popup#menu
+        img.logo(src="images/logo-crown.png")
+        a.btn(href="") Новая игра
+        a.btn(href="") Рейтинг
+        a.btn(href="") Помощь
+        a.btn(href="#profile") Личный кабинет
+      .popup.with-tabs#help
+        a.close(href="#close")
+        .tabs-btn
+          a.active.tab(href="") Описание игры
+          a.tab(href="") Вопросы
+        .tabs
+          .tab.active
+            h2 1. Краткое описание
+            p.
+              Игра представляет собой стратегическую игру-викторину для трех
+              игроков. Действие происходит на карте, поделенной на 15 участков.
+              Цель игроков – завоевать как можно больше территории и получить
+              полагающиеся за это очки. Победителем становится игрок, набравший
+              большее количество очков к концу игры.
+            h2 2. Тематика игры
+            p.
+              В течение ограниченного промежутка времени игроки отвечают на
+              вопросы из областей истории и культуры России. В зависимости от
+              скорости и точности ответов они получают очки и возможность
+              «завоевать» части игровой территории (повторяющей контуры России).
+            h2 3. Игровая механика
+            h3 3.1 Этап распределения земель
+            p.
+              После определения состава участников, начинается этап
+              распределения земель. Игрок видит карту России, поделенную на 15
+              территорий, на которой в случайных местах появляются 3 символа,
+              обозначающих его главную территорию и территории двух соперников.
+              За каждую такую территорию игроки получают по 1000 очков.
+            h2 3. Игровая механика
+            h3 3.1 Этап распределения земель
+            p.
+              После определения состава участников, начинается этап
+              распределения земель. Игрок видит карту России, поделенную на 15
+              территорий, на которой в случайных местах появляются 3 символа,
+              обозначающих его главную территорию и территории двух соперников.
+              За каждую такую территорию игроки получают по 1000 очков.
+            h2 3. Игровая механика
+            h3 3.1 Этап распределения земель
+            p.
+              После определения состава участников, начинается этап
+              распределения земель. Игрок видит карту России, поделенную на 15
+              территорий, на которой в случайных местах появляются 3 символа,
+              обозначающих его главную территорию и территории двух соперников.
+              За каждую такую территорию игроки получают по 1000 очков.
+          .tab
+            .q.
+              Я ответил правильно на вопрос одновременно с соперником. <br>
+              Почему победа засчитана ему?
+            .a.
+              После того, как все участники ответили, их ответы сравниваются с
+              правильным ответом. Победителем считается игрок, ответивший
+              наиболее точно на вопрос. Если 2 или 3 игрока имеют одинаково
+              точный ответ, то победитель определяется по наименьшему времени,
+              затраченному на ответ (с точностью до сотой доли секунды).
+            .q.
+              Я ответил правильно на вопрос одновременно с соперником. <br>
+              Почему победа засчитана ему?
+            .a.
+              После того, как все участники ответили, их ответы сравниваются с
+              правильным ответом. Победителем считается игрок, ответивший
+              наиболее точно на вопрос. Если 2 или 3 игрока имеют одинаково
+              точный ответ, то победитель определяется по наименьшему времени,
+              затраченному на ответ (с точностью до сотой доли секунды).
+            .q.
+              Я ответил правильно на вопрос одновременно с соперником. <br>
+              Почему победа засчитана ему?
+            .a.
+              После того, как все участники ответили, их ответы сравниваются с
+              правильным ответом. Победителем считается игрок, ответивший
+              наиболее точно на вопрос. Если 2 или 3 игрока имеют одинаково
+              точный ответ, то победитель определяется по наименьшему времени,
+              затраченному на ответ (с точностью до сотой доли секунды).
+      .popup.with-tabs#rating
+        a.close(href="#close")
+        .tabs-btn
+          a.active.tab(href="") Текущий рейтинг
+          a.tab(href="") Общий рейтинг
+        .tabs
+          .tab.active
+            table
+              tr
+                td.n
+                td.name Имя игрока
+                td.wind Побед
+                td.score Баллов
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr.you
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+          .tab
+            table
+              tr
+                td.n
+                td.name Имя игрока
+                td.wind Побед
+                td.score Баллов
+              tr
+                td.n 2
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+              tr.you
+                td.n 1
+                td.name Владислав
+                td.wind 43
+                td.score 98 300
+      .popup#winer
+        a.close(href="#menu")
+        .title Поздравляем победителя!
+        .places
+          .second
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .name Николай
+            .place занял 2 место
+          .first
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .name Наполеон
+          .third
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .name Максим
+            .place занял 3 место
+        img(src="../images/podium.png" style="margin-top: -40px;")
+        br
+        center
+          a.btn(href="#menu") Закрыть
+      .popup#profile
+        a.close(href="#close")
+        section.n1
+          .center
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .info
+              .name Наполеон Бананпарт
+              .row
+                .ico.cup
+                | Число побед: 
+                strong 14 
+                span.grey | 23 турнира
+              .row
+                .ico.ruby
+                | Всего баллов: 
+                strong 28 300
+        hr
+        section.n2
+          .achivments
+            .unit.earned
+              .shild
+              .label Усидчивый
+            .unit.earned
+              .shild
+              .label Достойный
+            .unit
+              .shild
+              .label Интеллигент
+            .unit
+              .shild
+              .label Завоеватель
+            .unit
+              .shild
+              .label Монополист
+        hr
+        section.n3
+          .small-title ПРИГЛАСИТЬ ДРУЗЕЙ В ИГРУ
+          .socials
+            a(href="")
+              img(src="images/ico-vk.png")
+            a(href="")
+              img(src="images/ico-ok.png")
+            a(href="")
+              img(src="images/ico-fb.png")
+        br
+        .buttons
+          .left
+            a(href="") Рейтинг
+            a(href="") Помощь
+            a(href="#new-password") Сменить пароль
+          .right
+            a.music(href="")
+            a.sfx(href="")
+      .popup#question-1
+        .left
+          .unit
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .info 
+              .name Наполеон
+              .row
+                .led.red
+                .timer 00:08
+          .unit
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .info 
+              .name Хамон
+              .row
+                .led.blue
+                .timer 00:05
+          .unit
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .info 
+              .name Мамон
+              .row
+                .led.black
+                .timer ...
+        .right
+          .small-title Распределение земель
+          .title Вопрос №1
+          .q.
+            В каком году произошло сражение на льду Чудского озера?
+          form
+            input(placeholder="Введите ответ")
+            button(type="submit") ok
+          .numpad
+            a(href="") 1
+            a(href="") 2
+            a(href="") 3
+            a.clear(href="") очистить
+            a(href="") 4
+            a(href="") 5
+            a(href="") 6
+            a.del(href="") удалить
+            a(href="") 7
+            a(href="") 8
+            a(href="") 9
+            a.zero(href="") 0
+          .timer 00:02
+      .popup#question-2
+        .small-title Третий тур: Вопрос 3
+        .row
+          .timer 00:43
+          .left
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .score 10 546
+          .right
+            .ava
+              .mask
+              img(src="http://dummyimage.com/86x98/")
+            .score 12 065
+        .q.
+          На какой стадии развития находилась Золотая Орда во время завоевания Руси?
+        .a
+          a(href="") аграрное общество
+          a(href="") информационные технологии
+          a(href="") цивилизация
+          a(href="") первобытность        
+      .popup#mathmaking
+        .title Подбор игроков
+        .row
+          .ava
+            .mask
+            img(src="http://dummyimage.com/86x98/")
+            .name &nbsp;
+          .ava
+            .mask
+            img(src="http://dummyimage.com/86x98/")
+            .name Вы
+          .ava
+            .mask
+            img(src="http://dummyimage.com/86x98/")
+            .name &nbsp;
+        br
+        hr
+        .note
+          i Подбор соперников может занять некоторое время, пожалуйста, подождите ...
+  script.
+    var _skoronagame_ = {
+      open_frame: 'login'
+    } //открыть фрейс login
