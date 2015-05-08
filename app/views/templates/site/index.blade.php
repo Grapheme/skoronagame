@@ -3,30 +3,32 @@
  * TITLE: Главная страница
  * AVAILABLE_ONLY_IN_ADVANCED_MODE
  */
-$activeUsers = Sessions::getUserIDsLastActivity();
 ?>
 @extends(Helper::layout())
 @section('style')
 @stop
 @section('content')
-    @if(Auth::guest())
-    <h2>Список пользователей</h2>
-    <ul>
-    @foreach(User::where('group_id',3)->whereNotIn('id',$activeUsers)->where('active',1)->get() as $user)
-        <li><a href="{{ URL::route('auto-auth',$user->id) }}">{{ $user->name }}</a></li>
-    @endforeach
-    </ul>
-    @elseif(Auth::user()->group_id == 3)
-        <ul>
-            <li><a href="{{ URL::route('game') }}">Играть</a></li>
-            <li><a href="{{ URL::route('logout') }}">Выйти</a></li>
-        </ul>
-    @else
-        <ul>
-            <li><a href="{{ URL::to(AuthAccount::getStartPage()) }}">Управленение</a></li>
-            <li><a href="{{ URL::route('logout') }}">Выйти</a></li>
-        </ul>
+    @include(Helper::layout('blocks.map'))
+@stop
+@section('overlays')
+    @include(Helper::layout('assets.overlays.login'))
+    @include(Helper::layout('assets.overlays.register'))
+    @include(Helper::layout('assets.overlays.password-forgot'))
+    @include(Helper::layout('assets.overlays.authorisation-send'))
+    @include(Helper::layout('assets.overlays.password-send'))
+    @if(Session::has('reset_token') && Session::has('reset_email'))
+        @include(Helper::layout('assets.overlays.password-reset'))
     @endif
 @stop
 @section('scripts')
+<script>
+    var _skoronagame_ = {}
+    @if(Auth::check())
+        location.href = "{{ AuthAccount::getStartPage() }}";
+    @elseif(Session::has('reset_token') && Session::has('reset_email'))
+    _skoronagame_.open_frame = 'password-reset';
+    @else
+    _skoronagame_.open_frame = 'login';
+    @endif
+</script>
 @stop

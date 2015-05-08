@@ -56,8 +56,9 @@ if (isset($page) && is_object($page) && isset($page->seo) && is_object($page->se
 @section('keywords'){{{ $page_keywords }}}@stop
 @section('h1'){{{ $page_h1 }}}@stop
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>@yield('title')</title>
 <meta name="description" content="@yield('description')">
 <meta name="keywords" content="@yield('keywords')">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{{ HTML::style(Config::get('site.theme_path').'/styles/main.css') }}
+{{ HTML::script(Config::get('site.theme_path').'/scripts/vendor/modernizr.js') }}

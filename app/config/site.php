@@ -2,7 +2,7 @@
 
 return array(
 
-    'theme_path' => 'theme',
+    'theme_path' => 'theme/desktop/dist',
     'mobile_theme_path' => NULL,
 
     'paginate_limit' => 30,

@@ -13,28 +13,27 @@
     @yield('style')
 </head>
 <body>
-    <!--[if lt IE 7]>
-        <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-
-    @include(Helper::layout('assets.header'))
     @if(Session::has('message'))
         <p>{{ Session::get('message') }}<p>
     @endif
     @section('content')
         {{ @$content }}
     @show
+    <div class="popup-wrapper">
+        <div class="popup-holder">
+            @section('overlays')
+            @show
+        </div>
+    </div>
     @section('game')
     @show
     @section('json_response')
     @show
-    @section('overlays')
-    @show
     @include(Helper::layout('assets.footer'))
     @section('footer')
     @show
-    @include(Helper::layout('assets.scripts'))
     @section('scripts')
     @show
+    @include(Helper::layout('assets.scripts'))
 </body>
 </html>

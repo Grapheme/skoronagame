@@ -10,10 +10,10 @@ class GameController extends BaseController {
     private $game_statuses = array('wait','start','ready','over');
     private $game_answers;
     private $game_winners = array('first_place' => array(), 'second_place' => array(), 'third_place' => array());
-    private $json_request = array('status'=>FALSE,'responseJSON'=>'','responseText'=>'');
+    private $json_request = array('status'=>FALSE,'responseJSON'=>'','responseText'=>'','redirect'=> FALSE);
     /****************************************************************************/
     public function __construct(){
-        self::initGame();
+
     }
 
     public function initGame(){
@@ -33,8 +33,11 @@ class GameController extends BaseController {
     public static function returnRoutes() {
 
         $class = __CLASS__;
+        Route::controller('password', 'RemindersController');
+
         Route::group(array('before'=>'login','prefix'=>''), function() use ($class) {
-            Route::get('login/auto/user/{user_id}', array('before'=>'login','as'=>'auto-auth','uses'=>$class.'@AutoAuth'));
+            Route::post('login/user', array('before'=>'csrf','as'=>'quick-auth','uses'=>$class.'@QuickAuth'));
+            Route::post('register/user', array('before'=>'csrf','as'=>'quick-register','uses'=>$class.'@QuickRegister'));
         });
 
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
@@ -98,18 +101,51 @@ class GameController extends BaseController {
         );
     }
     /****************************************************************************/
-    public function AutoAuth($user_id){
+    public function QuickAuth(){
 
-        if(Auth::check()):
-            Auth::logout();
+        if(!Request::ajax()) return App::abort(404);
+        $validator = Validator::make(Input::all(),array('email'=>'required|email','password'=>'required'));
+        if($validator->passes()):
+            if(Auth::attempt(array('email'=>Input::get('email'),'password'=>Input::get('password'),'active'=>1), FALSE)):
+                if(Auth::check()):
+                    $this->json_request['redirect'] = AuthAccount::getStartPage();
+                    $this->json_request['status'] = TRUE;
+                endif;
+            else:
+                $this->json_request['responseText'] = 'Неверное имя пользователя или пароль';
+            endif;
         endif;
-        if ($user = User::where('id',$user_id)->where('active',1)->first()):
-            Auth::login($user);
-            return Redirect::to(AuthAccount::getStartPage());
+        return Response::json($this->json_request,200);
+    }
+
+    public function QuickRegister(){
+
+        if(!Request::ajax()) return App::abort(404);
+        $validator = Validator::make(Input::all(),array('email'=>'required|email'));
+        if($validator->passes()):
+            if(User::where('email',Input::get('email'))->exists() === FALSE):
+                $user = new User;
+                $user->group_id = Group::where('name','game')->pluck('id');
+                $user->name = 'Игрок';
+                $user->email = Input::get('email');
+                $user->active = 1;
+                $password = Str::random(12);
+                $user->password = Hash::make($password);
+                $user->save();
+                Auth::login($user);
+                Mail::send('emails.auth.signup', array('user' => $user,'password' => $password), function ($message) {
+                    $message->from(Config::get('mail.from.address'),Config::get('mail.from.name'));
+                    $message->to(Input::get('email'))->subject('Регистрация');
+                });
+                $this->json_request['status'] = TRUE;
+                $this->json_request['redirect'] = URL::route('game');
+            else:
+                $this->json_request['responseText'] = 'E-mail уже зарегистрирован.';
+            endif;
         else:
-            return Redirect::back();
+            $json_request['responseText'] = 'Неверно заполнены поля';
         endif;
-
+        return Response::json($this->json_request,200);
     }
     /****************************************************************************/
     /********************************* GAME *************************************/
