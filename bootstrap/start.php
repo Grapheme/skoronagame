@@ -23,6 +23,7 @@ $env = $app->detectEnvironment(array(
 	'digitalocean' => array('www.grapheme.ru'),
 	'kd' => array('DobriyMac.local'),
 	'at' => array('MacBook-Pro-Tommy.local'),
+	'ma' => array('Marats-MacBook-Pro.local'),
 ));
 $app->bindInstallPaths(require __DIR__.'/paths.php');
 $framework = $app['path.base'].'/vendor/laravel/framework/src';
