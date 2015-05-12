@@ -36,6 +36,14 @@ block content
       .popup#register
         .title Регистрация
         form(data-result="authorisation-send")
+          input(name="text" type="text" placeholder="Введите имя")
+          .i
+            .text-wrapper
+              .text.
+                “Имя” должно быть уникальным,
+                может содержать кириллические
+                и латинские буквы, цифры, знак пробела.
+                Длина не более 12 символов.
           input(name="email" type="email" placeholder="Ваш e-mail")
           button(type="submit") Отправить
       .popup#password-forgot
