@@ -42,6 +42,7 @@ class GameController extends BaseController {
 
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
             Route::get('', array('as'=>'game','uses'=>$class.'@indexGame'));
+            Route::get('demo', array('as'=>'game-demo','uses'=>$class.'@demoGame'));
         });
 
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
@@ -180,6 +181,16 @@ class GameController extends BaseController {
             endif;
         endif;
         return View::make(Helper::acclayout('index'),array('game'=>$this->game));
+    }
+
+    public function demoGame(){
+
+        if(!self::initGame()):
+            if ($game_id = GameUser::where('user_id',Auth::user()->id)->where('status',1)->pluck('game_id')):
+                $this->game = Game::where('id',$game_id)->with('users')->first();
+            endif;
+        endif;
+        return View::make(Helper::acclayout('demo'),array('game'=>$this->game));
     }
     /********************************* JSON *************************************/
     public function getGame(){
@@ -433,7 +444,7 @@ class GameController extends BaseController {
                 $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
                     'email' => $user_game->user->email, 'photo' => $user_game->user->photo,
                     'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
-                    'status' => $user_game->status, 'stage' => $user_game->stage,
+                    'status' => $user_game->status,
                     'available_steps' => $user_game->available_steps,'make_steps' => $user_game->make_steps,
                     'settings' => json_decode($user_game->json_settings, TRUE));
             endforeach;
@@ -504,8 +515,7 @@ class GameController extends BaseController {
         if ($this->validGameStatus($this->game_statuses[1])):
             if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id')):
                 $user_id = array_rand($users);
-                #$this->nextStep($user_id);
-                $this->nextStep(3);
+                $this->nextStep($user_id);
             endif;
         endif;
     }

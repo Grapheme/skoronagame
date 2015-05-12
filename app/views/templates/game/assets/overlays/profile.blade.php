@@ -1,13 +1,16 @@
 <?php
 $badges = GameBadges::orderBy('name')->get();
-$profile = Accounts::where('id', Auth::user()->id)->with('games','badges')->first();
-$winners = $points = 0;
+$profile = Accounts::where('id', Auth::user()->id)->with('games.game','badges')->first();
+$winners = $tours = $points = 0;
 $user_badges = array();
 if (count($profile->games)):
     foreach ($profile->games as $games):
-        $points += $games->points;
-        if ($games->place == 1):
-            $winners++;
+        if ($games->game->status_over):
+            $points += $games->points;
+            $tours++;
+            if ($games->place == 1):
+                $winners++;
+            endif;
         endif;
     endforeach;
 endif;
@@ -30,7 +33,7 @@ endif;
                 <div class="row">
                     <div class="ico cup"></div>
                     Число побед: <strong>{{ $winners }}</strong>
-                    <span class="grey">| {{ count($profile->games) }} {{ Lang::choice('турнир|турнира|турниров',count($profile->games)) }}</span>
+                    <span class="grey">| {{ $tours }} {{ Lang::choice('турнир|турнира|турниров',$tours) }}</span>
                 </div>
                 <div class="row">
                     <div class="ico ruby"></div>Всего баллов: <strong>{{ number_format($points,0,'.',' ') }}</strong>

@@ -14,6 +14,41 @@ GAME.steps = 0;
 GAME.user_step = 0;
 GAME.statuses = ['wait','start','ready','over'];
 GAME.timer = {timer_object:{},time:10};
+
+/*
+Метод получает информацию о текущей игре или инициирует новую
+Отправляет:
+        game  - (int)ID игры или (string)null - если игра не существует.
+Результат:
+ game_id - (int) ID текущей игры
+ game_stage - (int) этам игры (0-не началась, 1,2 и т.д.)
+ game_status - (string) статус игры. (GAME.statuses)
+        wait - ожидает начала
+        start - игра началась
+        ready - игра активная
+        over - игра завершена
+ current_user - (int) ID текущего пользователя
+ users - список пользователей
+        color - цвет
+        points - очки
+        place - занятое место
+        status - статус пользователя
+        available_steps - доступно ходов
+        make_steps - сделано ходов
+        settings - (JSON) иные данные
+ map - карта
+        id - (int) ID области
+        zone - (int) номер области (1-15)
+        user_id - (int) ID пользователя владельца области
+        capital - (int) Столица (1/0)
+        lives - (int) количество доступных жизней области
+        settings - (JSON) иные данные
+        settings.color - код цвета области
+ settings - (JSON) иные данные
+        settings.next_step - (int) ID пользователя который делает следующий шаг
+
+*/
+
 GAME.getGame = function(){
     $.ajax({
         type: "POST",
@@ -36,6 +71,18 @@ GAME.getGame = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 };
+
+/*
+ Метод получает Квиз-вопрос
+ Отправляет:
+        game  - (int)ID игры.
+ Результат:
+    ...
+ question - вопрос
+        id - (int) ID вопроса
+        text - (string) текст вопроса
+        type - (string) тип вопроса (quiz/normal)
+*/
 GAME.getQuizQuestion = function(){
     $.ajax({
         type: "POST",
@@ -60,6 +107,20 @@ GAME.getQuizQuestion = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
+
+/*
+ Метод отправляет ответ на вопрос
+ Отправляет:
+        game  - (int)ID игры.
+        question  - (int)ID вопроса.
+        answer  - (int) ответ.
+        time  - (int) время потраченное на ответ.
+ Результат:
+ ...
+ status - (boolean) результат обработки
+ responseText - (string) текст результата (не обязательно)
+ */
+
 GAME.sendQuestionAnswer = function(){
     $.ajax({
         type: "POST",
@@ -81,6 +142,20 @@ GAME.sendQuestionAnswer = function(){
         }
     });
 }
+
+/*
+ Метод запрашивает состояние ответов на вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ question  - (int)ID вопроса.
+ Результат:
+ ...
+ result - результат ответов
+        result = (string)retry -  повтор запроса
+        result = (string)standoff - ничья
+        result = (JSON) = "12":3,"13":1,"14":2 . ID пользователя: занятое место (1-3)
+ responseText - (string) текст результата (не обязательно)
+ */
 GAME.getResultQuestion = function(){
     $.ajax({
         type: "POST",
@@ -102,6 +177,17 @@ GAME.getResultQuestion = function(){
         }
     });
 }
+
+/*
+ Метод отправляет запрос на захват пустой территории
+ Отправляет:
+ game  - (int)ID игры.
+ zone  - (int)номер зоны.
+ Результат:
+ ...
+ status - (boolean) результат обработки
+ responseText - (string) текст результата (не обязательно)
+ */
 GAME.sendConquestEmptyTerritory = function(territory){
     $.ajax({
         type: "POST",
@@ -129,6 +215,10 @@ GAME.sendConquestEmptyTerritory = function(territory){
 GAME.sendConquestTerritory = function(territory){
 
 }
+
+/*
+ Метод обрабатывает игровую информацию
+ */
 GAME.parseGameResponse = function(){
     GAME.game_id = GAME.response.game_id;
     GAME.status = GAME.response.game_status;
@@ -158,6 +248,10 @@ GAME.parseGameResponse = function(){
         }
     }
 }
+
+/*
+ Метод обрабатывает ответ сервера на запрос - "дай вопрос"
+ */
 GAME.parseQuestionResponse = function(){
     if(GAME.stage == 1){
         if(GAME.question.id > 0){
@@ -173,10 +267,15 @@ GAME.parseQuestionResponse = function(){
             $("#js-question-game").parent().show();
             $("#normal-question-block").show();
         }else{
-            //GAME.getQuizQuestion();
+            //GAME.getNormalQuestion();
         }
     }
 }
+
+/*
+ Метод обрабатывает ответ сервера на запрос - "какой результат на ответ"
+ */
+
 GAME.parseResultQuestionResponse = function(){
     if(GAME.stage == 1){
         if(GAME.response.result === 'standoff'){
@@ -198,6 +297,11 @@ GAME.parseResultQuestionResponse = function(){
         // этап 2
     }
 }
+
+/*
+ Метод создания карты
+ */
+
 GAME.createMap = function(){
     var block = $("#map-block-template");
     var block_class = '';
@@ -213,6 +317,11 @@ GAME.createMap = function(){
     $("#map-block-template").remove();
     $("#russia-map").show();
 }
+
+/*
+ Метод обновления карты
+ */
+
 GAME.updateMap = function(){
     if(GAME.isEmptyMap === false || $(".js-map-block").length == 0) GAME.createMap();
     var block_class = '';
@@ -226,6 +335,11 @@ GAME.updateMap = function(){
         $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives);
     });
 }
+
+/*
+ Метод запуска таймера при ответе на вопрос
+ */
+
 GAME.startTimer = function () {
     var timer;
     var questionTime = GAME.timer.time;
@@ -243,6 +357,11 @@ GAME.startTimer = function () {
         }
     }, 1000);
 }
+
+/*
+ Метод проверяет "не пустая" ли карта
+ */
+
 GAME.isEmptyMap = function() {
     return GAME.map.length === 0;
 }
