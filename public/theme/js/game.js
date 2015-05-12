@@ -3,17 +3,17 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;
-GAME.user = {};
-GAME.status = 0;
-GAME.stage = 0;
-GAME.response = {};
-GAME.map = {};
-GAME.question = {};
-GAME.steps = 0;
-GAME.user_step = 0;
-GAME.statuses = ['wait','start','ready','over'];
-GAME.timer = {timer_object:{},time:10};
+GAME.game_id = 0;                           // id игры
+GAME.user = {};                             // пользователь
+GAME.status = 0;                            // статус игры
+GAME.stage = 0;                             // этап игры
+GAME.response = {};                         // ответ от сервера
+GAME.map = {};                              // карта
+GAME.question = {};                         // текущий вопрос
+GAME.steps = 0;                             // доступные шаги
+GAME.user_step = 0;                         // id пользователя который сейчас делает шаг
+GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
+GAME.timer = {timer_object:{},time:10};                 // игровой таймер
 
 /*
 Метод получает информацию о текущей игре или инициирует новую
