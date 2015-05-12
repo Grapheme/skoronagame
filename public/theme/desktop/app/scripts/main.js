@@ -5,15 +5,20 @@ var bg_width = $('#map').width();
 
 function scale() {
   var doc_width = $(window).width();
+  console.log(doc_width);
+  console.log(bg_width);
+  console.log(doc_width/bg_width);
   $('#map').transition({ scale: doc_width/bg_width });
 }
-
-scale();
 
 $(window).resize(function (){
   scale();
 });
 
+$(window).load(function() {
+  bg_width = $('#map').width();
+  scale();
+});
 
 $('.areas .countur svg path').hover(function(){
   $(this).closest('.area').toggleClass('active');
@@ -27,6 +32,9 @@ function openFrame(href) {
     _history.pop();
   } else {
     _history.push(href);
+  }
+  if (href=="mathcmaking") {
+    startOrSearch();
   }
   var last_item = _history[_history.length-1]
   $('.popup-wrapper .popup-holder .popup').removeClass('active');
@@ -93,7 +101,7 @@ $('form').submit(function(e){
         }
         openFrame(_popup);
       } else if (response.status == false) {
-        alert('responseText')
+        alert(response)
       }
     },
     error: function (xhr, textStatus, errorThrown) {

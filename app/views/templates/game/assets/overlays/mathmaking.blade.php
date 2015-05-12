@@ -1,4 +1,4 @@
-<div id="mathmaking" class="popup">
+<div id="mathcmaking" class="popup">
     <div class="title">Подбор игроков</div>
     <div class="row">
         <div class="ava">

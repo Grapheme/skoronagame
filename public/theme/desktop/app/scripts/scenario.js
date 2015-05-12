@@ -1,0 +1,3 @@
+function startOrSearch() {
+  GAME.getGame();
+}
