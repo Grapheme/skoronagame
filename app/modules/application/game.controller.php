@@ -128,7 +128,7 @@ class GameController extends BaseController {
             if(User::where('email',Input::get('email'))->exists() === FALSE):
                 $user = new User;
                 $user->group_id = Group::where('name','game')->pluck('id');
-                $user->name = 'Игрок';
+                $user->name = Input::get('name');
                 $user->email = Input::get('email');
                 $user->active = 1;
                 $password = Str::random(12);
