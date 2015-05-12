@@ -1,46 +1,56 @@
+<?php
+$badges = GameBadges::orderBy('name')->get();
+$profile = Accounts::where('id', Auth::user()->id)->with('games','badges')->first();
+$winners = $points = 0;
+$user_badges = array();
+if (count($profile->games)):
+    foreach ($profile->games as $games):
+        $points += $games->points;
+        if ($games->place == 1):
+            $winners++;
+        endif;
+    endforeach;
+endif;
+if (count($profile->badges)):
+    foreach ($profile->badges as $badge):
+        $user_badges[$badge->badge_id] = $badge->badge_id;
+    endforeach;
+endif;
+?>
 <div id="profile" class="popup">
     <a href="#close" class="close"></a>
     <section class="n1">
         <div class="center">
             <div class="ava">
-                <div class="mask"></div><img src="http://dummyimage.com/86x98/">
+                <div class="mask"></div>
+                <img src="http://dummyimage.com/86x98/">
             </div>
             <div class="info">
-                <div class="name">Наполеон Бананпарт</div>
+                <div class="name">{{ $profile->name }}</div>
                 <div class="row">
-                    <div class="ico cup"></div>Число побед: <strong>14 </strong><span class="grey">| 23 турнира</span>
+                    <div class="ico cup"></div>
+                    Число побед: <strong>{{ $winners }}</strong>
+                    <span class="grey">| {{ count($profile->games) }} {{ Lang::choice('турнир|турнира|турниров',count($profile->games)) }}</span>
                 </div>
                 <div class="row">
-                    <div class="ico ruby"></div>Всего баллов: <strong>28 300</strong>
+                    <div class="ico ruby"></div>Всего баллов: <strong>{{ number_format($points,0,'.',' ') }}</strong>
                 </div>
             </div>
         </div>
     </section>
     <hr>
+    @if($badges->count())
     <section class="n2">
         <div class="achivments">
-            <div class="unit earned">
+            @foreach($badges as $badge)
+            <div class="unit {{ isset($user_badges[$badge->id]) ? ' earned' : '' }}">
                 <div class="shild"></div>
-                <div class="label">Усидчивый</div>
+                <div class="label">{{ $badge->name }}</div>
             </div>
-            <div class="unit earned">
-                <div class="shild"></div>
-                <div class="label">Достойный</div>
-            </div>
-            <div class="unit">
-                <div class="shild"></div>
-                <div class="label">Интеллигент</div>
-            </div>
-            <div class="unit">
-                <div class="shild"></div>
-                <div class="label">Завоеватель</div>
-            </div>
-            <div class="unit">
-                <div class="shild"></div>
-                <div class="label">Монополист</div>
-            </div>
+            @endforeach
         </div>
     </section>
+    @endif
     <hr>
     <section class="n3">
         <div class="small-title">ПРИГЛАСИТЬ ДРУЗЕЙ В ИГРУ</div>
