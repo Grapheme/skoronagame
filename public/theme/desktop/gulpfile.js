@@ -3,6 +3,7 @@
 // generated on 2014-12-17 using generator-gulp-webapp 0.2.0
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
+var concat = require('gulp-concat');
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
@@ -33,6 +34,13 @@ gulp.task('html', ['views', 'styles'], function () {
     .pipe($.useref())
     //.pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
     .pipe(gulp.dest('dist'));
+});
+
+gulp.task('js', function () {
+  return gulp.src('app/scripts/**/*.js')
+    .pipe($.uglify())
+    .pipe(concat('main.js'))
+    .pipe(gulp.dest('dist/scripts/'));
 });
 
 gulp.task('images', function () {
@@ -116,10 +124,11 @@ gulp.task('watch', ['connect'], function () {
     'app/scripts/**/*.js',
     'app/images/**/*'
   ]).on('change', $.livereload.changed);
-
+  
   gulp.watch('app/*.jade', ['views']);
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch('bower.json', ['wiredep']);
+  gulp.watch('app/scripts/**/*.js', ['js'])
 });
 
 gulp.task('build', ['html', 'images', 'fonts', 'extras'], function () {
