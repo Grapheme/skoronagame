@@ -187,6 +187,7 @@ class GameController extends BaseController {
                 endif;
             endforeach;
         endif;
+        Helper::tad($games);
         return View::make(Helper::acclayout('index'),array('game'=>$this->game));
     }
 
