@@ -5,7 +5,7 @@ $winners = $tours = $points = 0;
 $user_badges = array();
 if (count($profile->games)):
     foreach ($profile->games as $games):
-        if ($games->game->status_over):
+        if (isset($games->game->status_over) && $games->game->status_over):
             $points += $games->points;
             $tours++;
             if ($games->place == 1):
