@@ -13,5 +13,4 @@ function startOrSearch() {
     }
     console.log(GAME.status)
   });*/
-  
 }
