@@ -176,15 +176,13 @@ class GameController extends BaseController {
 
     public function indexGame(){
 
-        $game_id = -1;
-        $games = Game::where('status_over',0)->with(array('users'=>function($query){
-            $query->where('user_id',Auth::user()->id);
+        $games = Game::where('status_over', 0)->with(array('users' => function ($query) {
+            $query->where('user_id', Auth::user()->id);
         }))->get();
-        if(count($games)):
-            foreach($games as $game):
+        if (count($games)):
+            foreach ($games as $game):
                 if (!empty($game->users)):
-                    $game_id = $game->id;
-                    $this->game = Game::where('id',$game_id)->with('users')->first();
+                    $this->game = Game::where('id', $game->id)->with('users')->first();
                     break;
                 endif;
             endforeach;

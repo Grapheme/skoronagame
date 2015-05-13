@@ -2,7 +2,6 @@
 /**
  * TEMPLATE_IS_NOT_SETTABLE
  */
-Helper::tad($game);
 ?>
 @extends(Helper::layout())
 @section('style')
