@@ -24,7 +24,7 @@
 @section('scripts')
     <script>
         var _skoronagame_ = {}
-        _skoronagame_.game_id = {{ is_object($game) ? $game->id : '"null"' }};
+        _skoronagame_.game_id = {{ is_object($game) ? $game->id : -1 }};
         _skoronagame_.open_frame = 'menu';
     </script>
 @stop
