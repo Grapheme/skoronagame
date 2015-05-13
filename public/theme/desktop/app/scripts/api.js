@@ -14,6 +14,7 @@ GAME.steps = 0;                                         // доступные ш
 GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.timer = {timer_object:{},time:10};                 // игровой таймер
+GAME.users;
 
 /*
 Метод получает информацию о текущей игре или инициирует новую
@@ -49,7 +50,8 @@ GAME.timer = {timer_object:{},time:10};                 // игровой тай
 
 */
 
-GAME.getGame = function(){
+GAME.getGame = function(callback){
+    callback = callback || function(){}
     $.ajax({
         type: "POST",
         url: '/game/get-game',
@@ -63,11 +65,11 @@ GAME.getGame = function(){
                 GAME.response = response.responseJSON;
                 GAME.map = GAME.response.map;
                 GAME.parseGameResponse();
-                //$("#game-id").html(GAME.game_id);
+                _skoronagame_.game_id = GAME.game_id;
+                console.log(response)
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
+                callback();
             }
-            console.log(GAME)
-            console.log(response)
             //$("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {}
@@ -227,10 +229,11 @@ GAME.parseGameResponse = function(){
     GAME.status = GAME.response.game_status;
     GAME.stage = GAME.response.game_stage;
     GAME.user_step = GAME.response.settings.next_step;
+    GAME.users = GAME.response.users;
     $.each(GAME.response.users,function(index, value){
         if(value.id == GAME.response.current_user) {
             GAME.user = value;
-            $("#js-user-response").html(JSON.stringify(GAME.user));
+            //$("#js-user-response").html(JSON.stringify(GAME.user));
         }
     });
     if(GAME.status == GAME.statuses[1]){
