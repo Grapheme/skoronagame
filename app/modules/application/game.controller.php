@@ -50,6 +50,7 @@ class GameController extends BaseController {
 
             Route::post('get-game', array('as'=>'get-game','uses'=>$class.'@getGame'));
             Route::post('question/get-quiz', array('as'=>'get-quiz-question','uses'=>$class.'@getQuizQuestion'));
+            Route::post('question/get-normal', array('as'=>'get-normal-question','uses'=>$class.'@getNormalQuestion'));
             Route::post('question/send-answer', array('as'=>'send-answer-question','uses'=>$class.'@sendAnswerQuestion'));
             Route::post('question/get-result', array('as'=>'get-result-question','uses'=>$class.'@getResultQuestion'));
             Route::post('conquest/territory', array('as'=>'send-conquest-territory','uses'=>$class.'@sendConquestTerritory'));
@@ -175,10 +176,18 @@ class GameController extends BaseController {
 
     public function indexGame(){
 
-        if(!self::initGame()):
-            if ($game_id = GameUser::where('user_id',Auth::user()->id)->where('status',1)->pluck('game_id')):
-                $this->game = Game::where('id',$game_id)->with('users')->first();
-            endif;
+        $game_id = -1;
+        $games = Game::where('status_over',0)->with(array('users'=>function($query){
+            $query->where('user_id',Auth::user()->id);
+        }))->get();
+        if(count($games)):
+            foreach($games as $game):
+                if (!empty($game->users)):
+                    $game_id = $game->id;
+                    $this->game = Game::where('id',$game_id)->with('users')->first();
+                    break;
+                endif;
+            endforeach;
         endif;
         return View::make(Helper::acclayout('index'),array('game'=>$this->game));
     }
@@ -226,6 +235,23 @@ class GameController extends BaseController {
             endif;
             $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
             $this->createQuestionJSONResponse($question);
+        endif;
+        return Response::json($this->json_request, 200);
+    }
+
+    public function getNormalQuestion(){
+
+        if (!Request::ajax()) return App::abort(404);
+        if ($this->initGame()):
+            if ($this->validGameStage(2)):
+                $this->nextStep(0);
+                if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
+                    $randomQuestion = $this->randomQuestion('quiz');
+                    $this->createQuestion($randomQuestion->id);
+                endif;
+                $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
+                $this->createQuestionJSONResponse($question);
+            endif;
         endif;
         return Response::json($this->json_request, 200);
     }

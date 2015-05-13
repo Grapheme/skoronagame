@@ -109,6 +109,41 @@ GAME.getQuizQuestion = function(){
 }
 
 /*
+ Метод получает нормальный-вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ Результат:
+ ...
+ question - вопрос
+ id - (int) ID вопроса
+ text - (string) текст вопроса
+ type - (string) тип вопроса (quiz/normal)
+ */
+GAME.getNormalQuestion = function(){
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-normal',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.user_step = 0;
+                GAME.response = response.responseJSON;
+                GAME.question.id = GAME.response.question.id;
+                GAME.question.text = GAME.response.question.text;
+                GAME.question.type = GAME.response.question.type;
+                GAME.parseQuestionResponse();
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+/*
  Метод отправляет ответ на вопрос
  Отправляет:
         game  - (int)ID игры.
@@ -212,6 +247,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
+
 GAME.sendConquestTerritory = function(territory){
 
 }
@@ -382,6 +418,12 @@ $(document).ready(function () {
         event.preventDefault();
         GAME.getQuizQuestion();
     });
+
+    $("#js-question-normal-game").click(function(event){
+        event.preventDefault();
+        GAME.getQuizQuestion();
+    });
+
     $("#js-question-result").click(function(event){
         event.preventDefault();
         GAME.getResultQuestion();
