@@ -43,7 +43,9 @@ $game_id = is_object($game) ? $game->id : 'null';
     </div>
     <div id="normal-question-block" style="display: none;">
         <hr>
-        <div id="normal-question-text"></div>
+        <p id="normal-question-timer">Осталось секунд: <span></span></p>
+        Нормальный вопрос: <div id="normal-question-text"></div>
+        <div id="normal-question-answers"></div>
         <form id="normal-question-form">
             <button type="submit">OK</button>
         </form>

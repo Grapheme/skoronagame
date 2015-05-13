@@ -34,7 +34,7 @@
                     @else
                         <section>
                             <label class="label">Ответы</label>
-                            @for($i=0;$i<5;$i++)
+                            @for($i=0;$i<Config::get('game.normal_question_answers_count');$i++)
                                 <label class="input">
                                     {{ Form::text("answers[$i]",isset($answers[$i]->title)?$answers[$i]->title:NULL) }}
 

@@ -7,6 +7,7 @@ return array(
     'map_empty_place_lives' => 1,
     'map_capital_place_lives' => 3,
     'question_time_seconds' => 10,
+    'normal_question_answers_count' => 4,
 
     'adjacent_places' => array(
         1 => array(2, 3), 2 => array(1, 3, 4, 5), 3 => array(1, 2, 4), 4 => array(3, 2, 5, 6),

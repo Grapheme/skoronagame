@@ -98,6 +98,7 @@ GAME.getQuizQuestion = function(){
                 GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
                 GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = [];
                 GAME.question.type = GAME.response.question.type;
                 GAME.parseQuestionResponse();
                 $("#js-server-response").html(JSON.stringify(GAME.response));
@@ -112,6 +113,7 @@ GAME.getQuizQuestion = function(){
  Метод получает нормальный-вопрос
  Отправляет:
  game  - (int)ID игры.
+ zone  - (int)ID зоны.
  Результат:
  ...
  question - вопрос
@@ -123,7 +125,7 @@ GAME.getNormalQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id},
+        data: {game: GAME.game_id, zone : 1 },
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -134,6 +136,7 @@ GAME.getNormalQuestion = function(){
                 GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
                 GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = GAME.response.question.answers;
                 GAME.question.type = GAME.response.question.type;
                 GAME.parseQuestionResponse();
                 $("#js-server-response").html(JSON.stringify(GAME.response));
@@ -195,7 +198,7 @@ GAME.getResultQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-result',
-        data: {game: GAME.game_id, question: GAME.question.id},
+        data: {game: GAME.game_id, question: GAME.question, type: GAME.question.type},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -299,12 +302,31 @@ GAME.parseQuestionResponse = function(){
             GAME.getQuizQuestion();
         }
     }else if(GAME.stage == 2){
-        if(GAME.question.id > 0){
-            $("#js-question-game").parent().show();
-            $("#normal-question-block").show();
-        }else{
-            //GAME.getNormalQuestion();
+        if(GAME.question.type == 'normal'){
+            if(GAME.question.id > 0 && GAME.question.answers.length > 0){
+                $("#js-question-game").parent().show();
+                var inputs = '';
+                $.each(GAME.question.answers,function(index, value){
+                    inputs = inputs + '<input type="radio" name="answer" value="'+value+'">'+value;
+                });
+                $("#normal-question-text").html(GAME.question.text);
+                $("#normal-question-answers").html(inputs);
+                $("#normal-question-block").show();
+                GAME.startTimer();
+            }else{
+                GAME.getNormalQuestion();
+            }
+        }else if(GAME.question.type == 'quiz'){
+            if(GAME.question.id > 0){
+                $("#js-question-game").parent().hide();
+                $("#quiz-question-text").html(GAME.question.text);
+                $("#quiz-question-block").show();
+                GAME.startTimer();
+            }else{
+                GAME.getQuizQuestion();
+            }
         }
+
     }
 }
 
@@ -421,7 +443,7 @@ $(document).ready(function () {
 
     $("#js-question-normal-game").click(function(event){
         event.preventDefault();
-        GAME.getQuizQuestion();
+        GAME.getNormalQuestion();
     });
 
     $("#js-question-result").click(function(event){
@@ -433,6 +455,13 @@ $(document).ready(function () {
         clearInterval(GAME.timer.timer_object);
         GAME.question.answer = $("#quiz-question-answer").val().trim();
         $("#quiz-question-block").hide();
+        GAME.sendQuestionAnswer();
+        return false;
+    });
+    $("#normal-question-form").submit(function(){
+        clearInterval(GAME.timer.timer_object);
+        GAME.question.answer = $("#normal-question-answers input:checked").val().trim();
+        $("#normal-question-block").hide();
         GAME.sendQuestionAnswer();
         return false;
     });
