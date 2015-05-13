@@ -9,6 +9,7 @@ GAME.status = 0;                                        // статус игры
 GAME.stage = 0;                                         // этап игры
 GAME.response = {};                                     // ответ от сервера
 GAME.map = {};                                          // карта
+GAME.users_question = [];                               // массив id пользователей которым нужно создать вопрос. пустой - если всем
 GAME.question = {};                                     // текущий вопрос
 GAME.steps = 0;                                         // доступные шаги
 GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
@@ -76,6 +77,7 @@ GAME.getGame = function(){
  Метод получает Квиз-вопрос
  Отправляет:
         game  - (int)ID игры.
+        users - (array) id пользователей кому выдавать вопрос
  Результат:
     ...
  question - вопрос
@@ -87,7 +89,7 @@ GAME.getQuizQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-quiz',
-        data: {game: GAME.game_id},
+        data: {game: GAME.game_id, users: []},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -113,7 +115,7 @@ GAME.getQuizQuestion = function(){
  Метод получает нормальный-вопрос
  Отправляет:
  game  - (int)ID игры.
- zone  - (int)ID зоны.
+ users - (array) id пользователей кому выдавать вопрос или пустой если всем
  Результат:
  ...
  question - вопрос
@@ -125,7 +127,7 @@ GAME.getNormalQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, zone : 1 },
+        data: {game: GAME.game_id, users: [GAME.user.id, 16]},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -198,7 +200,7 @@ GAME.getResultQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-result',
-        data: {game: GAME.game_id, question: GAME.question, type: GAME.question.type},
+        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -307,7 +309,7 @@ GAME.parseQuestionResponse = function(){
                 $("#js-question-game").parent().show();
                 var inputs = '';
                 $.each(GAME.question.answers,function(index, value){
-                    inputs = inputs + '<input type="radio" name="answer" value="'+value+'">'+value;
+                    inputs = inputs + '<input type="radio" name="answer" value="'+index+'">'+value;
                 });
                 $("#normal-question-text").html(GAME.question.text);
                 $("#normal-question-answers").html(inputs);
@@ -409,7 +411,11 @@ GAME.startTimer = function () {
         GAME.question.time = GAME.question.time + 1 || 1;
         if (questionTime <= 0){
             clearInterval(GAME.timer.timer_object);
-            GAME.question.answer = null;
+            if(GAME.question.type == 'quiz'){
+                GAME.question.answer = 0;
+            }else if(GAME.question.type == 'normal'){
+                GAME.question.answer = 100;
+            }
             GAME.sendQuestionAnswer();
             $("#" + GAME.question.type + "-question-block").hide();
         }
