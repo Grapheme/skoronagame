@@ -498,12 +498,12 @@ class GameController extends BaseController {
             if (empty($users_ids)):
                 foreach(GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id') as $user_id => $user):
                     GameUserQuestions::create(array('group_id'=>$group_id,'game_id' => $this->game->id, 'user_id' => $user_id,
-                        'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => '', 'seconds' => 0));
+                        'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => 0, 'seconds' => 0));
                 endforeach;
             else:
                 foreach($users_ids as $user_id):
                     GameUserQuestions::create(array('group_id'=>$group_id,'game_id' => $this->game->id, 'user_id' => $user_id,
-                        'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => '', 'seconds' => 0));
+                        'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => 0, 'seconds' => 0));
                 endforeach;
             endif;
         endif;
