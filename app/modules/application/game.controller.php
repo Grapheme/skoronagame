@@ -481,7 +481,7 @@ class GameController extends BaseController {
             for ($i = 0; $i < Config::get('game.number_places_on_map'); $i++):
                 $map_places[] = new GameMap(array(
                     'game_id' => $this->game->id, 'user_id' => 0,'zone'=>$i+1,'capital' => '0',
-                    'lives' => Config::get('game.map_empty_place_lives'), 'status' => '',
+                    'lives' => Config::get('game.map_empty_place_lives'), 'status' => 0,
                     'json_settings' => json_encode(array('color'=>'')),
                 ));
             endfor;
