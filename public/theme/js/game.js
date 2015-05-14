@@ -89,7 +89,7 @@ GAME.getQuizQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-quiz',
-        data: {game: GAME.game_id, users: []},
+        data: {game: GAME.game_id, users: GAME.users_question},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -127,7 +127,7 @@ GAME.getNormalQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: [GAME.user.id, 16]},
+        data: {game: GAME.game_id, users: GAME.users_question},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -349,12 +349,22 @@ GAME.parseResultQuestionResponse = function(){
             $("#js-question-game").parent().hide();
         }else if(typeof GAME.response.result == "object"){
             GAME.question = {};
+            GAME.users_question = [];
             $("#js-question-result").parent().hide();
             $("#js-question-game").parent().hide();
             GAME.steps = Math.abs(GAME.response.result[GAME.user.id]-3);
         }
     }else if(GAME.stage == 2){
-        // этап 2
+        if(GAME.response.result === 'standoff'){
+            GAME.question = {};
+            GAME.getQuizQuestion();
+        }else if(GAME.response.result === 'retry'){
+            GAME.getResultQuestion();
+        }else if(typeof GAME.response.result == "object"){
+            GAME.question = {};
+            GAME.users_question = [];
+            GAME.steps = GAME.response.result[GAME.user.id];
+        }
     }
 }
 
@@ -442,13 +452,16 @@ $(document).ready(function () {
         event.preventDefault();
         GAME.getGame();
     });
-    $("#js-question-game").click(function(event){
+    $("#js-question-quiz-game").click(function(event){
         event.preventDefault();
+        GAME.users_question = [];
         GAME.getQuizQuestion();
     });
 
     $("#js-question-normal-game").click(function(event){
         event.preventDefault();
+        //GAME.users_question = [GAME.user.id,OTHER_USER_ID];
+        GAME.users_question = [15,16];
         GAME.getNormalQuestion();
     });
 

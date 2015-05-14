@@ -15,7 +15,7 @@ $game_id = is_object($game) ? $game->id : 'null';
             <li><a id="js-start-game" href="javascript:void(0);">Начать игру</a></li>
         @endif
         <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-update-game" href="javascript:void(0);">Обновить игру</a></li>
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-game" href="javascript:void(0);">Запросить вопрос</a></li>
+        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-quiz-game" href="javascript:void(0);">Запросить квиз вопрос</a></li>
         <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-result" href="javascript:void(0);">Запросить результат вопроса</a></li>
 
         <li><a id="js-question-normal-game" href="javascript:void(0);">Запросить нормальный вопрос</a></li>

@@ -233,7 +233,9 @@ class GameController extends BaseController {
         if ($validation->passes()):
             if ($this->initGame()):
                 $this->changeGameStatus($this->game_statuses[2]);
-                $this->changeGameStage(1);
+                if ($this->validGameStage(0)):
+                    $this->changeGameStage(1);
+                endif;
                 $this->nextStep(0);
                 if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                     $randomQuestion = $this->randomQuestion('quiz');
@@ -296,7 +298,7 @@ class GameController extends BaseController {
         if ($validation->passes()):
             if ($this->initGame()):
                 $number_participants = Config::get('game.number_participants');
-                if (Input::get('type') == 'normal'):
+                if($this->validGameStage(2)):
                     $number_participants = 2;
                 endif;
                 if (GameUserQuestions::where('game_id', $this->game->id)->where('status', 1)->count() == $number_participants):
@@ -318,8 +320,8 @@ class GameController extends BaseController {
                             GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)->first()
                                 ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
                             $available_steps = abs($place-3);
-                            if (Input::get('type') == 'normal'):
-                                $available_steps  = 1;
+                            if($this->validGameStage(2)):
+                                $available_steps  = $place;
                             endif;
                             GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)
                                 ->update(array('status'=>0,'available_steps'=>$available_steps,'make_steps'=>0, 'updated_at' => date('Y-m-d H:i:s')));
@@ -330,7 +332,7 @@ class GameController extends BaseController {
                 elseif(GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 99)->exists()):
                     $this->game_winners = 'standoff';
                 else:
-                    $this->game_winners = 'retry';
+                    $this->game_winners = 'retry1';
                 endif;
                 $this->createQuestionResultJSONResponse();
                 if (is_array($this->game_winners)):
@@ -747,21 +749,26 @@ class GameController extends BaseController {
     private function setQuizQuestionWinner(){
 
         if ($this->game_answers['current_answer'] !== FALSE):
+            $this->game_winners = array('first_place' => array(), 'second_place' => array(), 'third_place' => array());
             $this->getFirstPlace();
             if ($this->isStandoff('first_place')):
                 $this->game_winners = 'standoff';
                 return FALSE;
             endif;
-            $this->getSecondPlace();
-            if ($this->isStandoff('second_place')):
-                $this->game_winners = 'standoff';
-                return FALSE;
+            if ($this->validGameStage(1)):
+                $this->getSecondPlace();
+                if ($this->isStandoff('second_place')):
+                    $this->game_winners = 'standoff';
+                    return FALSE;
+                endif;
+                $this->getThirdPlace();
             endif;
-            $this->getThirdPlace();
             $winner_places = array();
             $places = array('first_place' => 1, 'second_place' => 2, 'third_place' => 3);
             foreach ($this->game_winners as $place => $user_id):
-                $winner_places[@$user_id[0]] = $places[$place];
+                if (isset($user_id[0])):
+                    $winner_places[@$user_id[0]] = $places[$place];
+                endif;
             endforeach;
             $this->nextStep(@$this->game_winners['first_place'][0]);
             $this->game_winners = $winner_places;
@@ -771,7 +778,7 @@ class GameController extends BaseController {
     private function setNormalQuestionWinner(){
 
         if ($this->game_answers['current_answer'] !== FALSE):
-            $winners = array();
+            $this->game_winners = $winners = array();
             foreach($this->game_answers['answers_titles'] as $user_id => $answers_title):
                 $this->game_winners[$user_id] = 0;
                 if($answers_title == $this->game_answers['current_answer']):
