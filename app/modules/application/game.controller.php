@@ -49,6 +49,7 @@ class GameController extends BaseController {
             Route::post('profile/password-save', array('as'=>'profile-password-save','uses'=>$class.'@ProfilePasswordSave'));
 
             Route::post('get-game', array('as'=>'get-game','uses'=>$class.'@getGame'));
+            Route::post('over-game', array('as'=>'over-game','uses'=>$class.'@overGame'));
             Route::post('question/get-quiz', array('as'=>'get-quiz-question','uses'=>$class.'@getQuizQuestion'));
             Route::post('question/get-normal', array('as'=>'get-normal-question','uses'=>$class.'@getNormalQuestion'));
             Route::post('question/send-answer', array('as'=>'send-answer-question','uses'=>$class.'@sendAnswerQuestion'));
@@ -223,6 +224,18 @@ class GameController extends BaseController {
         endif;
         $this->setGameStatus();
         $this->createGameJSONResponse();
+        return Response::json($this->json_request,200);
+    }
+
+    public function overGame(){
+
+        if(!Request::ajax()) return App::abort(404);
+        if ($this->initGame()):
+            if (!empty($this->game->users)):
+                #
+            endif;
+            Helper::tad($this->game);
+        endif;
         return Response::json($this->json_request,200);
     }
 
@@ -413,7 +426,7 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function overGame(){
+    private function finishGame(){
 
         $this->game->status_over = 1;
         $this->game->date_over = Carbon::now()->format('Y-m-d H:i:s');

@@ -74,6 +74,35 @@ GAME.getGame = function(){
 };
 
 /*
+ Метод завершает текущую игру
+ Отправляет:
+ game  - (int)ID игры
+
+ */
+GAME.overGame = function(){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/over-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                GAME.map = GAME.response.map;
+                GAME.parseGameResponse();
+                $("#game-id").html(GAME.game_id);
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+/*
  Метод получает Квиз-вопрос
  Отправляет:
         game  - (int)ID игры.
@@ -457,19 +486,20 @@ $(document).ready(function () {
         GAME.users_question = [];
         GAME.getQuizQuestion();
     });
-
     $("#js-question-normal-game").click(function(event){
         event.preventDefault();
         //GAME.users_question = [GAME.user.id,OTHER_USER_ID];
         GAME.users_question = [15,16];
         GAME.getNormalQuestion();
     });
-
     $("#js-question-result").click(function(event){
         event.preventDefault();
         GAME.getResultQuestion();
     });
-
+    $("#js-over-game").click(function(event){
+        event.preventDefault();
+        GAME.overGame();
+    });
     $("#quiz-question-form").submit(function(){
         clearInterval(GAME.timer.timer_object);
         GAME.question.answer = $("#quiz-question-answer").val().trim();
@@ -493,7 +523,6 @@ $(document).ready(function () {
             }
         }
     });
-
     $(document).on("click",".js-map-block",function(event){
         event.preventDefault();
         if(GAME.steps > 0){
