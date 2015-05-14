@@ -2,7 +2,7 @@ var firstTime = new Date().getTime()/1000;
 var search_timeout = 90;
 function startOrSearch() {
   GAME.game_id = _skoronagame_.game_id;
-  /*GAME.getGame(function(){
+  GAME.getGame(function(){
     if (GAME.status == "wait") {
       var now = new Date().getTime()/1000;
       if (now-firstTime<search_timeout) {
@@ -12,5 +12,5 @@ function startOrSearch() {
       }
     }
     console.log(GAME.status)
-  });*/
+  });
 }

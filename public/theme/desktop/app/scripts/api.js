@@ -69,6 +69,7 @@ GAME.getGame = function(callback){
                 console.log(response)
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
                 callback();
+                
             }
             //$("#js-server-notification").html(response.responseText);
         },

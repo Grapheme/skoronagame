@@ -5,9 +5,6 @@ var bg_width = $('#map').width();
 
 function scale() {
   var doc_width = $(window).width();
-  console.log(doc_width);
-  console.log(bg_width);
-  console.log(doc_width/bg_width);
   $('#map').transition({ scale: doc_width/bg_width });
 }
 
