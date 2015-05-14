@@ -16,6 +16,21 @@ GAME.user_step = 0;                                     // id пользоват
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.timer = {timer_object:{},time:10};                 // игровой таймер
 
+GAME.reInitialize = function(){
+
+    GAME.game_id = 0;                                       // id игры
+    GAME.user = {};                                         // пользователь
+    GAME.status = 0;                                        // статус игры
+    GAME.stage = 0;                                         // этап игры
+    GAME.response = {};                                     // ответ от сервера
+    GAME.map = {};                                          // карта
+    GAME.users_question = [];                               // массив id пользователей которым нужно создать вопрос. пустой - если всем
+    GAME.question = {};                                     // текущий вопрос
+    GAME.steps = 0;                                         // доступные шаги
+    GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
+    GAME.timer = {timer_object:{},time:10};
+}
+
 /*
 Метод получает информацию о текущей игре или инициирует новую
 Отправляет:
@@ -92,8 +107,6 @@ GAME.overGame = function(){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
-                GAME.map = GAME.response.map;
-                GAME.parseGameResponse();
                 $("#game-id").html(GAME.game_id);
                 $("#js-server-response").html(JSON.stringify(GAME.response));
             }
@@ -316,6 +329,10 @@ GAME.parseGameResponse = function(){
                 // этап 2-й
             }
         }
+    }else if(GAME.status == GAME.statuses[3]){
+        alert(GAME.response.settings.message);
+        GAME.reInitialize();
+        location.reload();
     }
 }
 
@@ -476,6 +493,7 @@ $(document).ready(function () {
         GAME.getGame();
         $(this).parent().hide();
         $("#js-update-game").parent().show();
+        $("#js-over-game").parent().show();
     });
     $("#js-update-game").click(function(event){
         event.preventDefault();

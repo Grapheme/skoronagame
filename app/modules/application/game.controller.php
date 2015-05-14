@@ -170,11 +170,6 @@ class GameController extends BaseController {
     /****************************************************************************/
     /********************************* GAME *************************************/
     /****************************************************************************/
-
-    #$this->game = Game::find(1);
-    #$this->randomStep();
-    #exit;
-
     public function indexGame(){
 
         $games = Game::where('status_over', 0)->with(array('users' => function ($query) {
@@ -232,9 +227,15 @@ class GameController extends BaseController {
         if(!Request::ajax()) return App::abort(404);
         if ($this->initGame()):
             if (!empty($this->game->users)):
-                #
+                foreach($this->game->users as $user):
+                    if ($user->user_id == Auth::user()->id):
+                        $this->finishGame();
+                        $this->json_request['responseText'] = Auth::user()->name.' завершил игру.';
+                        $this->json_request['status'] = TRUE;
+                        break;
+                    endif;
+                endforeach;
             endif;
-            Helper::tad($this->game);
         endif;
         return Response::json($this->json_request,200);
     }
@@ -428,12 +429,14 @@ class GameController extends BaseController {
 
     private function finishGame(){
 
+        $this->game->status = $this->game_statuses[3];
         $this->game->status_over = 1;
         $this->game->date_over = Carbon::now()->format('Y-m-d H:i:s');
+        $this->game->json_settings = json_encode(array('next_step'=>0,'message'=>Auth::user()->name.' завершил игру.'));
         $this->game->save();
         $this->game->touch();
-        $this->json_request['game_status'] = $this->game->status[3];
-        GameUser::where('game_id',$this->game->id)->update(array('status'=>0));
+        GameUser::where('game_id',$this->game->id)->update(array('status'=>99));
+        GameUserQuestions::where('game_id',$this->game->id)->update(array('status'=>99));
     }
 
     private function setWinners(){
