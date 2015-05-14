@@ -242,7 +242,7 @@ class GameController extends BaseController {
     public function getQuizQuestion(){
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('users' => 'required'));
+        $validation = Validator::make(Input::all(), array('users' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
                 $this->changeGameStatus($this->game_statuses[2]);
@@ -264,7 +264,7 @@ class GameController extends BaseController {
     public function getNormalQuestion(){
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('users' => 'required'));
+        $validation = Validator::make(Input::all(), array('users' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
