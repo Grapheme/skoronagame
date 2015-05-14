@@ -80,6 +80,10 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
+function hidePoppups() {
+  $('.popup-wrapper').slideUp();
+}
+
 $('form').submit(function(e){
   e.preventDefault();
   var _href = $(this).attr('action');

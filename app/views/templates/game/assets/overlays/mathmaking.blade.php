@@ -5,7 +5,7 @@
             <div class="mask"></div><img src="http://dummyimage.com/86x98/">
             <div class="name">&nbsp;</div>
         </div>
-        <div class="ava">
+        <div class="ava reserved">
             <div class="mask"></div><img src="http://dummyimage.com/86x98/">
             <div class="name">Вы</div>
         </div>
