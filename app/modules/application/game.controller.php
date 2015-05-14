@@ -345,7 +345,7 @@ class GameController extends BaseController {
                 elseif(GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 99)->exists()):
                     $this->game_winners = 'standoff';
                 else:
-                    $this->game_winners = 'retry1';
+                    $this->game_winners = 'retry';
                 endif;
                 $this->createQuestionResultJSONResponse();
                 if (is_array($this->game_winners)):
