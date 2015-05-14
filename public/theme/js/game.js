@@ -3,18 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
-GAME.user = {};                                         // пользователь
-GAME.status = 0;                                        // статус игры
-GAME.stage = 0;                                         // этап игры
-GAME.response = {};                                     // ответ от сервера
-GAME.map = {};                                          // карта
-GAME.users_question = [];                               // массив id пользователей которым нужно создать вопрос. пустой - если всем
-GAME.question = {};                                     // текущий вопрос
-GAME.steps = 0;                                         // доступные шаги
-GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
-GAME.timer = {timer_object:{},time:10};                 // игровой таймер
 
 GAME.reInitialize = function(){
 
@@ -486,6 +475,7 @@ GAME.isEmptyMap = function() {
     return GAME.map.length === 0;
 }
 $(document).ready(function () {
+    GAME.reInitialize();
     GAME.game_id = $("#game-id").html();
     if(isNaN(GAME.game_id) === false) GAME.getGame(this);
     $("#js-start-game").click(function(event){
