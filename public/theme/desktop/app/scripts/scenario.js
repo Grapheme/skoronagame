@@ -4,7 +4,15 @@ var search_timeout = 90;
 function renderPlayers() {
   $.each(GAME.users, function(index, value){
     if (value.id != GAME.user.id) {
-      $('#mathcmaking .ava:not(.reserved):first .name').text(value.name).closest('.ava').addClass('reserved');
+      var is_reserved = false;
+      $('#mathcmaking .ava .name').each(function(){
+        if ($(this).text()==value.name) {
+          is_reserved = true;
+        }
+      });
+      if (is_reserved == false) {
+        $('#mathcmaking .ava:not(.reserved):first .name').text(value.name).closest('.ava').addClass('reserved');
+      }
     }
   });
 }
