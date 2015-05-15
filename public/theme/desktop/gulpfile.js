@@ -38,7 +38,7 @@ gulp.task('html', ['views', 'styles'], function () {
 
 gulp.task('js', function () {
   return gulp.src('app/scripts/**/*.js')
-    .pipe($.uglify())
+    //.pipe($.uglify())
     .pipe(concat('main.js'))
     .pipe(gulp.dest('dist/scripts/'));
 });

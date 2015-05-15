@@ -2,7 +2,7 @@
     <div class="left">
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://dummyimage.com/86x98/">
+                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
             </div>
             <div class="info">
                 <div class="name">Наполеон</div>
@@ -14,7 +14,7 @@
         </div>
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://dummyimage.com/86x98/">
+                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
             </div>
             <div class="info">
                 <div class="name">Хамон</div>
@@ -26,7 +26,7 @@
         </div>
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://dummyimage.com/86x98/">
+                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
             </div>
             <div class="info">
                 <div class="name">Мамон</div>
@@ -39,7 +39,7 @@
     </div>
     <div class="right">
         <div class="small-title">Распределение земель</div>
-        <div class="title">Вопрос №<span class="qn">0</span></div>
+        <div class="title">Вопрос:</div>
         <div class="q">В каком году произошло сражение на льду Чудского озера?</div>
         <form class="noajax a">
             <input placeholder="Введите ответ">

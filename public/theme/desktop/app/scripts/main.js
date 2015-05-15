@@ -31,7 +31,7 @@ function openFrame(href) {
     _history.push(href);
   }
   if (href=="mathcmaking") {
-    startOrSearch();
+    matchmaking();
   }
   var last_item = _history[_history.length-1]
   $('.popup-wrapper .popup-holder .popup').removeClass('active');

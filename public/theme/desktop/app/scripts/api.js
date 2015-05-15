@@ -5,6 +5,7 @@
 var GAME = GAME || {};
 GAME.game_id = 0;                                       // id игры
 GAME.user = {};                                         // пользователь
+GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
 GAME.stage = 0;                                         // этап игры
 GAME.response = {};                                     // ответ от сервера
@@ -13,133 +14,49 @@ GAME.question = {};                                     // текущий воп
 GAME.steps = 0;                                         // доступные шаги
 GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
-GAME.timer = {timer_object:{},time:10};                 // игровой таймер
-GAME.users;
+GAME.users = {};
+GAME.question;
 
-/*
-Метод получает информацию о текущей игре или инициирует новую
-Отправляет:
-        game  - (int)ID игры или (string)null - если игра не существует.
-Результат:
- game_id - (int) ID текущей игры
- game_stage - (int) этам игры (0-не началась, 1,2 и т.д.)
- game_status - (string) статус игры. (GAME.statuses)
-        wait - ожидает начала
-        start - игра началась
-        ready - игра активная
-        over - игра завершена
- current_user - (int) ID текущего пользователя
- users - список пользователей
-        color - цвет
-        points - очки
-        place - занятое место
-        status - статус пользователя
-        available_steps - доступно ходов
-        make_steps - сделано ходов
-        settings - (JSON) иные данные
- map - карта
-        id - (int) ID области
-        zone - (int) номер области (1-15)
-        user_id - (int) ID пользователя владельца области
-        capital - (int) Столица (1/0)
-        lives - (int) количество доступных жизней области
-        settings - (JSON) иные данные
-        settings.color - код цвета области
- settings - (JSON) иные данные
-        settings.next_step - (int) ID пользователя который делает следующий шаг
 
-*/
-
-GAME.getGame = function(callback){
+var getGame = function(callback){
     callback = callback || function(){}
     $.ajax({
         type: "POST",
         url: '/game/get-game',
         data: {game: GAME.game_id},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
         success: function (response) {
             if (response.status) {
-                GAME.response = response.responseJSON;
-                GAME.map = GAME.response.map;
-                GAME.parseGameResponse();
-                _skoronagame_.game_id = GAME.game_id;
-                console.log(response)
-                //$("#js-server-response").html(JSON.stringify(GAME.response));
+                parseGameData(response);
                 callback();
+                console.log(response);
+                //GAME.response = response.responseJSON;
+                //GAME.map = GAME.response.map;
                 
             }
-            //$("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {}
     });
 };
 
-/*
- Метод завершает текущую игру
- Отправляет:
- game  - (int)ID игры
-
- */
-GAME.overGame = function(){
-
-    $.ajax({
-        type: "POST",
-        url: '/game/over-game',
-        data: {game: GAME.game_id},
-        dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
-        success: function (response) {
-            if (response.status) {
-                GAME.response = response.responseJSON;
-                GAME.map = GAME.response.map;
-                GAME.parseGameResponse();
-                $("#game-id").html(GAME.game_id);
-                $("#js-server-response").html(JSON.stringify(GAME.response));
-            }
-            $("#js-server-notification").html(response.responseText);
-        },
-        error: function (xhr, textStatus, errorThrown) {}
-    });
-}
-
-/*
- Метод получает Квиз-вопрос
- Отправляет:
-        game  - (int)ID игры.
-        users - (array) id пользователей кому выдавать вопрос
- Результат:
-    ...
- question - вопрос
-        id - (int) ID вопроса
-        text - (string) текст вопроса
-        type - (string) тип вопроса (quiz/normal)
-*/
-GAME.getQuizQuestion = function(callback){
+getQuizQuestion = function(_users, callback){
     callback = callback || function(){}
+    _users = _users || GAME.users
     $.ajax({
         type: "POST",
         url: '/game/question/get-quiz',
-        data: {game: GAME.game_id, users: GAME.users_question},
+        data: {game: GAME.game_id, users: _users},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
         success: function (response) {
             if (response.status) {
-                console.log(response)
-                GAME.user_step = 0;
-                GAME.response = response.responseJSON;
-                GAME.question.id = GAME.response.question.id;
-                GAME.question.text = GAME.response.question.text;
-                GAME.question.answers = [];
-                GAME.question.type = GAME.response.question.type;
+                //GAME.user_step = 0;
+                parseGameData(response);
+                //GAME.response = response.responseJSON;
+                //AME.question.id = GAME.response.question.id;
+                //GAME.question.text = GAME.response.question.text;
+                //GAME.question.answers = [];
+                //GAME.question.type = GAME.response.question.type;
                 //GAME.parseQuestionResponse();
-                callback();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
             }
             //$("#js-server-notification").html(response.responseText);
@@ -148,339 +65,109 @@ GAME.getQuizQuestion = function(callback){
     });
 }
 
-/*
- Метод получает нормальный-вопрос
- Отправляет:
- game  - (int)ID игры.
- users - (array) id пользователей кому выдавать вопрос или пустой если всем
- Результат:
- ...
- question - вопрос
- id - (int) ID вопроса
- text - (string) текст вопроса
- type - (string) тип вопроса (quiz/normal)
- */
-GAME.getNormalQuestion = function(){
-    $.ajax({
-        type: "POST",
-        url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: GAME.users_question},
-        dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
-        success: function (response) {
-            if (response.status) {
-                GAME.user_step = 0;
-                GAME.response = response.responseJSON;
-                GAME.question.id = GAME.response.question.id;
-                GAME.question.text = GAME.response.question.text;
-                GAME.question.answers = GAME.response.question.answers;
-                GAME.question.type = GAME.response.question.type;
-                GAME.parseQuestionResponse();
-                $("#js-server-response").html(JSON.stringify(GAME.response));
-            }
-            $("#js-server-notification").html(response.responseText);
-        },
-        error: function (xhr, textStatus, errorThrown) {}
-    });
-}
-/*
- Метод отправляет ответ на вопрос
- Отправляет:
-        game  - (int)ID игры.
-        question  - (int)ID вопроса.
-        answer  - (int) ответ.
-        time  - (int) время потраченное на ответ.
- Результат:
- ...
- status - (boolean) результат обработки
- responseText - (string) текст результата (не обязательно)
- */
-
-GAME.sendQuestionAnswer = function(callback){
-    callback = callback || function(){};
-    $.ajax({
-        type: "POST",
-        url: '/game/question/send-answer',
-        data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
-        dataType: 'json',
-        beforeSend: function () {
-            //$("#js-server-response").html('');
-        },
-        success: function (response) {
-            if (response.status) {
-                console.log()
-                GAME.response = response.responseJSON;
-                callback();
-                //$("#js-server-response").html(JSON.stringify(GAME.response));
-            }
-            //$("#js-question-result").parent().show();
-            //$("#js-server-notification").html(response.responseText);
-        },
-        error: function (xhr, textStatus, errorThrown) {
+function getUserById(id) {
+    var returnVal;
+    $.each(GAME.users, function(index, value){
+        if (value.id == id) {
+            returnVal = value;
         }
     });
+    return returnVal;
 }
 
-/*
- Метод запрашивает состояние ответов на вопрос
- Отправляет:
- game  - (int)ID игры.
- question  - (int)ID вопроса.
- Результат:
- ...
- result - результат ответов
-        result = (string)retry -  повтор запроса
-        result = (string)standoff - ничья
-        result = (JSON) = "12":3,"13":1,"14":2 . ID пользователя: занятое место (1-3)
- responseText - (string) текст результата (не обязательно)
- */
-
-GAME.getResultQuestion = function(callback){
-    callback = callback || function(){};
-    $.ajax({
-        type: "POST",
-        url: '/game/question/get-result',
-        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
-        dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
-        success: function (response) {
-            if (response.status) {
-                console.log(response)
-                GAME.response = response.responseJSON;
-                //GAME.parseResultQuestionResponse();
-                callback();
-                //$("#js-server-response").html(JSON.stringify(GAME.response));
-            }
-            $("#js-server-notification").html(response.responseText);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-        }
-    });
-}
-
-/*
- Метод отправляет запрос на захват пустой территории
- Отправляет:
- game  - (int)ID игры.
- zone  - (int)номер зоны.
- Результат:
- ...
- status - (boolean) результат обработки
- responseText - (string) текст результата (не обязательно)
- */
-GAME.sendConquestEmptyTerritory = function(territory){
+sendConquestEmptyTerritory = function(territory, callback){
+    callback = callback || function(){}
     $.ajax({
         type: "POST",
         url: '/game/conquest/territory',
-        data: {game: GAME.game_id, zone: $(territory).data('zone')},
+        data: {game: GAME.game_id, zone: territory},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
         success: function (response) {
             if (response.status) {
-                $(territory).css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives'));
-                GAME.response = response.responseJSON;
-                GAME.steps--;
-                if (GAME.steps == 0) {
-                    $("#js-question-game").parent().show();
-                }
-                $("#js-server-response").html(JSON.stringify(GAME.response));
+                console.log(response);
+                callback();
             }
-            $("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
 
-GAME.sendConquestTerritory = function(territory){
 
-}
-
-/*
- Метод обрабатывает игровую информацию
- */
-GAME.parseGameResponse = function(){
-    GAME.game_id = GAME.response.game_id;
-    GAME.status = GAME.response.game_status;
-    GAME.stage = GAME.response.game_stage;
-    GAME.users = GAME.response.users;
-    GAME.user_step = GAME.response.settings.next_step;
-    $.each(GAME.response.users,function(index, value){
-        if(value.id == GAME.response.current_user) {
-            GAME.user = value;
-            //$("#js-user-response").html(JSON.stringify(GAME.user));
-        }
-    });
-    if(GAME.status == GAME.statuses[1]){
-        GAME.createMap();
-        if(GAME.user_step == GAME.user.id){
-            GAME.stage = 1;
-            //GAME.getQuizQuestion();
-        }
-    }else if(GAME.status == GAME.statuses[2]){
-        GAME.updateMap();
-        if(GAME.user_step == 0){
-            if(GAME.stage == 1 && $.isEmptyObject(GAME.question)){
-                //GAME.getQuizQuestion();
-                // этап 1-й
-            }else if(GAME.stage == 2){
-                // этап 2-й
-            }
-        }
-    }
-}
-
-/*
- Метод обрабатывает ответ сервера на запрос - "дай вопрос"
- */
-GAME.parseQuestionResponse = function(){
-    if(GAME.stage == 1){
-        if(GAME.question.id > 0){
-            $("#js-question-game").parent().hide();
-            $("#quiz-question-text").html(GAME.question.text);
-            $("#quiz-question-block").show();
-            GAME.startTimer();
-        }else{
-            GAME.getQuizQuestion();
-        }
-    }else if(GAME.stage == 2){
-        if(GAME.question.type == 'normal'){
-            if(GAME.question.id > 0 && GAME.question.answers.length > 0){
-                $("#js-question-game").parent().show();
-                var inputs = '';
-                $.each(GAME.question.answers,function(index, value){
-                    inputs = inputs + '<input type="radio" name="answer" value="'+index+'">'+value;
+function parseGameData(response) {
+    if (response.responseJSON.users) {
+        GAME.users = response.responseJSON.users;
+        $.each(response.responseJSON.users, function(index, value){
+            if (value.id == response.responseJSON.current_user) {
+                GAME.user = value;
+            } else {
+                var exist = false;
+                $.each(GAME.enemies, function(i, v){
+                    if (v.id == value.id) {
+                        exist = true;
+                        GAME.enemies[i] = value
+                    }
                 });
-                $("#normal-question-text").html(GAME.question.text);
-                $("#normal-question-answers").html(inputs);
-                $("#normal-question-block").show();
-                GAME.startTimer();
-            }else{
-                GAME.getNormalQuestion();
+                if (exist == false) {
+                    GAME.enemies.push(value) 
+                }
             }
-        }else if(GAME.question.type == 'quiz'){
-            if(GAME.question.id > 0){
-                $("#js-question-game").parent().hide();
-                $("#quiz-question-text").html(GAME.question.text);
-                $("#quiz-question-block").show();
-                GAME.startTimer();
-            }else{
-                GAME.getQuizQuestion();
-            }
-        }
-
+        });
     }
-}
-
-/*
- Метод обрабатывает ответ сервера на запрос - "какой результат на ответ"
- */
-
-GAME.parseResultQuestionResponse = function(){
-    if(GAME.stage == 1){
-        if(GAME.response.result === 'standoff'){
-            GAME.question = {};
-            GAME.getQuizQuestion();
-            $("#js-question-result").parent().hide();
-            $("#js-question-game").parent().show();
-        }else if(GAME.response.result === 'retry'){
-            GAME.getResultQuestion();
-            $("#js-question-result").parent().hide();
-            $("#js-question-game").parent().hide();
-        }else if(typeof GAME.response.result == "object"){
-            GAME.question = {};
-            GAME.users_question = [];
-            $("#js-question-result").parent().hide();
-            $("#js-question-game").parent().hide();
-            GAME.steps = Math.abs(GAME.response.result[GAME.user.id]-3);
-        }
-    }else if(GAME.stage == 2){
-        if(GAME.response.result === 'standoff'){
-            GAME.question = {};
-            GAME.getQuizQuestion();
-        }else if(GAME.response.result === 'retry'){
-            GAME.getResultQuestion();
-        }else if(typeof GAME.response.result == "object"){
-            GAME.question = {};
-            GAME.users_question = [];
-            GAME.steps = GAME.response.result[GAME.user.id];
-        }
+    
+    if (response.responseJSON.question) {
+        GAME.question = response.responseJSON.question;
     }
+    
+    GAME.game_id = response.responseJSON.game_id;
+    GAME.stage = response.responseJSON.game_stage;
+    GAME.status = response.responseJSON.game_status;
+    GAME.map = response.responseJSON.map;
+    if (response.responseJSON.settings) {
+        GAME.next_turn = response.responseJSON.settings.next_step || 0;
+    }
+    GAME.response = response.responseJSON;
+    
 }
 
-/*
- Метод создания карты
- */
 
-GAME.createMap = function(){
-    var block = $("#map-block-template");
-    var block_class = '';
-    $.each(GAME.map, function (index, value) {
-        if (value.user_id > 0)
-            block_class = 'js-map-block';
-        else
-            block_class = 'js-map-empty-block';
-        if (value.lives > 1)
-            block_class = 'js-map-capital-block';
-        $(block).clone(true).appendTo($("#russia-map-blocks")).removeAttr('id').addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives);
-    });
-    $("#map-block-template").remove();
-    $("#russia-map").show();
-}
-
-/*
- Метод обновления карты
- */
-
-GAME.updateMap = function(){
-    if(GAME.isEmptyMap === false || $(".js-map-block").length == 0) GAME.createMap();
-    var block_class = '';
-    $.each(GAME.map, function (index, value) {
-        if (value.user_id > 0)
-            block_class = 'js-map-block';
-        else
-            block_class = 'js-map-empty-block';
-        if (value.lives > 1)
-            block_class = 'js-map-capital-block';
-        $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives);
-    });
-}
-
-/*
- Метод запуска таймера при ответе на вопрос
- */
-
-GAME.startTimer = function () {
-    var timer;
-    var questionTime = GAME.timer.time;
-    var questionTimer = $("#" + GAME.question.type + "-question-timer span");
-    questionTimer.text(questionTime).parent('p');
-    GAME.question.time = 0;
-    GAME.timer.timer_object = setInterval(function () {
-        questionTimer.text(--questionTime);
-        GAME.question.time = GAME.question.time + 1 || 1;
-        if (questionTime <= 0){
-            clearInterval(GAME.timer.timer_object);
-            if(GAME.question.type == 'quiz'){
-                GAME.question.answer = 0;
-            }else if(GAME.question.type == 'normal'){
-                GAME.question.answer = 100;
+getResultQuestion = function(){
+  $.ajax({
+      type: "POST",
+      url: '/game/question/get-result',
+      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+      dataType: 'json',
+      success: function (response) {
+          if (response.status) {
+            if (response.responseJSON.result == 'retry') {
+              //console.log(response)
+              setTimeout(getResultQuestion, 500)
+            } else if (response.responseJSON.result == 'standoff') {
+              alert('Ничья')
+              //console.log(response)
+            } else {
+              showQuestionResult(response);
             }
-            GAME.sendQuestionAnswer();
-            $("#" + GAME.question.type + "-question-block").hide();
-        }
-    }, 1000);
+          }
+      },
+      error: function (xhr, textStatus, errorThrown) {
+      }
+  });
 }
 
-/*
- Метод проверяет "не пустая" ли карта
- */
-
-GAME.isEmptyMap = function() {
-    return GAME.map.length === 0;
+sendQuestionAnswer = function(callback){
+  callback = callback || function(){}
+  $.ajax({
+    type: "POST",
+    url: '/game/question/send-answer',
+    data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
+    dataType: 'json',
+    success: function (response) {
+      if (response.status) {
+        console.log(response);
+        callback();
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+    }
+  });
 }
