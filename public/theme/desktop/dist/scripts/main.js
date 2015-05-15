@@ -387,9 +387,10 @@ function renderMap(nodelay) {
   } else {
     var delay = 500
   }
-  $('.temp-map').html('');
   $.each(GAME.map, function(index, value){
     setTimeout(function(){
+      $('.temp-map').html('');
+      
       $('<div> \
         capital:'+ value.capital+'<br>\
         id:'+ value.id+'<br>\
