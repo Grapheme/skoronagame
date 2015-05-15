@@ -1,3 +1,4 @@
+<div class="temp-map"></div>
 <div id="map">
     <div class="areas">
         <div id="area-12" class="area">

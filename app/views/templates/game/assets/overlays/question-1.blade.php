@@ -39,9 +39,9 @@
     </div>
     <div class="right">
         <div class="small-title">Распределение земель</div>
-        <div class="title">Вопрос №1</div>
+        <div class="title">Вопрос №<span class="qn">0</span></div>
         <div class="q">В каком году произошло сражение на льду Чудского озера?</div>
-        <form>
+        <form class="noajax a">
             <input placeholder="Введите ответ">
             <button type="submit">ok</button>
         </form>

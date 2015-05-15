@@ -652,7 +652,19 @@
   }
 }
 
+.temp-map {
+  position: absolute;
+  background: white;
+  z-index: 9;
+  &>div {
+    width: 80px;
+    float: left;
+    border: 1px solid black;
+  }
+}
+
 .ava {
+  position: relative;
   .mask {
     background: url('../images/ava-mask.png');
     width: 116px;

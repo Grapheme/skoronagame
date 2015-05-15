@@ -78,9 +78,40 @@ GAME.getGame = function(callback){
 };
 
 /*
+ Метод завершает текущую игру
+ Отправляет:
+ game  - (int)ID игры
+
+ */
+GAME.overGame = function(){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/over-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                GAME.map = GAME.response.map;
+                GAME.parseGameResponse();
+                $("#game-id").html(GAME.game_id);
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
+/*
  Метод получает Квиз-вопрос
  Отправляет:
         game  - (int)ID игры.
+        users - (array) id пользователей кому выдавать вопрос
  Результат:
     ...
  question - вопрос
@@ -88,11 +119,52 @@ GAME.getGame = function(callback){
         text - (string) текст вопроса
         type - (string) тип вопроса (quiz/normal)
 */
-GAME.getQuizQuestion = function(){
+GAME.getQuizQuestion = function(callback){
+    callback = callback || function(){}
     $.ajax({
         type: "POST",
         url: '/game/question/get-quiz',
-        data: {game: GAME.game_id},
+        data: {game: GAME.game_id, users: GAME.users_question},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                console.log(response)
+                GAME.user_step = 0;
+                GAME.response = response.responseJSON;
+                GAME.question.id = GAME.response.question.id;
+                GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = [];
+                GAME.question.type = GAME.response.question.type;
+                //GAME.parseQuestionResponse();
+                callback();
+                //$("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            //$("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
+/*
+ Метод получает нормальный-вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ users - (array) id пользователей кому выдавать вопрос или пустой если всем
+ Результат:
+ ...
+ question - вопрос
+ id - (int) ID вопроса
+ text - (string) текст вопроса
+ type - (string) тип вопроса (quiz/normal)
+ */
+GAME.getNormalQuestion = function(){
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-normal',
+        data: {game: GAME.game_id, users: GAME.users_question},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -103,6 +175,7 @@ GAME.getQuizQuestion = function(){
                 GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
                 GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = GAME.response.question.answers;
                 GAME.question.type = GAME.response.question.type;
                 GAME.parseQuestionResponse();
                 $("#js-server-response").html(JSON.stringify(GAME.response));
@@ -112,7 +185,6 @@ GAME.getQuizQuestion = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
-
 /*
  Метод отправляет ответ на вопрос
  Отправляет:
@@ -126,22 +198,25 @@ GAME.getQuizQuestion = function(){
  responseText - (string) текст результата (не обязательно)
  */
 
-GAME.sendQuestionAnswer = function(){
+GAME.sendQuestionAnswer = function(callback){
+    callback = callback || function(){};
     $.ajax({
         type: "POST",
         url: '/game/question/send-answer',
         data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
         dataType: 'json',
         beforeSend: function () {
-            $("#js-server-response").html('');
+            //$("#js-server-response").html('');
         },
         success: function (response) {
             if (response.status) {
+                console.log()
                 GAME.response = response.responseJSON;
-                $("#js-server-response").html(JSON.stringify(GAME.response));
+                callback();
+                //$("#js-server-response").html(JSON.stringify(GAME.response));
             }
-            $("#js-question-result").parent().show();
-            $("#js-server-notification").html(response.responseText);
+            //$("#js-question-result").parent().show();
+            //$("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
         }
@@ -161,23 +236,26 @@ GAME.sendQuestionAnswer = function(){
         result = (JSON) = "12":3,"13":1,"14":2 . ID пользователя: занятое место (1-3)
  responseText - (string) текст результата (не обязательно)
  */
-GAME.getResultQuestion = function(){
+
+GAME.getResultQuestion = function(callback){
+    callback = callback || function(){};
     $.ajax({
         type: "POST",
         url: '/game/question/get-result',
-        data: {game: GAME.game_id, question: GAME.question.id},
+        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
         },
         success: function (response) {
             if (response.status) {
+                console.log(response)
                 GAME.response = response.responseJSON;
-                GAME.parseResultQuestionResponse();
-                console.log(GAME)
+                //GAME.parseResultQuestionResponse();
+                callback();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
             }
-            //$("#js-server-notification").html(response.responseText);
+            $("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
         }
@@ -218,6 +296,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
+
 GAME.sendConquestTerritory = function(territory){
 
 }
@@ -229,8 +308,8 @@ GAME.parseGameResponse = function(){
     GAME.game_id = GAME.response.game_id;
     GAME.status = GAME.response.game_status;
     GAME.stage = GAME.response.game_stage;
-    GAME.user_step = GAME.response.settings.next_step;
     GAME.users = GAME.response.users;
+    GAME.user_step = GAME.response.settings.next_step;
     $.each(GAME.response.users,function(index, value){
         if(value.id == GAME.response.current_user) {
             GAME.user = value;
@@ -241,13 +320,13 @@ GAME.parseGameResponse = function(){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
             GAME.stage = 1;
-            GAME.getQuizQuestion();
+            //GAME.getQuizQuestion();
         }
     }else if(GAME.status == GAME.statuses[2]){
         GAME.updateMap();
         if(GAME.user_step == 0){
             if(GAME.stage == 1 && $.isEmptyObject(GAME.question)){
-                GAME.getQuizQuestion();
+                //GAME.getQuizQuestion();
                 // этап 1-й
             }else if(GAME.stage == 2){
                 // этап 2-й
@@ -270,12 +349,31 @@ GAME.parseQuestionResponse = function(){
             GAME.getQuizQuestion();
         }
     }else if(GAME.stage == 2){
-        if(GAME.question.id > 0){
-            $("#js-question-game").parent().show();
-            $("#normal-question-block").show();
-        }else{
-            //GAME.getNormalQuestion();
+        if(GAME.question.type == 'normal'){
+            if(GAME.question.id > 0 && GAME.question.answers.length > 0){
+                $("#js-question-game").parent().show();
+                var inputs = '';
+                $.each(GAME.question.answers,function(index, value){
+                    inputs = inputs + '<input type="radio" name="answer" value="'+index+'">'+value;
+                });
+                $("#normal-question-text").html(GAME.question.text);
+                $("#normal-question-answers").html(inputs);
+                $("#normal-question-block").show();
+                GAME.startTimer();
+            }else{
+                GAME.getNormalQuestion();
+            }
+        }else if(GAME.question.type == 'quiz'){
+            if(GAME.question.id > 0){
+                $("#js-question-game").parent().hide();
+                $("#quiz-question-text").html(GAME.question.text);
+                $("#quiz-question-block").show();
+                GAME.startTimer();
+            }else{
+                GAME.getQuizQuestion();
+            }
         }
+
     }
 }
 
@@ -296,12 +394,22 @@ GAME.parseResultQuestionResponse = function(){
             $("#js-question-game").parent().hide();
         }else if(typeof GAME.response.result == "object"){
             GAME.question = {};
+            GAME.users_question = [];
             $("#js-question-result").parent().hide();
             $("#js-question-game").parent().hide();
             GAME.steps = Math.abs(GAME.response.result[GAME.user.id]-3);
         }
     }else if(GAME.stage == 2){
-        // этап 2
+        if(GAME.response.result === 'standoff'){
+            GAME.question = {};
+            GAME.getQuizQuestion();
+        }else if(GAME.response.result === 'retry'){
+            GAME.getResultQuestion();
+        }else if(typeof GAME.response.result == "object"){
+            GAME.question = {};
+            GAME.users_question = [];
+            GAME.steps = GAME.response.result[GAME.user.id];
+        }
     }
 }
 
@@ -358,7 +466,11 @@ GAME.startTimer = function () {
         GAME.question.time = GAME.question.time + 1 || 1;
         if (questionTime <= 0){
             clearInterval(GAME.timer.timer_object);
-            GAME.question.answer = null;
+            if(GAME.question.type == 'quiz'){
+                GAME.question.answer = 0;
+            }else if(GAME.question.type == 'normal'){
+                GAME.question.answer = 100;
+            }
             GAME.sendQuestionAnswer();
             $("#" + GAME.question.type + "-question-block").hide();
         }

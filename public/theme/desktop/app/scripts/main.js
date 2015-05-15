@@ -84,8 +84,15 @@ function hidePoppups() {
   $('.popup-wrapper').slideUp();
 }
 
+function showPoppups() {
+  $('.popup-wrapper').slideDown();
+}
+
 $('form').submit(function(e){
   e.preventDefault();
+  
+  if ($(this).is('.noajax')) return false;
+  
   var _href = $(this).attr('action');
   var _method = $(this).attr('method');
   var _popup = $(this).attr('data-result');
