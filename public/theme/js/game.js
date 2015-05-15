@@ -26,7 +26,7 @@ GAME.reInitialize = function(){
         game  - (int)ID игры или (string)null - если игра не существует.
 Результат:
  game_id - (int) ID текущей игры
- game_stage - (int) этам игры (0-не началась, 1,2 и т.д.)
+ game_stage - (int) этап игры (0-не началась, 1,2 и т.д.)
  game_status - (string) статус игры. (GAME.statuses)
         wait - ожидает начала
         start - игра началась
@@ -51,6 +51,7 @@ GAME.reInitialize = function(){
         settings.color - код цвета области
  settings - (JSON) иные данные
         settings.next_step - (int) ID пользователя который делает следующий шаг
+        settings.message - (string) сообщение для всех (необязательное)
 
 */
 
