@@ -387,10 +387,9 @@ function renderMap(nodelay) {
   } else {
     var delay = 500
   }
+  $('.temp-map').html('');
   $.each(GAME.map, function(index, value){
-    setTimeout(function(){
-      $('.temp-map').html('');
-      
+    if (nodelay) {
       $('<div> \
         capital:'+ value.capital+'<br>\
         id:'+ value.id+'<br>\
@@ -400,7 +399,19 @@ function renderMap(nodelay) {
       </div>').appendTo('.temp-map').css({
         "background-color":value.settings.color
       }).data('zone', value.zone);
-    }, delay*index);
+    } else {
+      setTimeout(function(){
+        $('<div> \
+          capital:'+ value.capital+'<br>\
+          id:'+ value.id+'<br>\
+          lives:'+ value.lives+'<br>\
+          user_id:'+ value.user_id+'<br>\
+          zone:'+ value.zone+'\
+        </div>').appendTo('.temp-map').css({
+          "background-color":value.settings.color
+        }).data('zone', value.zone);
+      }, delay*index);
+    }
   });
 }
 
