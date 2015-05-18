@@ -316,6 +316,7 @@ GAME.parseGameResponse = function(){
                 GAME.getQuizQuestion();
                 // этап 1-й
             }else if(GAME.stage == 2){
+				//? GAME.getNormalQuestion();
                 // этап 2-й
             }
         }
