@@ -5,10 +5,10 @@
             <div class="undeground"></div>
             <div class="ground"></div>
             <div class="countur">
-                {{ File::get(app_path('views/templates/site/assets/svg/first.xml')) }}
+                {{ File::get(public_path(Config::get('site.theme_path').'/images/12_contyr.svg')) }}
             </div>
             <div class="glow">
-                {{ File::get(app_path('views/templates/site/assets/svg/second.xml')) }}
+                {{ File::get(public_path(Config::get('site.theme_path').'/images/12_glow.svg')) }}
             </div>
             <div class="objects"></div>
         </div>
