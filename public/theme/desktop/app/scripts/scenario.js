@@ -2,16 +2,19 @@ var firstTime = new Date().getTime()/1000;
 var search_timeout = 90;
 var quiz_timer_default = 10;
 
+var quiz_interval;
+
 function startQuizeTimer() {
   var timer = quiz_timer_default;
   $('#question-1 .right .timer').text(timer);
-  setInterval(function(){
+  quiz_interval = setInterval(function(){
     $('#question-1 .right .timer').text(timer);
     timer--
   }, 1000)
 }
 
 function quizQuesionRender() {
+  clearInterval(quiz_interval);
   renderPlayers();
   getQuizQuestion(callback=function(){
     $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideDown();
@@ -37,9 +40,10 @@ function matchmaking() {
     } else {
       renderPlayers();
       if (GAME.status == "start" || GAME.status == "ready") {
-        renderMap();
+        renderMap(true);
         hidePoppups();
-        setTimeout(takingLand, 10000);
+        takingLand();
+        //setTimeout(takingLand, 10000);
       }
     }
   });
@@ -77,7 +81,7 @@ function renderPlayers() {
 }
 
 $('body').on('click', '.temp-map div', function(event){
-  if (GAME.user.id == GAME.next_turn && GAME.stage == 1) {
+  if (GAME.user.id == GAME.next_turn && GAME.stage == 1 && !$(this).hasClass('reserved')) {
     sendConquestEmptyTerritory($(this).data('zone'),function(){
       getGame(function(){
         renderMap(true);
@@ -96,7 +100,7 @@ function renderMap(nodelay) {
   $('.temp-map').html('');
   $.each(GAME.map, function(index, value){
     if (nodelay) {
-      $('<div> \
+      var $area =  $('<div> \
         capital:'+ value.capital+'<br>\
         id:'+ value.id+'<br>\
         lives:'+ value.lives+'<br>\
@@ -105,6 +109,9 @@ function renderMap(nodelay) {
       </div>').appendTo('.temp-map').css({
         "background-color":value.settings.color
       }).data('zone', value.zone);
+      if (value.user_id>0) {
+        $area.addClass('reserved');
+      }
     } else {
       setTimeout(function(){
         $('<div> \
@@ -121,31 +128,55 @@ function renderMap(nodelay) {
   });
 }
 
+
+renderNormalQuestion = function(){
+  GAME.users_question = [GAME.user.id, GAME.enemies[0].id]
+  getNormalQuestion(function(){
+    console.log(GAME.response);
+  })
+}
+
+
 var last_turn = 0;
 
 whoTurn = function() {
   getGame(function(){
-    if (GAME.next_turn==GAME.user.id) {
-      if (GAME.next_turn != last_turn) {
-        last_turn = GAME.next_turn;
-        alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
-        hidePoppups();
-      }
-      setTimeout(whoTurn, 1000);
-    } else {
-      if (GAME.next_turn != last_turn) {
-        last_turn = GAME.next_turn;
-
-        var user_turn = getUserById(GAME.next_turn);
-        if (user_turn) {
-          alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+    if (GAME.stage == 1) {
+      if (GAME.next_turn==GAME.user.id) {
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+          alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           hidePoppups();
-        } else {
-          renderMap(true);
-          takingLand();
         }
+        setTimeout(whoTurn, 1000);
+      } else {
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+  
+          var user_turn = getUserById(GAME.next_turn);
+          if (user_turn) {
+            alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+            hidePoppups();
+          } else {
+            renderMap(true);
+            takingLand();
+          }
+        }
+        setTimeout(whoTurn, 1000);
       }
-      setTimeout(whoTurn, 1000);
+      
+    } else if (GAME.stage == 2) {
+      //alert('Этап захвата')
+      console.log('Этап захвата');
+      /*alert(GAME.response.settings.next_step);
+      if (GAME.next_turn != last_turn) {
+        last_turn = GAME.next_turn;
+        //var user_turn = getUserById(GAME.next_turn);
+        if (GAME.next_turn==GAME.user.id) {
+          alert('Ваш ход. Этап захвата.')
+          renderNormalQuestion();
+        }
+      }*/
     }
     renderMap(true);
   });
@@ -153,7 +184,12 @@ whoTurn = function() {
 
 showQuestionResult = function(response){
   GAME.question.result = response.responseJSON.result;
-  alert(response.responseText);
+  var _s = '';
+  $.each(GAME.users, function(index, value){
+    value.place = GAME.question.result[value.id]
+    _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
+  });
+  alert(_s);
   whoTurn();
 }
 
@@ -167,7 +203,7 @@ $(document).ready(function () {
   $('#question-1 form.a').submit(function(){
     GAME.question.answer = $(this).find('input').val();
     $(this).find('input').val('');
-    GAME.question.time = 10 - $('#question-1 .right .timer').text()
+    GAME.question.time = 10 - $('#question-1 .right .timer').text();
     sendQuestionAnswer(function(){
       afterAnswer();
       getResultQuestion();

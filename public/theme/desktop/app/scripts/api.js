@@ -39,9 +39,37 @@ var getGame = function(callback){
     });
 };
 
+getNormalQuestion = function(callback){
+    callback = callback || function(){};
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-normal',
+        data: {game: GAME.game_id, users: GAME.users_question},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                //GAME.user_step = 0;
+                parseGameData(response);
+                /*GAME.response = response.responseJSON;
+                GAME.question.id = GAME.response.question.id;
+                GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = GAME.response.question.answers;
+                GAME.question.type = GAME.response.question.type;*/
+                callback();
+                //GAME.parseQuestionResponse();
+                //$("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
 getQuizQuestion = function(_users, callback){
     callback = callback || function(){}
     _users = _users || GAME.users
+    if (GAME.stage==2) {
+        alert('тревога. Лишний запрос!')
+    }
     $.ajax({
         type: "POST",
         url: '/game/question/get-quiz',

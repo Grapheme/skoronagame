@@ -598,11 +598,9 @@ class GameController extends BaseController {
 
     private function randomStep(){
 
-        if ($this->validGameStatus($this->game_statuses[1])):
-            if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id')):
-                $user_id = array_rand($users);
-                $this->nextStep($user_id);
-            endif;
+        if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id')):
+            $user_id = array_rand($users);
+            $this->nextStep($user_id);
         endif;
     }
 
