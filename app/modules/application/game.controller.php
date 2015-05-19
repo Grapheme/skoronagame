@@ -270,6 +270,7 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     $this->nextStep(0);
+                    $this->createDuel(Input::get('users'));
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $randomQuestion = $this->randomQuestion('normal');
                         $this->createQuestion($randomQuestion->id,Input::get('users'));
@@ -336,6 +337,7 @@ class GameController extends BaseController {
                             $available_steps = abs($place-3);
                             if($this->validGameStage(2)):
                                 $available_steps  = $place;
+                                $this->createDuel();
                             endif;
                             GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)
                                 ->update(array('status'=>0,'available_steps'=>$available_steps,'make_steps'=>0, 'updated_at' => date('Y-m-d H:i:s')));
@@ -510,6 +512,15 @@ class GameController extends BaseController {
                 endforeach;
             endif;
         endif;
+    }
+
+    private function createDuel($users_ids = array()){
+
+        $json_settings = json_decode($this->game->json_settings,TRUE);
+        $json_settings['duel'] = is_array($users_ids) ? $users_ids : '';
+        $this->game->json_settings = json_encode($json_settings);
+        $this->game->save();
+        $this->game->touch();
     }
 
     private function createGameJSONResponse(){
