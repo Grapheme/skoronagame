@@ -87,6 +87,8 @@ $('body').on('click', '.temp-map div', function(event){
         renderMap(true);
       });
     });
+  } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
+    renderNormalQuestion($(this).data('info').user_id);
   }
 })
 
@@ -108,9 +110,10 @@ function renderMap(nodelay) {
         zone:'+ value.zone+'\
       </div>').appendTo('.temp-map').css({
         "background-color":value.settings.color
-      }).data('zone', value.zone);
+      }).data('zone', value.zone).data('info', value);
       if (value.user_id>0) {
         $area.addClass('reserved');
+        //$area.data('user', value.zone);
       }
     } else {
       setTimeout(function(){
@@ -129,13 +132,14 @@ function renderMap(nodelay) {
 }
 
 
-renderNormalQuestion = function(){
-  GAME.users_question = [GAME.user.id, GAME.enemies[0].id]
+renderNormalQuestion = function(enemy_id){
+  GAME.users_question = [GAME.user.id, enemy_id]
   getNormalQuestion(function(){
     console.log(GAME.response);
+    openFrame('question-2');
+    showPoppups();
   })
 }
-
 
 var last_turn = 0;
 
@@ -148,7 +152,6 @@ whoTurn = function() {
           alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           hidePoppups();
         }
-        setTimeout(whoTurn, 1000);
       } else {
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -162,21 +165,22 @@ whoTurn = function() {
             takingLand();
           }
         }
-        setTimeout(whoTurn, 1000);
       }
-      
+      setTimeout(whoTurn, 1000);
     } else if (GAME.stage == 2) {
       //alert('Этап захвата')
       console.log('Этап захвата');
-      /*alert(GAME.response.settings.next_step);
-      if (GAME.next_turn != last_turn) {
-        last_turn = GAME.next_turn;
-        //var user_turn = getUserById(GAME.next_turn);
-        if (GAME.next_turn==GAME.user.id) {
-          alert('Ваш ход. Этап захвата.')
-          renderNormalQuestion();
+      //alert(GAME.response.settings.next_step);
+      if (GAME.next_turn==GAME.user.id) {
+        alert('Ваш ход. Этап захвата.');
+        //renderNormalQuestion();
+      } else {
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+          //var user_turn = getUserById(GAME.next_turn);
         }
-      }*/
+        getResultQuestion();
+      }
     }
     renderMap(true);
   });

@@ -166,14 +166,29 @@ getResultQuestion = function(){
       dataType: 'json',
       success: function (response) {
           if (response.status) {
-            if (response.responseJSON.result == 'retry') {
-              //console.log(response)
-              setTimeout(getResultQuestion, 500)
-            } else if (response.responseJSON.result == 'standoff') {
-              alert('Ничья')
-              //console.log(response)
-            } else {
-              showQuestionResult(response);
+            if(GAME.stage == 1){
+                if (response.responseJSON.result == 'retry') {
+                  //console.log(response)
+                  setTimeout(getResultQuestion, 500)
+                } else if (response.responseJSON.result == 'standoff') {
+                  alert('Ничья')
+                  //console.log(response)
+                } else {
+                  showQuestionResult(response);
+                }
+            } else if (GAME.stage==2) {
+                if(response.responseJSON.result === 'standoff'){
+                    //GAME.question = {};
+                    //GAME.getQuizQuestion();
+                    alert('Ничья')
+                }else if(response.responseJSON.result === 'retry'){
+                    setTimeout(getResultQuestion, 500)
+                }else if(typeof response.responseJSON.result == "object"){
+                    console.log('INSPECT!', response)
+                    /*GAME.question = {};
+                    GAME.users_question = [];
+                    GAME.steps = GAME.response.result[GAME.user.id];*/
+                }
             }
           }
       },

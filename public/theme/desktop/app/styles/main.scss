@@ -694,8 +694,11 @@
   }
   .areas {
     position: relative;
+    * {
+    }
     &>* {
       position: absolute;
+      pointer-events: none;
       .countur {
         position: relative;
         z-index: 99999999999999999999999;
@@ -704,6 +707,7 @@
         svg {
           g {
             cursor: pointer;
+            pointer-events: visibleFill;
           }
           g:hover {
             path {
@@ -722,6 +726,7 @@
         background-position: bottom;
         background-repeat: no-repeat;
         transition: all 300ms linear;
+        pointer-events: none;
       }
       .ground {
         position: absolute;
@@ -729,6 +734,7 @@
         pointer-events: none;
         transition: all 300ms linear;
         background-repeat: no-repeat;
+        pointer-events: none;
       }
       .glow {
         position: absolute;
@@ -739,6 +745,7 @@
         background-repeat: no-repeat;
         stroke: red;
         fill: transparent;
+        pointer-events: none;
         #large {
           display: none;
         }
@@ -752,6 +759,7 @@
         top: 0;
         transition: all 300ms linear;
         background-repeat: no-repeat;
+        pointer-events: none;
       }
       &.active {
         .ground {
@@ -779,6 +787,30 @@
       }
     }
   }
+  #area-13 {
+    left: 665px;
+    top: 285px;
+    .objects {
+      background: url('../images/13_object.png');
+      width: 258px;
+      height: 303px;
+    }
+    .undeground {
+      width: 258px;
+      height: 300px;
+      background-image: url('../images/13_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 258px;
+      height: 300px;
+      background: url('../images/13_ground.png');
+    }
+    .countur {
+      width: 258px;
+      height: 300px;
+    }
+  }
   #area-12 {
     left: 885px;
     top: 235px;
@@ -801,6 +833,30 @@
     .countur {
       width: 529px;
       height: 345px;
+    }
+  }
+  #area-11 {
+    left: 1362px;
+    top: 134px;
+    .objects {
+      background: url('../images/11_object.png');
+      width: 415px;
+      height: 414px;
+    }
+    .undeground {
+      width: 415px;
+      height: 414px;
+      background-image: url('../images/11_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 415px;
+      height: 414px;
+      background: url('../images/11_ground.png');
+    }
+    .countur {
+      width: 415px;
+      height: 414px;
     }
   }
 }
