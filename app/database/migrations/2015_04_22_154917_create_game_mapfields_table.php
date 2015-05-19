@@ -13,6 +13,7 @@ class CreateGameMapfieldsTable extends Migration {
             $table->tinyInteger('zone')->default(0)->nullable()->unsigned();
             $table->boolean('capital')->default(0)->nullable()->unsigned();
             $table->integer('lives')->default(1)->nullable()->unsigned();
+            $table->integer('points')->default(0)->nullable()->unsigned();
             $table->tinyInteger('status')->default(0)->nullable()->unsigned();
             $table->string('json_settings',255)->nullable();
 			$table->timestamps();

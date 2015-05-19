@@ -15,7 +15,7 @@ class CreateGameGamesTable extends Migration {
             $table->timestamp('date_begin')->nullable();
             $table->boolean('status_over')->default(0)->nullable()->unsigned();
             $table->timestamp('date_over')->nullable();
-            $table->string('json_settings',255)->nullable();
+            $table->text('json_settings')->nullable();
 			$table->timestamps();
 		});
 	}

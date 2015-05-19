@@ -17,6 +17,7 @@ GAME.reInitialize = function(){
     GAME.question = {};                                     // текущий вопрос
     GAME.steps = 0;                                         // доступные шаги
     GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
+    GAME.conquerorZone = 0                                  // номер зоны для завоевания
     GAME.timer = {timer_object:{},time:10};
 }
 
@@ -261,10 +262,11 @@ GAME.getResultQuestion = function(){
  responseText - (string) текст результата (не обязательно)
  */
 GAME.sendConquestEmptyTerritory = function(territory){
+    GAME.conquerorZone = $(territory).data('zone');
     $.ajax({
         type: "POST",
         url: '/game/conquest/territory',
-        data: {game: GAME.game_id, zone: $(territory).data('zone')},
+        data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -285,8 +287,30 @@ GAME.sendConquestEmptyTerritory = function(territory){
     });
 }
 
-GAME.sendConquestTerritory = function(territory){
-
+GAME.sendConquestTerritory = function(){
+    $.ajax({
+        type: "POST",
+        url: '/game/conquest/territory',
+        data: {game: GAME.game_id, zone: GAME.conquerorZone},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                $(".js-map-block[data-zone='"+GAME.conquerorZone+"']").css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives'));
+                GAME.response = response.responseJSON;
+                GAME.steps--;
+                GAME.conquerorZone = 0;
+                if (GAME.steps == 0) {
+                    $("#js-question-game").parent().show();
+                }
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
 }
 
 /*
@@ -311,13 +335,12 @@ GAME.parseGameResponse = function(){
         }
     }else if(GAME.status == GAME.statuses[2]){
         GAME.updateMap();
-        if(GAME.user_step == 0){
-            if(GAME.stage == 1 && $.isEmptyObject(GAME.question)){
-                GAME.getQuizQuestion();
-                // этап 1-й
-            }else if(GAME.stage == 2){
-				//? GAME.getNormalQuestion();
-                // этап 2-й
+        if(GAME.user_step == 0 && GAME.stage == 1 && $.isEmptyObject(GAME.question)){
+            GAME.getQuizQuestion();
+        }
+        if(GAME.stage == 2 && typeof GAME.response.settings.duel == "object"){
+            if (GAME.response.settings.duel[0] == GAME.user.id || GAME.response.settings.duel[1] == GAME.user.id) {
+                GAME.getNormalQuestion();
             }
         }
     }else if(GAME.status == GAME.statuses[3]){
@@ -401,6 +424,7 @@ GAME.parseResultQuestionResponse = function(){
             GAME.question = {};
             GAME.users_question = [];
             GAME.steps = GAME.response.result[GAME.user.id];
+            GAME.sendConquestTerritory();
         }
     }
 }
@@ -419,7 +443,7 @@ GAME.createMap = function(){
             block_class = 'js-map-empty-block';
         if (value.lives > 1)
             block_class = 'js-map-capital-block';
-        $(block).clone(true).appendTo($("#russia-map-blocks")).removeAttr('id').addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives);
+        $(block).clone(true).appendTo($("#russia-map-blocks")).removeAttr('id').addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-points', value.points).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives + '<br>Points: ' + value.points);
     });
     $("#map-block-template").remove();
     $("#russia-map").show();
@@ -439,7 +463,7 @@ GAME.updateMap = function(){
             block_class = 'js-map-empty-block';
         if (value.lives > 1)
             block_class = 'js-map-capital-block';
-        $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives);
+        $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-points', value.points).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives + '<br>Points: ' + value.points);
     });
 }
 
@@ -535,10 +559,10 @@ $(document).ready(function () {
     });
     $(document).on("click",".js-map-block",function(event){
         event.preventDefault();
-        if(GAME.steps > 0){
-            if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
-                GAME.sendConquestTerritory(this);
-            }
+        if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
+            GAME.users_question = [GAME.user.id,$(this).data('user')];
+            GAME.conquerorZone = $(this).data('zone');
+            GAME.getNormalQuestion();
         }
     });
 });

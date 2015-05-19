@@ -24,7 +24,7 @@ $game_id = is_object($game) ? $game->id : 'null';
         <li><a href="{{ URL::route('logout') }}">Выйти</a></li>
     </ul>
     <div id="russia-map" style="display: none;">
-        <div id="map-block-template" class="territory-block" style="width: 60px; height: 80px;border: 1px solid; float: left;"></div>
+        <div id="map-block-template" class="territory-block" style="width: 80px;border: 1px solid; float: left;"></div>
         <div id="russia-map-blocks"></div>
     </div>
     <div style="clear: both;"></div>
