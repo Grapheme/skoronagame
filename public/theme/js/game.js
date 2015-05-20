@@ -221,13 +221,15 @@ GAME.sendQuestionAnswer = function(){
  Отправляет:
  game  - (int)ID игры.
  question  - (int)ID вопроса.
+ type  - (string) тип вопроса.
  Результат:
  ...
  result - результат ответов
-        result = (string)retry -  повтор запроса
-        result = (string)standoff - ничья
-        result = (JSON) = "12":3,"13":1,"14":2 . ID пользователя: занятое место (1-3)
+ result = (string)retry -  повтор запроса
+ result = (string)standoff - ничья
+ result = (JSON) = "12":3,"13":1,"14":2 . ID пользователя: занятое место (1-3)
  responseText - (string) текст результата (не обязательно)
+
  */
 GAME.getResultQuestion = function(){
     $.ajax({
@@ -251,6 +253,46 @@ GAME.getResultQuestion = function(){
     });
 }
 
+/*
+ Метод запрашивает состояние ответов на вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ question  - (int)ID вопроса.
+ type  - (string) тип вопроса.
+ Результат:
+ ...
+ current_answer - (string) Приавильный ответ
+ results - (JSON) ответы пользователей
+ results = {"15":{"answer":"9","seconds" :2,"place":1,"status":2,"correctly":1}
+    15 - (int)ID пользователя
+    answer - (string) ответ пользователя
+    seconds - (int) время потраченное на ответ пользователем
+    place - (int) занятое место по результам всех ответов
+    status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
+    correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
+ */
+
+GAME.getUsersResultQuestions = function () {
+
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-users-results',
+        data: {game: GAME.game_id, question: 1, type: 'normal'},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+        }
+    });
+}
 /*
  Метод отправляет запрос на захват пустой территории
  Отправляет:
@@ -533,6 +575,10 @@ $(document).ready(function () {
     $("#js-over-game").click(function(event){
         event.preventDefault();
         GAME.overGame();
+    });
+    $("#js-users-questions-result").click(function(event){
+        event.preventDefault();
+        GAME.getUsersResultQuestions();
     });
     $("#quiz-question-form").submit(function(){
         clearInterval(GAME.timer.timer_object);

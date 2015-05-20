@@ -20,6 +20,8 @@ $game_id = is_object($game) ? $game->id : 'null';
 
         <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-normal-game" href="javascript:void(0);">Запросить нормальный вопрос</a></li>
 
+        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-users-questions-result" href="javascript:void(0);">Запросить результаты ответов пользователей</a></li>
+
         <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-over-game" href="javascript:void(0);">Завершить игру</a></li>
         <li><a href="{{ URL::route('logout') }}">Выйти</a></li>
     </ul>

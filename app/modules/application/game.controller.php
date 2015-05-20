@@ -54,6 +54,7 @@ class GameController extends BaseController {
             Route::post('question/get-normal', array('as'=>'get-normal-question','uses'=>$class.'@getNormalQuestion'));
             Route::post('question/send-answer', array('as'=>'send-answer-question','uses'=>$class.'@sendAnswerQuestion'));
             Route::post('question/get-result', array('as'=>'get-result-question','uses'=>$class.'@getResultQuestion'));
+            Route::post('question/get-users-results', array('as'=>'get-users-results-question','uses'=>$class.'@getUsersResultsQuestion'));
             Route::post('conquest/territory', array('as'=>'send-conquest-territory','uses'=>$class.'@sendConquestTerritory'));
         });
     }
@@ -111,6 +112,9 @@ class GameController extends BaseController {
         if(!Request::ajax()) return App::abort(404);
         $validator = Validator::make(Input::all(),array('email'=>'required|email','password'=>'required'));
         if($validator->passes()):
+//          Auth::loginUsingId(17);
+//          $this->json_request['redirect'] = AuthAccount::getStartPage();
+//          $this->json_request['status'] = TRUE;
             if(Auth::attempt(array('email'=>Input::get('email'),'password'=>Input::get('password'),'active'=>1), FALSE)):
                 if(Auth::check()):
                     $this->json_request['redirect'] = AuthAccount::getStartPage();
@@ -357,6 +361,49 @@ class GameController extends BaseController {
                     asort($this->game_winners);
                     $winners = array_keys($this->game_winners);
                     $this->json_request['responseText'] = 'Первое место: ' . @$winners[0] . '! Второе место: ' . @$winners[1] . '! Третье место: ' . @$winners[2];
+                endif;
+            endif;
+        endif;
+        return Response::json($this->json_request, 200);
+    }
+
+    public function getUsersResultsQuestion(){
+
+        if (!Request::ajax()) return App::abort(404);
+        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required'));
+        if ($validation->passes()):
+            if ($this->initGame()):
+                $question_group = GameUserQuestions::where('game_id', $this->game->id)->where('id', Input::get('question'))->pluck('group_id');
+                $question_id = GameUserQuestions::where('game_id', $this->game->id)->where('id', Input::get('question'))->pluck('question_id');
+                if ($users_questions = GameUserQuestions::where('game_id', $this->game->id)->where('group_id',$question_group)->get()):
+                    $current_answer = '';
+                    $users_answers = array();
+                    if ($answer_question = GameQuestions::where('id',$question_id)->where('type',Input::get('type'))->pluck('answers')):
+                        $answer_question = json_decode($answer_question,TRUE);
+                        if (Input::get('type') == 'quiz'):
+                            $current_answer = isset($answer_question[0]['title']) ? $answer_question[0]['title']: '';
+                            foreach($users_questions as $users_question):
+                                $correctly = ($users_question->answer == $current_answer) ? TRUE : FALSE;
+                                $users_answers[$users_question->user_id] = array('answer' => $users_question->answer,
+                                    'seconds' => $users_question->answer, 'place' => $users_question->place,
+                                    'status' => $users_question->status, 'correctly' => $correctly);
+                            endforeach;
+                        elseif (Input::get('type') == 'normal'):
+                            foreach($answer_question as $answer):
+                                if ($answer['current'] == 1):
+                                    $current_answer = $answer['title'];
+                                endif;
+                            endforeach;
+                            foreach($users_questions as $users_question):
+                                $answer = isset($answer_question[$users_question->answer]) ? $answer_question[$users_question->answer] : '';
+                                $users_answers[$users_question->user_id] = array('answer' => $answer['title'],
+                                    'seconds' => $users_question->answer, 'place' => $users_question->place,
+                                    'status' => $users_question->status,'correctly' => (int) $answer['current']);
+                            endforeach;
+                        endif;
+                    endif;
+                    $this->json_request['responseJSON'] = array('game_id' => $this->game->id, 'current_answer' => $current_answer, 'results' => $users_answers);
+                    $this->json_request['status'] = TRUE;
                 endif;
             endif;
         endif;
@@ -639,7 +686,8 @@ class GameController extends BaseController {
     private function createQuestionResultJSONResponse(){
 
         if ($this->validGameStatus($this->game_statuses[2])):
-            $this->json_request['responseJSON'] = array('game_id' => $this->game->id,'game_status' => $this->game->status, 'game_stage' => $this->game->stage,
+            $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
+                'game_status' => $this->game->status, 'game_stage' => $this->game->stage,
                 'current_user' => Auth::user()->id, 'result' => $this->game_winners);
             $this->json_request['status'] = TRUE;
         endif;
