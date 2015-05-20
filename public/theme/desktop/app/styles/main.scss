@@ -18,6 +18,10 @@
   }
 }
 
+body {
+  background: #5b6d7a;
+}
+
 .popup-wrapper {
   position: fixed;
   top: 0;
@@ -26,6 +30,7 @@
   bottom: 0;
   text-align: center;
   background: rgba(0,0,0,0.6);
+  z-index: 9999999;
   &:before {
     display: inline-block;
     content: '';
@@ -190,6 +195,15 @@
               font-weight: bold;
               color: #002718;
               margin-bottom: 16px;
+              &.green {
+                background: #d39500;
+              }
+              &.red {
+                background: #ad062e;
+              }
+              &.blue {
+                background: #0000ff;
+              }
             }
             .led {
               width: 11px;
@@ -686,6 +700,71 @@
   }
 }
 
+#user-list {
+  position: absolute;
+  z-index: 99999;
+  margin-left: 30px;
+  transform-origin: top left;
+  display: none;
+  .user {
+    float: left;
+    width: 100px;
+    text-align: center;
+    color: #eeeeee;
+    font-family: Verdana;
+    font-size: 12px;
+    margin-top: 24px;
+    margin-right: 8px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.65);
+    opacity: 0.5;
+    &.active {
+      opacity: 1;
+    }
+    .name {
+      display: inline-block;
+      width: 90px;
+      min-height: 30px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .points {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .ava {
+      display: inline-block;
+    }
+    .mask {
+      width: 83px;
+      height: 93px;
+      margin-top: -7px;
+      margin-left: -42px;
+    }
+    &.green {
+      background: #d39500;
+      .mask {
+        
+        background: url('../images/mask-green.png');
+      }
+    }
+    &.red {
+      background: #ad062e;
+      .mask {
+        
+        background: url('../images/mask-red.png');
+      }
+    }
+    &.blue {
+      background: #0000ff;
+      .mask {
+        
+        background: url('../images/mask-blue.png');
+      }
+    }
+  }
+}
+
 #map {
   position: absolute;
   transform-origin: left top;
@@ -700,8 +779,8 @@
   &.user_green {
     .areas {
       .glow {
-        fill: green;
-        stroke: green;
+        fill: #d39500;
+        stroke: #d39500;
       }
     }
   }
@@ -737,8 +816,8 @@
         }
         &.green {
           .glow {
-            fill: green;
-            stroke: green;
+            fill: #d39500;
+            stroke: #d39500;
           }
         }
         &.blue {
@@ -815,7 +894,7 @@
         background-repeat: no-repeat;
         pointer-events: none;
       }
-      &.active {
+      &.active.empty {
         z-index: 900000;
         .ground {
           transform: translate(0, -15px);
@@ -825,7 +904,7 @@
           transform: translate(0, -15px);
         }
         .glow {
-          transform: translate(0, -15px);
+          transform: translate(0, -15px) !important;
           /*
           fill: green !important;
           stroke: blue !important;*/
@@ -845,7 +924,7 @@
     }
   }
   #area-15 {
-    left: 506px;
+    left: 507px;
     top: 328px;
     .objects {
       background: url('../images/15_object.png');
@@ -890,6 +969,9 @@
     .countur {
       width: 343px;
       height: 317px;
+    }
+    .glow {
+      transform: translate(0, 5px);
     }
   }
   #area-13 {
@@ -965,8 +1047,8 @@
     }
   }
   #area-10 {
-    left: 900px;
-    top: 542px;
+    left: 902px;
+    top: 540px;
     .objects {
       background: url('../images/10_object.png');
       width: 235px;
@@ -987,10 +1069,13 @@
       width: 235px;
       height: 304px;
     }
+    .glow {
+      transform: translate(0px, 9px);
+    }
   }
   #area-9 {
-    left: 1080px;
-    top: 630px;
+    left: 1083px;
+    top: 632px;
     .objects {
       background: url('../images/9_object.png');
       width: 309px;
@@ -1013,8 +1098,8 @@
     }
   }
   #area-8 {
-    left: 1378px;
-    top: 355px;
+    left: 1380px;
+    top: 351px;
     .objects {
       background: url('../images/8_object.png');
       width: 250px;
@@ -1035,10 +1120,13 @@
       width: 250px;
       height: 280px;
     }
+    .glow {
+      transform: translate(0px, 7px);
+    }
   }
   #area-7 {
-    left: 1204px;
-    top: 442px;
+    left: 1207px;
+    top: 440px;
     .objects {
       background: url('../images/7_object.png');
       width: 268px;
@@ -1109,8 +1197,8 @@
     }
   }
   #area-4 {
-    left: 547px;
-    top: 458px;
+    left: 546px;
+    top: 452px;
     .objects {
       background: url('../images/4_object.png');
       width: 223px;
@@ -1130,6 +1218,9 @@
     .countur {
       width: 223px;
       height: 216px;
+    }
+    .glow {
+      transform: translate(0, 8px);
     }
   }
   #area-3 {
@@ -1155,10 +1246,13 @@
       width: 241px;
       height: 296px;
     }
+    .glow {
+      transform: translate(1px, 4px);
+    }
   }
   #area-2 {
-    left: 368px;
-    top: 458px;
+    left: 369px;
+    top: 459px;
     .objects {
       background: url('../images/2_object.png');
       width: 235px;
@@ -1178,6 +1272,9 @@
     .countur {
       width: 235px;
       height: 234px;
+    }
+    .glow {
+      transform: translate(0, 17px);
     }
   }
   #area-1 {
@@ -1202,6 +1299,9 @@
     .countur {
       width: 171px;
       height: 208px;
+    }
+    .glow {
+      transform: translate(0, 13px);
     }
   }
 }

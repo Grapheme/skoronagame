@@ -6,6 +6,7 @@ var bg_width = $('#map').width();
 function scale() {
   var doc_width = $(window).width();
   $('#map').transition({ scale: doc_width/bg_width });
+  $('#user-list').transition({ scale: doc_width/bg_width });
 }
 
 $(window).resize(function (){
@@ -55,7 +56,9 @@ $('body').on('click', '.numpad a', function(e){
   } else if ($(this).hasClass('del')) {
     $input.val($input.val().slice(0, -1));
   } else {
-    $input.val($input.val()+$(this).text());
+    if ($input.val().length<4) {
+      $input.val($input.val()+$(this).text());
+    }
   }
   e.preventDefault();
 });

@@ -29,6 +29,7 @@ var getGame = function(callback){
             if (response.status) {
                 parseGameData(response);
                 callback();
+                renderPlayers();
                 console.log(response);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
@@ -67,6 +68,7 @@ getNormalQuestion = function(callback){
 getQuizQuestion = function(_users, callback){
     callback = callback || function(){}
     _users = _users || GAME.users
+    console.log(arguments)
     if (GAME.stage==2) {
         alert('тревога. Лишний запрос!')
     }
@@ -79,6 +81,7 @@ getQuizQuestion = function(_users, callback){
             if (response.status) {
                 //GAME.user_step = 0;
                 parseGameData(response);
+                callback();
                 //GAME.response = response.responseJSON;
                 //AME.question.id = GAME.response.question.id;
                 //GAME.question.text = GAME.response.question.text;
@@ -157,6 +160,43 @@ function parseGameData(response) {
     
 }
 
+/*
+ Метод запрашивает состояние ответов на вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ question  - (int)ID вопроса.
+ type  - (string) тип вопроса.
+ Результат:
+ ...
+ current_answer - (string) Приавильный ответ
+ results - (JSON) ответы пользователей
+ results = {"15":{"answer":"9","seconds" :2,"place":1,"status":2,"correctly":1}
+    15 - (int)ID пользователя
+    answer - (string) ответ пользователя
+    seconds - (int) время потраченное на ответ пользователем
+    place - (int) занятое место по результам всех ответов
+    status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
+    correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
+ */
+
+getUsersResultQuestions = function (callback) {
+    callback = callback || function(){}
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-users-results',
+        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                console.log(response, 'ВНИМАНИЕ!!');
+                GAME.resultQuestion = response.responseJSON;
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+        }
+    });
+}
 
 getResultQuestion = function(){
   $.ajax({
