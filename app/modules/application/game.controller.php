@@ -385,7 +385,7 @@ class GameController extends BaseController {
                             foreach($users_questions as $users_question):
                                 $correctly = ($users_question->answer == $current_answer) ? TRUE : FALSE;
                                 $users_answers[$users_question->user_id] = array('answer' => $users_question->answer,
-                                    'seconds' => $users_question->answer, 'place' => $users_question->place,
+                                    'seconds' => $users_question->seconds, 'place' => $users_question->place,
                                     'status' => $users_question->status, 'correctly' => $correctly);
                             endforeach;
                         elseif (Input::get('type') == 'normal'):
@@ -397,7 +397,7 @@ class GameController extends BaseController {
                             foreach($users_questions as $users_question):
                                 $answer = isset($answer_question[$users_question->answer]) ? $answer_question[$users_question->answer] : '';
                                 $users_answers[$users_question->user_id] = array('answer' => $answer['title'],
-                                    'seconds' => $users_question->answer, 'place' => $users_question->place,
+                                    'seconds' => $users_question->seconds, 'place' => $users_question->place,
                                     'status' => $users_question->status,'correctly' => (int) $answer['current']);
                             endforeach;
                         endif;

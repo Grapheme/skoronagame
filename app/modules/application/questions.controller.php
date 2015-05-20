@@ -45,6 +45,8 @@ class QuestionsController extends BaseController {
                     )
                 )
             );
+
+            Route::post('game/questions/{type_question}/import', array('as'=>'questions.import','uses'=>$class.'@import'));
         });
     }
     /****************************************************************************/
@@ -130,5 +132,9 @@ class QuestionsController extends BaseController {
         else:
             App::abort(404);
         endif;
+    }
+
+    public function import($type_question){
+
     }
 }
