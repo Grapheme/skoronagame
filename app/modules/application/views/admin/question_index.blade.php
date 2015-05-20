@@ -15,7 +15,8 @@
                     <tbody>
                     @foreach($questions as $index => $question)
                         <tr>
-                            <td>{{ ($index+1)+(((int)Input::get('page')-1)*50) }}</td>
+                            <?php $sub_index = Input::has('page') ? (int)Input::get('page')-1 : 0;?>
+                            <td>{{ ($index+1)+($sub_index*50) }}</td>
                             <td>{{ $question->title }}</td>
                             <td class="text-center" style="white-space:nowrap;">
                             @if(Allow::action('game','edit'))
