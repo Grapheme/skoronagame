@@ -41,7 +41,7 @@
                     <div class="timer">...</div>
                 </div>
                 <div class="row">
-                    <div class="answer" srtyle="font-size:12px;"></div>
+                    <div class="answer" srtyle="font-size:10px;"></div>
                 </div>
             </div>
         </div>

@@ -102,6 +102,7 @@ function getUserById(id) {
         if (value.id == id) {
             returnVal = value;
         }
+        
     });
     return returnVal;
 }
