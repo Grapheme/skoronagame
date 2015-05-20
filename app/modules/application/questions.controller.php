@@ -59,7 +59,7 @@ class QuestionsController extends BaseController {
 
     public function index(){
 
-        $questions = GameQuestions::where('type',Request::segment(4))->orderBy('title')->get();
+        $questions = GameQuestions::where('type',Request::segment(4))->orderBy('title')->paginate(50);
         return View::make($this->module['tpl'].'question_index', compact('questions'));
     }
 

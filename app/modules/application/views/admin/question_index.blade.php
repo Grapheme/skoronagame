@@ -15,7 +15,7 @@
                     <tbody>
                     @foreach($questions as $index => $question)
                         <tr>
-                            <td>{{ $index+1 }}</td>
+                            <td>{{ ($index+1)+(((int)Input::get('page')-1)*50) }}</td>
                             <td>{{ $question->title }}</td>
                             <td class="text-center" style="white-space:nowrap;">
                             @if(Allow::action('game','edit'))
@@ -33,6 +33,7 @@
                     @endforeach
                     </tbody>
                 </table>
+                {{ $questions->links() }}
             </div>
         </div>
     @else
