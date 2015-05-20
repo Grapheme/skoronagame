@@ -689,6 +689,30 @@
 #map {
   position: absolute;
   transform-origin: left top;
+  &.user_red {
+    .areas {
+      .glow {
+        fill: red;
+        stroke: red;
+      }
+    }
+  }
+  &.user_green {
+    .areas {
+      .glow {
+        fill: green;
+        stroke: green;
+      }
+    }
+  }
+  &.user_blue {
+    .areas {
+      .glow {
+        fill: blue;
+        stroke: blue;
+      }
+    }
+  }
   .bg {
     display: block;
   }
@@ -699,6 +723,31 @@
     &>* {
       position: absolute;
       pointer-events: none;
+      &.reserved {
+        .glow {
+          #small {
+            opacity: 1;
+          }
+        }
+        &.red {
+          .glow {
+            fill: red;
+            stroke: red;
+          }
+        }
+        &.green {
+          .glow {
+            fill: green;
+            stroke: green;
+          }
+        }
+        &.blue {
+          .glow {
+            fill: blue;
+            stroke: blue;
+          }
+        }
+      }
       .countur {
         position: relative;
         z-index: 99999999999999999999999;
@@ -725,14 +774,14 @@
         pointer-events: none;
         background-position: bottom;
         background-repeat: no-repeat;
-        transition: all 300ms linear;
+        transition: all 100ms linear;
         pointer-events: none;
       }
       .ground {
         position: absolute;
         top: 0;
         pointer-events: none;
-        transition: all 300ms linear;
+        transition: all 100ms linear;
         background-repeat: no-repeat;
         pointer-events: none;
       }
@@ -741,15 +790,20 @@
         top: 0;
         width: 100%;
         height: 100%;
-        transition: all 300ms linear;
+        transition: all 100ms linear;
         background-repeat: no-repeat;
-        stroke: red;
-        fill: transparent;
+        //stroke: green;
+        //fill: green;
+        //fill: transparent;
         pointer-events: none;
         #large {
-          display: none;
+          opacity: 0;
+          transition: all 100ms linear;
+          display: block;
         }
         #small {
+          opacity: 0;
+          transition: all 100ms linear;
           display: block;
         }
       }
@@ -757,11 +811,12 @@
         position: absolute;
         pointer-events: none;
         top: 0;
-        transition: all 300ms linear;
+        transition: all 100ms linear;
         background-repeat: no-repeat;
         pointer-events: none;
       }
       &.active {
+        z-index: 900000;
         .ground {
           transform: translate(0, -15px);
           //top: -15px;
@@ -775,16 +830,66 @@
           fill: green !important;
           stroke: blue !important;*/
           #large {
-            display: block;
+            //display: block;
+            opacity: 1;
           }
           #small {
-            display: none;
+            //display: none;
+            opacity: 0;
           }
         }
         .undeground {
           opacity: 1 !important;
         }
       }
+    }
+  }
+  #area-15 {
+    left: 506px;
+    top: 328px;
+    .objects {
+      background: url('../images/15_object.png');
+      width: 240px;
+      height: 171px;
+    }
+    .undeground {
+      width: 240px;
+      height: 171px;
+      background-image: url('../images/15_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 240px;
+      height: 171px;
+      background: url('../images/15_ground.png');
+    }
+    .countur {
+      width: 240px;
+      height: 171px;
+    }
+  }
+  #area-14 {
+    left: 307px;
+    top: 237px;
+    .objects {
+      background: url('../images/14_object.png');
+      width: 343px;
+      height: 317px;
+    }
+    .undeground {
+      width: 343px;
+      height: 317px;
+      background-image: url('../images/14_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 343px;
+      height: 317px;
+      background: url('../images/14_ground.png');
+    }
+    .countur {
+      width: 343px;
+      height: 317px;
     }
   }
   #area-13 {
@@ -857,6 +962,246 @@
     .countur {
       width: 415px;
       height: 414px;
+    }
+  }
+  #area-10 {
+    left: 900px;
+    top: 542px;
+    .objects {
+      background: url('../images/10_object.png');
+      width: 235px;
+      height: 304px;
+    }
+    .undeground {
+      width: 235px;
+      height: 304px;
+      background-image: url('../images/10_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 235px;
+      height: 304px;
+      background: url('../images/10_ground.png');
+    }
+    .countur {
+      width: 235px;
+      height: 304px;
+    }
+  }
+  #area-9 {
+    left: 1080px;
+    top: 630px;
+    .objects {
+      background: url('../images/9_object.png');
+      width: 309px;
+      height: 215px;
+    }
+    .undeground {
+      width: 309px;
+      height: 215px;
+      background-image: url('../images/9_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 309px;
+      height: 215px;
+      background: url('../images/9_ground.png');
+    }
+    .countur {
+      width: 309px;
+      height: 215px;
+    }
+  }
+  #area-8 {
+    left: 1378px;
+    top: 355px;
+    .objects {
+      background: url('../images/8_object.png');
+      width: 250px;
+      height: 280px;
+    }
+    .undeground {
+      width: 250px;
+      height: 280px;
+      background-image: url('../images/8_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 250px;
+      height: 280px;
+      background: url('../images/8_ground.png');
+    }
+    .countur {
+      width: 250px;
+      height: 280px;
+    }
+  }
+  #area-7 {
+    left: 1204px;
+    top: 442px;
+    .objects {
+      background: url('../images/7_object.png');
+      width: 268px;
+      height: 237px;
+    }
+    .undeground {
+      width: 268px;
+      height: 237px;
+      background-image: url('../images/7_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 268px;
+      height: 237px;
+      background: url('../images/7_ground.png');
+    }
+    .countur {
+      width: 268px;
+      height: 237px;
+    }
+  }
+  #area-6 {
+    left: 1048px;
+    top: 478px;
+    .objects {
+      background: url('../images/6_object.png');
+      width: 243px;
+      height: 212px;
+    }
+    .undeground {
+      width: 243px;
+      height: 212px;
+      background-image: url('../images/6_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 243px;
+      height: 212px;
+      background: url('../images/6_ground.png');
+    }
+    .countur {
+      width: 243px;
+      height: 212px;
+    }
+  }
+  #area-5 {
+    left: 1350px;
+    top: 596px;
+    .objects {
+      background: url('../images/5_object.png');
+      width: 363px;
+      height: 289px;
+    }
+    .undeground {
+      width: 363px;
+      height: 289px;
+      background-image: url('../images/5_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 363px;
+      height: 289px;
+      background: url('../images/5_ground.png');
+    }
+    .countur {
+      width: 363px;
+      height: 289px;
+    }
+  }
+  #area-4 {
+    left: 547px;
+    top: 458px;
+    .objects {
+      background: url('../images/4_object.png');
+      width: 223px;
+      height: 216px;
+    }
+    .undeground {
+      width: 223px;
+      height: 216px;
+      background-image: url('../images/4_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 223px;
+      height: 216px;
+      background: url('../images/4_ground.png');
+    }
+    .countur {
+      width: 223px;
+      height: 216px;
+    }
+  }
+  #area-3 {
+    left: 718px;
+    top: 546px;
+    .objects {
+      background: url('../images/3_object.png');
+      width: 241px;
+      height: 296px;
+    }
+    .undeground {
+      width: 241px;
+      height: 296px;
+      background-image: url('../images/3_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 241px;
+      height: 296px;
+      background: url('../images/3_ground.png');
+    }
+    .countur {
+      width: 241px;
+      height: 296px;
+    }
+  }
+  #area-2 {
+    left: 368px;
+    top: 458px;
+    .objects {
+      background: url('../images/2_object.png');
+      width: 235px;
+      height: 234px;
+    }
+    .undeground {
+      width: 235px;
+      height: 234px;
+      background-image: url('../images/2_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 235px;
+      height: 234px;
+      background: url('../images/2_ground.png');
+    }
+    .countur {
+      width: 235px;
+      height: 234px;
+    }
+  }
+  #area-1 {
+    left: 218px;
+    top: 518px;
+    .objects {
+      background: url('../images/1_object.png');
+      width: 171px;
+      height: 208px;
+    }
+    .undeground {
+      width: 171px;
+      height: 208px;
+      background-image: url('../images/1_3d.png');
+      opacity: 0;
+    }
+    .ground {
+      width: 171px;
+      height: 208px;
+      background: url('../images/1_ground.png');
+    }
+    .countur {
+      width: 171px;
+      height: 208px;
     }
   }
 }
