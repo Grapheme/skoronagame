@@ -52,9 +52,20 @@ function matchmaking() {
 
 function renderPlayers() {
   $.each(GAME.users, function(index, value){
-    $('#question-1 .left .unit').eq(index).find('.name').text(value.name).css({
-      color: value.color
-    });  
+    $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    if (GAME.stage==1 && GAME.status =='ready') {
+      $('#user-list').show();
+    }
+    var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points').text(value.points);
+    if (value.id == GAME.user.id) {
+      $('#user-list .user.'+value.color).find('.name').text('Вы');
+    }
+    
+    if (value.id == GAME.next_turn) {
+      $('#user-list .user').removeClass('active');
+      $('#user-list .user.'+value.color).addClass('active');
+    }
+    
   });
   $.each(GAME.enemies, function(index, value){
     if (index==0) {
@@ -80,7 +91,7 @@ function renderPlayers() {
   });
 }
 
-$('body').on('click', '.temp-map div', function(event){
+$('body').on('click', '#map .area', function(event){
   if (GAME.user.id == GAME.next_turn && GAME.stage == 1 && !$(this).hasClass('reserved')) {
     sendConquestEmptyTerritory($(this).data('zone'),function(){
       getGame(function(){
@@ -98,22 +109,22 @@ function renderMap(nodelay) {
     var delay = 0
   } else {
     var delay = 500
+    
   }
   $('.temp-map').html('');
+  $('#map').addClass('user_'+GAME.user.color);
   $.each(GAME.map, function(index, value){
     if (nodelay) {
-      var $area =  $('<div> \
-        capital:'+ value.capital+'<br>\
-        id:'+ value.id+'<br>\
-        lives:'+ value.lives+'<br>\
-        user_id:'+ value.user_id+'<br>\
-        zone:'+ value.zone+'\
-      </div>').appendTo('.temp-map').css({
-        "background-color":value.settings.color
-      }).data('zone', value.zone).data('info', value);
+      var offset_index = parseInt(index)+1;
+      var $area = $('#map #area-'+offset_index);
+      $area.data('zone', value.zone).data('info', value);
       if (value.user_id>0) {
+        $area.removeClass('empty');
         $area.addClass('reserved');
-        //$area.data('user', value.zone);
+        $area.addClass(getUserById(value.user_id).color);
+      } else {
+        $area.removeClass('reserved');
+        $area.addClass('empty');
       }
     } else {
       setTimeout(function(){
@@ -145,11 +156,12 @@ var last_turn = 0;
 
 whoTurn = function() {
   getGame(function(){
+    
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
-          alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+          //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           hidePoppups();
         }
       } else {
@@ -158,7 +170,7 @@ whoTurn = function() {
   
           var user_turn = getUserById(GAME.next_turn);
           if (user_turn) {
-            alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+            //alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
             hidePoppups();
           } else {
             renderMap(true);
@@ -186,6 +198,10 @@ whoTurn = function() {
   });
 }
 
+function orderPlayers() {
+  
+}
+
 showQuestionResult = function(response){
   GAME.question.result = response.responseJSON.result;
   var _s = '';
@@ -193,6 +209,7 @@ showQuestionResult = function(response){
     value.place = GAME.question.result[value.id]
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
+  orderPlayers()
   alert(_s);
   whoTurn();
 }

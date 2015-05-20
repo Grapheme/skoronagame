@@ -29,6 +29,7 @@ var getGame = function(callback){
             if (response.status) {
                 parseGameData(response);
                 callback();
+                renderPlayers();
                 console.log(response);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;

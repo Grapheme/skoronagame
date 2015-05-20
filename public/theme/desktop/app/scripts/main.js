@@ -6,6 +6,7 @@ var bg_width = $('#map').width();
 function scale() {
   var doc_width = $(window).width();
   $('#map').transition({ scale: doc_width/bg_width });
+  $('#user-list').transition({ scale: doc_width/bg_width });
 }
 
 $(window).resize(function (){
