@@ -49,6 +49,12 @@
 @stop
 @section('scripts')
     <script>
+        $(".js-load-import-file").click(function(){
+            $("#import-file-input").click();
+        });
+        $("#import-file-input").change(function(){
+            $("#import-file-form").submit();
+        });
         var essence = 'question';
         var essence_name = 'вопрос';
     </script>
