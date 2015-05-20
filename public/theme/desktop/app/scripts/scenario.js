@@ -16,7 +16,11 @@ function startQuizeTimer() {
 function quizQuesionRender() {
   clearInterval(quiz_interval);
   renderPlayers();
-  getQuizQuestion(callback=function(){
+  getQuizQuestion(GAME.users, function(){
+    //alert(GAME.question.text);
+    $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
+    $('#question-1 .left .answer').text('');
+    $('#question-1 .right .answerlkhbdsfksdlhfg').slideUp();
     $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideDown();
     $('#question-1 .right .q').html(GAME.question.text);
     openFrame('question-1');
@@ -29,6 +33,7 @@ function takingLand() {
   getGame(function(){
     console.log(GAME.status);
     quizQuesionRender();
+    //getUsersResultQuestions();
   });
 }
 
@@ -38,6 +43,7 @@ function matchmaking() {
       renderPlayers();
       setTimeout(matchmaking, 1000)
     } else {
+      createPlayers();
       renderPlayers();
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
@@ -49,10 +55,28 @@ function matchmaking() {
   });
 }
 
+function createPlayers() {
+  $.each(GAME.users, function(index, value){
+    $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+  })
+}
 
 function renderPlayers() {
   $.each(GAME.users, function(index, value){
-    $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    
+    if (!GAME.resultQuestion || !GAME.resultQuestion[value.id]) {
+      //$('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    } else {
+      /*
+      var _answ = GAME.resultQuestion[value.id];
+      var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
+      $unit.data('place', _answ.place);
+      $unit.find('.timer').text(_answ.seconds);
+      $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
+      $unit.find('.answer').text(_answ.answer);
+      orderPlayers();*/
+    }
+    
     if (GAME.stage==1 && GAME.status =='ready') {
       $('#user-list').show();
     }
@@ -139,7 +163,7 @@ function renderMap(nodelay) {
         }).data('zone', value.zone);
       }, delay*index);
     }
-  });
+  }); 
 }
 
 
@@ -156,13 +180,13 @@ var last_turn = 0;
 
 whoTurn = function() {
   getGame(function(){
-    
+    //getUsersResultQuestions();
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
-          hidePoppups();
+          //hidePoppups();
         }
       } else {
         if (GAME.next_turn != last_turn) {
@@ -171,7 +195,7 @@ whoTurn = function() {
           var user_turn = getUserById(GAME.next_turn);
           if (user_turn) {
             //alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
-            hidePoppups();
+            //hidePoppups();
           } else {
             renderMap(true);
             takingLand();
@@ -199,7 +223,9 @@ whoTurn = function() {
 }
 
 function orderPlayers() {
-  
+  $('#question-1 .left').find('.unit').sort(function (a, b) {
+    return $(a).data('place') - $(b).data('place');
+  }).appendTo('#question-1 .left');
 }
 
 showQuestionResult = function(response){
@@ -209,20 +235,35 @@ showQuestionResult = function(response){
     value.place = GAME.question.result[value.id]
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
-  orderPlayers()
-  alert(_s);
+  getUsersResultQuestions(function(){
+    $.each(GAME.users, function(index, value){
+      var _answ = GAME.resultQuestion.results[value.id];
+      var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
+      $unit.data('place', _answ.place);
+      //$unit.find('.timer').text(_answ.seconds+' сек.');
+      $unit.find('.timer').text('10 сек.');
+      $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
+      $unit.find('.answer').text('Ответ: '+_answ.answer);
+    })
+    orderPlayers();
+    setTimeout(hidePoppups, 4000);
+  })
+  //alert(_s);
   whoTurn();
 }
 
 
 function afterAnswer() {
   $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideUp();
+  $('#question-1 .right .answerlkhbdsfksdlhfg').slideDown();
 }
 
 $(document).ready(function () {
 
   $('#question-1 form.a').submit(function(){
     GAME.question.answer = $(this).find('input').val();
+    $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
+    GAME.question.answer
     $(this).find('input').val('');
     GAME.question.time = 10 - $('#question-1 .right .timer').text();
     sendQuestionAnswer(function(){

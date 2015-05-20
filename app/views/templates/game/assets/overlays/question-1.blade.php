@@ -7,8 +7,11 @@
             <div class="info">
                 <div class="name">Наполеон</div>
                 <div class="row">
-                    <div class="led red"></div>
-                    <div class="timer">00:08</div>
+                    <div class="led black"></div>
+                    <div class="timer">...</div>
+                </div>
+                <div class="row">
+                    <div class="answer" srtyle="font-size:12px;"></div>
                 </div>
             </div>
         </div>
@@ -19,8 +22,11 @@
             <div class="info">
                 <div class="name">Хамон</div>
                 <div class="row">
-                    <div class="led blue"></div>
-                    <div class="timer">00:05</div>
+                    <div class="led black"></div>
+                    <div class="timer">...</div>
+                </div>
+                <div class="row">
+                    <div class="answer" srtyle="font-size:12px;"></div>
                 </div>
             </div>
         </div>
@@ -34,6 +40,9 @@
                     <div class="led black"></div>
                     <div class="timer">...</div>
                 </div>
+                <div class="row">
+                    <div class="answer" srtyle="font-size:12px;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -41,8 +50,12 @@
         <div class="small-title">Распределение земель</div>
         <div class="title">Вопрос:</div>
         <div class="q">В каком году произошло сражение на льду Чудского озера?</div>
+        <div class="answerlkhbdsfksdlhfg">
+            <div class="title">Ваш ответ:</div>
+            <div class="qa"></div>
+        </div>
         <form class="noajax a">
-            <input placeholder="Введите ответ">
+            <input placeholder="Введите ответ" maxlength="4">
             <button type="submit">ok</button>
         </form>
         <div class="numpad">
@@ -60,5 +73,6 @@
             <a href="" class="zero">0</a>
         </div>
         <div class="timer">00:02</div>
+        
     </div>
 </div>
