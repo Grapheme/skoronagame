@@ -102,6 +102,7 @@ function getUserById(id) {
         if (value.id == id) {
             returnVal = value;
         }
+        
     });
     return returnVal;
 }
@@ -620,8 +621,8 @@ showQuestionResult = function(response){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
       $unit.data('place', _answ.place);
-      //$unit.find('.timer').text(_answ.seconds+' сек.');
-      $unit.find('.timer').text('10 сек.');
+      $unit.find('.timer').text(_answ.seconds+' сек.');
+      //$unit.find('.timer').text('10 сек.');
       $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
       $unit.find('.answer').text('Ответ: '+_answ.answer);
     })
