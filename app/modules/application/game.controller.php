@@ -259,7 +259,7 @@ class GameController extends BaseController {
                 $this->nextStep(0);
                 if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                     $randomQuestion = $this->randomQuestion('quiz');
-                    $this->createQuestion($randomQuestion->id);
+                    $this->createQuestion($randomQuestion->id,Input::get('users'));
                 endif;
                 $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
                 $this->createQuestionJSONResponse($question);
@@ -570,7 +570,7 @@ class GameController extends BaseController {
                     GameUserQuestions::create(array('group_id'=>$group_id,'game_id' => $this->game->id, 'user_id' => $user_id,
                         'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => 0, 'seconds' => 0));
                 endforeach;
-            else:
+            elseif(count($users_ids)):
                 foreach($users_ids as $user_id):
                     GameUserQuestions::create(array('group_id'=>$group_id,'game_id' => $this->game->id, 'user_id' => $user_id,
                         'question_id' => $question_id, 'status' => 0, 'place' => 0, 'answer' => 0, 'seconds' => 0));
