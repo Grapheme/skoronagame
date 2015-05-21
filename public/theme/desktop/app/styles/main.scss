@@ -102,6 +102,17 @@ body {
         width: 530px;
         .row {
           @include cf();
+          .left, .right {
+            &.green {
+              color: #d39500;
+            }
+            &.red {
+              color: #ad062e;
+            }
+            &.blue {
+              color: #0000ff;
+            }
+          }
           .left {
             .ava {
               float: left;

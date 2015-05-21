@@ -27,10 +27,12 @@ var getGame = function(callback){
         dataType: 'json',
         success: function (response) {
             if (response.status) {
+                
                 parseGameData(response);
                 callback();
                 renderPlayers();
                 console.log(response);
+                console.log(GAME.status);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
@@ -69,7 +71,7 @@ getNormalQuestion = function(callback){
 getQuizQuestion = function(_users, callback){
     callback = callback || function(){}
     _users = _users || GAME.users
-    console.log(arguments)
+    //console.log(arguments)
     if (GAME.stage==2) {
         alert('тревога. Лишний запрос!')
     }
@@ -222,18 +224,18 @@ getResultQuestion = function(){
                 } else {
                   showQuestionResult(response);
                 }
-            } else if (GAME.stage==2) {
-                if(response.responseJSON.result === 'standoff'){
-                    //GAME.question = {};
+            } else if (GAME.stage == 2) {
+                if(GAME.response.result === 'standoff'){
+                    alert('Ничья');
                     //GAME.getQuizQuestion();
-                    alert('Ничья')
-                }else if(response.responseJSON.result === 'retry'){
+                }else if(GAME.response.result === 'retry'){
                     setTimeout(getResultQuestion, 500)
-                }else if(typeof response.responseJSON.result == "object"){
-                    console.log('INSPECT!', response)
+                }else if(typeof GAME.response.result == "object"){
+                    console.log('РЕЗУЛЬТАТ!!!', GAME.response.result)
                     /*GAME.question = {};
                     GAME.users_question = [];
-                    GAME.steps = GAME.response.result[GAME.user.id];*/
+                    GAME.steps = GAME.response.result[GAME.user.id];
+                    GAME.sendConquestTerritory();*/
                 }
             }
           }
