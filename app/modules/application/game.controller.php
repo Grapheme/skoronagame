@@ -315,6 +315,11 @@ class GameController extends BaseController {
 
     public function getResultQuestion(){
 
+        $this->initGame();
+        $this->nextStepInSecondStage();
+        exit;
+
+
         if (!Request::ajax()) return App::abort(404);
         $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required'));
         if ($validation->passes()):
@@ -341,15 +346,15 @@ class GameController extends BaseController {
                         foreach ($this->game_winners as $user_id => $place):
                             GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)->first()
                                 ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
-                            $available_steps = abs($place-3);
-                            if($this->validGameStage(2)):
-                                $available_steps  = $place;
-                                $this->createDuel();
-                                $this->nextStepInSecondStage();
-                            endif;
+                            $available_steps = $this->getAvailableSteps($user_id, $place);
                             GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)
-                                ->update(array('status'=>0,'available_steps'=>$available_steps,'make_steps'=>0, 'updated_at' => date('Y-m-d H:i:s')));
+                                ->update(array('status' => 0, 'available_steps' => $available_steps, 'make_steps' => 0,
+                                    'updated_at' => date('Y-m-d H:i:s')));
                         endforeach;
+                        if($this->validGameStage(2)):
+                            $this->createDuel();
+                            $this->nextStepInSecondStage();
+                        endif;
                     endif;
                 elseif ($userQuestion = GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 2)->first()):
                     $this->game_winners = GameUserQuestions::where('game_id', $this->game->id)->where('status', 2)->where('group_id', $userQuestion->group_id)->lists('place','user_id');
@@ -441,10 +446,8 @@ class GameController extends BaseController {
                 elseif($this->validGameStage(2)):
                     if ($this->changeGameUsersSteps()):
                         $this->conquestTerritory(Input::get('zone'));
-
-                        //Территория переходит под его собственность и ей назначается стоимость 400 очков (эти очки получит игрок при следующем ее захвате).
-
-                        $this->changeUserPoints(Auth::user()->id,200,$this->user);
+                        $points = $this->getTerritoryPoints(Input::get('zone'));
+                        $this->changeUserPoints(Auth::user()->id,$points,$this->user);
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
@@ -582,7 +585,7 @@ class GameController extends BaseController {
     private function createDuel($users_ids = array()){
 
         $json_settings = json_decode($this->game->json_settings,TRUE);
-        $json_settings['duel'] = is_array($users_ids) ? $users_ids : '';
+        $json_settings['duel'] = is_array($users_ids) ? $users_ids : array();
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
@@ -625,13 +628,6 @@ class GameController extends BaseController {
             endforeach;
             if ($nextTour):
                 $current_tour++;
-                if ($current_tour == 3):
-                    if ($winner = $this->getWinnerByPoints()):
-                        $this->nextStep($winner);
-                    else:
-                        $this->randomStep();
-                    endif;
-                endif;
             endif;
             $json_settings['current_tour'] = $current_tour;
             $json_settings['stage2_tours'] = $stage2_tours;
@@ -773,7 +769,7 @@ class GameController extends BaseController {
 
     private function changeGameUsersSteps(){
 
-        if ($this->validGameStatus($this->game_statuses[2]) && $this->validGameStage(1)):
+        if ($this->validGameStatus($this->game_statuses[2])):
             if($this->user->status == 0):
                 $diff_steps = (int)$this->user->available_steps - $this->user->make_steps;
                 if ($diff_steps > 0):
@@ -856,6 +852,9 @@ class GameController extends BaseController {
 
         if ($this->validGameStatus($this->game_statuses[2])):
             if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', Auth::user()->id)->where('zone', $zone)->where('capital', 0)->first()):
+                if ($this->validGameStage(2)):
+                    $conquest->points += 200;
+                endif;
                 $settings = json_decode($conquest->json_settings);
                 $settings->color = $this->user['color'];
                 $conquest->json_settings = json_encode($settings);
@@ -907,6 +906,13 @@ class GameController extends BaseController {
                     return FALSE;
                 endif;
                 $this->getThirdPlace();
+            elseif($this->validGameStage(2)):
+                $duel = $this->getDuel();
+                if ($this->game_winners['first_place'][0] == $duel['conqu']):
+                    $this->game_winners['second_place'][] = $duel['def'];
+                elseif($this->game_winners['first_place'][0] == $duel['def']):
+                    $this->game_winners['second_place'][] = $duel['conqu'];
+                endif;
             endif;
             $winner_places = array();
             $places = array('first_place' => 1, 'second_place' => 2, 'third_place' => 3);
@@ -915,7 +921,9 @@ class GameController extends BaseController {
                     $winner_places[@$user_id[0]] = $places[$place];
                 endif;
             endforeach;
-            $this->nextStep(@$this->game_winners['first_place'][0]);
+            if ($this->validGameStage(1)):
+                $this->nextStep(@$this->game_winners['first_place'][0]);
+            endif;
             $this->game_winners = $winner_places;
         endif;
     }
@@ -936,17 +944,14 @@ class GameController extends BaseController {
                 $users_times = array_values($winners);
                 if ($users_times[0] > $users_times[1]):
                     $this->game_winners[$users_ids[1]] = 1;
-                    $this->nextStep($users_ids[1]);
                 elseif($users_times[0] < $users_times[1]):
                     $this->game_winners[$users_ids[0]] = 1;
-                    $this->nextStep($users_ids[0]);
                 else:
                     $this->game_winners = 'standoff';
                 endif;
             elseif(count($winners) == 1):
                 $users_ids = array_keys($winners);
                 $this->game_winners[$users_ids[0]] = 1;
-                $this->nextStep($users_ids[0]);
             else:
                 $this->game_winners = 'standoff';
             endif;
@@ -968,12 +973,20 @@ class GameController extends BaseController {
         $current_tour = $json_settings['current_tour'];
         $stage2_tours = $json_settings['stage2_tours'];
         if (isset($stage2_tours[$current_tour])):
-            foreach($stage2_tours[$current_tour] as $user_id => $status):
-                if ($status == FALSE):
-                    $this->nextStep($user_id);
-                    break;
+            if($current_tour < 3):
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == FALSE):
+                        $this->nextStep($user_id);
+                        break;
+                    endif;
+                endforeach;
+            elseif($current_tour == 3):
+                if ($winner = $this->getWinnerByPoints()):
+                    $this->nextStep($winner);
+                else:
+                    $this->randomStep();
                 endif;
-            endforeach;
+            endif;
         endif;
     }
 
@@ -1077,5 +1090,36 @@ class GameController extends BaseController {
             endif;
         endif;
         return FALSE;
+    }
+
+    private function getDuel(){
+
+        $json_settings = json_decode($this->game->json_settings,TRUE);
+        if (isset($json_settings['duel'])):
+            return $json_settings['duel'];
+        else:
+            return FALSE;
+        endif;
+    }
+
+    private function getAvailableSteps($user_id, $place){
+
+        $available_steps = 0;
+        if ($this->validGameStage(1)):
+            $available_steps = abs($place - 3);
+        elseif ($this->validGameStage(2)):
+            $duel = $this->getDuel();
+            if ($place == 1 && $duel['conqu'] == $user_id):
+                $available_steps = 1;
+            endif;
+        endif;
+        return $available_steps;
+    }
+
+    private function getTerritoryPoints($zone){
+
+        if ($this->validGameStatus($this->game_statuses[2])):
+            return GameMap::where('game_id', $this->game->id)->where('zone', $zone)->where('capital', 0)->pluck('points');
+        endif;
     }
 }

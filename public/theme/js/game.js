@@ -11,6 +11,7 @@ GAME.reInitialize = function(){
     GAME.user = {};                                         // пользователь
     GAME.status = 0;                                        // статус игры
     GAME.stage = 0;                                         // этап игры
+    GAME.settings = {};                                     // настройки игры
     GAME.response = {};                                     // ответ от сервера
     GAME.map = {};                                          // карта
     GAME.users_question = [];                               // массив id пользователей которым нужно создать вопрос. пустой - если всем
@@ -331,6 +332,8 @@ GAME.sendConquestEmptyTerritory = function(territory){
 }
 
 GAME.sendConquestTerritory = function(){
+
+    var territory = $(".territory-block[data-zone='"+GAME.conquerorZone+"']");
     $.ajax({
         type: "POST",
         url: '/game/conquest/territory',
@@ -341,7 +344,7 @@ GAME.sendConquestTerritory = function(){
         },
         success: function (response) {
             if (response.status) {
-                $(".js-map-block[data-zone='"+GAME.conquerorZone+"']").css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives'));
+                $(".js-map-block[data-zone='"+GAME.conquerorZone+"']").css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives') + '<br>Points: ' + $(territory).data('points'));
                 GAME.response = response.responseJSON;
                 GAME.steps--;
                 GAME.conquerorZone = 0;
@@ -364,6 +367,7 @@ GAME.parseGameResponse = function(){
     GAME.status = GAME.response.game_status;
     GAME.stage = GAME.response.game_stage;
     GAME.user_step = GAME.response.settings.next_step;
+    GAME.settings = GAME.response.settings;
     $.each(GAME.response.users,function(index, value){
         if(value.id == GAME.response.current_user) {
             GAME.user = value;
@@ -381,17 +385,17 @@ GAME.parseGameResponse = function(){
         if(GAME.user_step == 0 && GAME.stage == 1 && $.isEmptyObject(GAME.question)){
             GAME.getQuizQuestion();
         }
-        if(GAME.stage == 2 && typeof GAME.response.settings.duel == "object"){
-            if (GAME.response.settings.duel.conqu == GAME.user.id){
+        if(GAME.stage == 2 && typeof GAME.settings.duel == "object"){
+            if (GAME.settings.duel.conqu == GAME.user.id){
                 console.log('Я нападаю');
             }
-            if(GAME.response.settings.duel.def == GAME.user.id) {
-                GAME.users_question = [GAME.response.settings.duel.conqu,GAME.response.settings.duel.def];
+            if(GAME.settings.duel.def == GAME.user.id) {
+                GAME.users_question = [GAME.settings.duel.conqu,GAME.settings.duel.def];
                 GAME.getNormalQuestion();
             }
         }
     }else if(GAME.status == GAME.statuses[3]){
-        alert(GAME.response.settings.message);
+        alert(GAME.settings.message);
         GAME.reInitialize();
         location.reload();
     }
@@ -470,8 +474,15 @@ GAME.parseResultQuestionResponse = function(){
         }else if(typeof GAME.response.result == "object"){
             GAME.question = {};
             GAME.users_question = [];
-            GAME.steps = GAME.response.result[GAME.user.id];
-            GAME.sendConquestTerritory();
+            GAME.steps = 0;
+            if(typeof GAME.settings.duel == "object"){
+                if(GAME.settings.duel.conqu == GAME.user.id){
+                    GAME.steps = GAME.response.result[GAME.user.id];
+                }
+            }
+            if(GAME.steps > 0){
+                GAME.sendConquestTerritory();
+            }
         }
     }
 }
