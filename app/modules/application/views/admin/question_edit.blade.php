@@ -3,7 +3,7 @@
 @stop
 @section('content')
     @include($module['tpl'].'.question_menu')
-    {{ Form::model($question,array('route'=>array('question.update',$question->id),'class'=>'smart-form','id'=>'question-form','role'=>'form','method'=>'put')) }}
+    {{ Form::model($question,array('url'=>array('admin/game/questions/'.Request::segment(4).'/'.$question->id),'class'=>'smart-form','id'=>'question-form','role'=>'form','method'=>'put')) }}
     {{ Form::hidden('type') }}
     <div class="row">
         <section class="col col-6">

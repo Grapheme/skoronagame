@@ -20,7 +20,7 @@
                             <td>{{ $question->title }}</td>
                             <td class="text-center" style="white-space:nowrap;">
                             @if(Allow::action('game','edit'))
-                                <a class="btn btn-success margin-right-5" href="{{ URL::route('question.edit',$question->id) }}" title="Изменить">
+                                <a class="btn btn-success margin-right-5" href="{{ URL::to('admin/game/questions/'.Request::segment(4).'/'.$question->id.'/edit') }}" title="Изменить">
                                     <i class="fa fa-pencil"></i>
                                 </a>
                             @endif
