@@ -157,10 +157,11 @@ GAME.getQuizQuestion = function(){
  type - (string) тип вопроса (quiz/normal)
  */
 GAME.getNormalQuestion = function(){
+
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: GAME.users_question},
+        data: {game: GAME.game_id, users: {conqu: GAME.users_question[0],def: GAME.users_question[1]}},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -381,7 +382,11 @@ GAME.parseGameResponse = function(){
             GAME.getQuizQuestion();
         }
         if(GAME.stage == 2 && typeof GAME.response.settings.duel == "object"){
-            if (GAME.response.settings.duel[0] == GAME.user.id || GAME.response.settings.duel[1] == GAME.user.id) {
+            if (GAME.response.settings.duel.conqu == GAME.user.id){
+                console.log('Я нападаю');
+            }
+            if(GAME.response.settings.duel.def == GAME.user.id) {
+                GAME.users_question = [GAME.response.settings.duel.conqu,GAME.response.settings.duel.def];
                 GAME.getNormalQuestion();
             }
         }
@@ -525,9 +530,9 @@ GAME.startTimer = function () {
         if (questionTime <= 0){
             clearInterval(GAME.timer.timer_object);
             if(GAME.question.type == 'quiz'){
-                GAME.question.answer = 0;
+                GAME.question.answer = 99999;
             }else if(GAME.question.type == 'normal'){
-                GAME.question.answer = 100;
+                GAME.question.answer = 99999;
             }
             GAME.sendQuestionAnswer();
             $("#" + GAME.question.type + "-question-block").hide();

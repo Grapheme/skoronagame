@@ -109,14 +109,16 @@ class GameController extends BaseController {
     /****************************************************************************/
     public function QuickAuth(){
 
-        if(!Request::ajax()) return App::abort(404);
-        $validator = Validator::make(Input::all(),array('email'=>'required|email','password'=>'required'));
-        if($validator->passes()):
+        if (!Request::ajax()) return App::abort(404);
+        $validator = Validator::make(Input::all(), array('email' => 'required|email', 'password' => 'required'));
+        if ($validator->passes()):
 //          Auth::loginUsingId(17);
 //          $this->json_request['redirect'] = AuthAccount::getStartPage();
 //          $this->json_request['status'] = TRUE;
-            if(Auth::attempt(array('email'=>Input::get('email'),'password'=>Input::get('password'),'active'=>1), FALSE)):
-                if(Auth::check()):
+            if (Auth::attempt(array('email' => Input::get('email'), 'password' => Input::get('password'),
+                'active' => 1), FALSE)
+            ):
+                if (Auth::check()):
                     $this->json_request['redirect'] = AuthAccount::getStartPage();
                     $this->json_request['status'] = TRUE;
                 endif;
@@ -124,7 +126,7 @@ class GameController extends BaseController {
                 $this->json_request['responseText'] = 'Неверное имя пользователя или пароль';
             endif;
         endif;
-        return Response::json($this->json_request,200);
+        return Response::json($this->json_request, 200);
     }
 
     public function QuickRegister(){
@@ -273,12 +275,12 @@ class GameController extends BaseController {
         if ($validation->passes()):
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
-                    $this->nextStep(0);
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $this->createStepInSecondStage();
                         $randomQuestion = $this->randomQuestion('normal');
                         $this->createQuestion($randomQuestion->id,Input::get('users'));
                         $this->createDuel(Input::get('users'));
+                        $this->nextStep(0);
                     endif;
                     $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
                     $this->createQuestionJSONResponse($question);
@@ -299,7 +301,7 @@ class GameController extends BaseController {
                     $userGameQuestion->seconds = (int)Input::get('time');
                     $userGameQuestion->save();
                     $userGameQuestion->touch();
-                    if (!empty($userGameQuestion->answer)):
+                    if ($userGameQuestion->answer != 99999):
                         $this->json_request['responseText'] = "Спасибо. Ваш ответ принят.";
                     else:
                         $this->json_request['responseText'] = 'Вы не ответили на вопрос.';
@@ -429,8 +431,9 @@ class GameController extends BaseController {
                         endif;
                         if($this->isConqueredTerritories()):
                             $this->changeGameStage(2);
-                            $this->randomStep();
-                            $this->createTemplateStepInSecondStage();
+                            $this->nextStep();
+                            $nextStep = $this->createTemplateStepInSecondStage();
+                            $this->nextStep($nextStep);
                         endif;
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
@@ -589,10 +592,11 @@ class GameController extends BaseController {
 
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $json_settings['current_tour'] = 0;
-        $stage2tours = array(array(),array(),array(),array());
-        if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id')):
-            foreach($users as $user_id => $id):
-                foreach($stage2tours as $tour => $users_id):
+        $json_settings['stage2_tours'] = array(array(),array(),array(),array());
+        if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('user_id')):
+            foreach($json_settings['stage2_tours'] as $tour => $users_id):
+                shuffle($users);
+                foreach($users as $user_id):
                     $json_settings['stage2_tours'][$tour][$user_id] = FALSE;
                 endforeach;
             endforeach;
@@ -600,6 +604,9 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
+
+        reset($json_settings['stage2_tours'][0]);
+        return array_keys($json_settings['stage2_tours'][0])[0];
     }
 
     private function createStepInSecondStage(){
@@ -618,9 +625,7 @@ class GameController extends BaseController {
             endforeach;
             if ($nextTour):
                 $current_tour++;
-                if ($current_tour < 3):
-                    $this->randomStep();
-                elseif ($current_tour == 3):
+                if ($current_tour == 3):
                     if ($winner = $this->getWinnerByPoints()):
                         $this->nextStep($winner);
                     else:
