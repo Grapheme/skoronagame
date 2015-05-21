@@ -3,6 +3,7 @@ var search_timeout = 90;
 var quiz_timer_default = 10;
 
 var quiz_interval;
+var normal_interval;
 
 function startQuizeTimer() {
   var timer = quiz_timer_default;
@@ -13,10 +14,19 @@ function startQuizeTimer() {
   }, 1000)
 }
 
+function startNormalTimer() {
+  var timer = quiz_timer_default;
+  $('#question-2 .timer').text(timer);
+  normal_interval = setInterval(function(){
+    $('#question-2 .timer').text(timer);
+    timer--
+  }, 1000)
+}
+
 function quizQuesionRender() {
   clearInterval(quiz_interval);
   renderPlayers();
-  getQuizQuestion(GAME.users, function(){
+  getQuizQuestion([], function(){
     //alert(GAME.question.text);
     $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
     $('#question-1 .left .answer').text('');
@@ -31,7 +41,7 @@ function quizQuesionRender() {
 
 function takingLand() {
   getGame(function(){
-    console.log(GAME.status);
+    //console.log(GAME.status);
     quizQuesionRender();
     //getUsersResultQuestions();
   });
@@ -80,7 +90,8 @@ function renderPlayers() {
     if (GAME.stage==1 && GAME.status =='ready') {
       $('#user-list').show();
     }
-    var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points').text(value.points);
+    var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
+    $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
       $('#user-list .user.'+value.color).find('.name').text('Вы');
     }
@@ -98,22 +109,20 @@ function renderPlayers() {
     if (index==1) {
       $('#mathcmaking .ava').last().find('.name').text(value.name);
     }
-    /*if (value.id != GAME.user.id) {
-      var is_reserved = false;
-      $('#mathcmaking .ava .name').each(function(){
-        if ($(this).text()==value.name) {
-          is_reserved = true;
-        }
-      });
-      if (is_reserved == false) {
-        $('#mathcmaking .ava:not(.reserved):first .name').text(value.name).closest('.ava').addClass('reserved');
-      }
-    }
-    
-    */
-    
   });
 }
+
+
+$('body').on('click', '#question-2 .a a', function(e){
+  e.preventDefault();
+  GAME.question.answer = $(this).text();
+  GAME.question.time = 10 - $('#question-2 .timer').text();
+  $(this).addClass('active');
+  sendQuestionAnswer(function(){
+    //getResultQuestion();
+    //normalQuestionIsrender=false;
+  });
+});
 
 $('body').on('click', '#map .area', function(event){
   if (GAME.user.id == GAME.next_turn && GAME.stage == 1 && !$(this).hasClass('reserved')) {
@@ -166,8 +175,9 @@ function renderMap(nodelay) {
   });
 }
 
-
+normalQuestionIsrender = false;
 renderNormalQuestion = function(conqu, enemy_id){
+  normalQuestionIsrender = true;
   conqu = conqu || GAME.user.id;
   GAME.users_question = {
     conqu: conqu,
@@ -175,8 +185,16 @@ renderNormalQuestion = function(conqu, enemy_id){
   }
   getNormalQuestion(function(){
     //console.log(GAME.response);
+    clearInterval(quiz_interval);
+    startNormalTimer();
+    $('#question-2 .left').removeClass('red green blue');
+    $('#question-2 .right').removeClass('red green blue');
+    $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
+    $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
+    $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
+    $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
     $('#question-2 .q').html(GAME.question.text);
-    $('#question-2 .a').html();
+    $('#question-2 .a').html('');
     $.each(GAME.question.answers, function(index, value){
       $('#question-2 .a').append('<a href="">'+value+'</a>');
     });
@@ -187,8 +205,9 @@ renderNormalQuestion = function(conqu, enemy_id){
 }
 
 var last_turn = 0;
-
+var whoTurn_is_run = false;
 whoTurn = function() {
+  whoTurn_is_run = true;
   getGame(function(){
     //getUsersResultQuestions();
     if (GAME.stage == 1) {
@@ -217,7 +236,7 @@ whoTurn = function() {
       console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
-        alert('Ваш ход. Этап захвата.');
+        //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
         
@@ -227,19 +246,18 @@ whoTurn = function() {
         };
         
         if (GAME.duel) {
-          GAME.duel.def == GAME.user.id;
-          renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
-        }
-        /*$.each(GAME.duel, function(index, value){
-          if (value == GAME.user.id) {
-            renderNormalQuestion()
+          if (GAME.duel.def == GAME.user.id) {
+            if (normalQuestionIsrender == false) {
+              renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
+            }
           }
-        });*/
+          getResultQuestion();
+        }
         
         //getResultQuestion();
-        setTimeout(whoTurn, 1000);
+        //setTimeout(whoTurn, 1000);
       }
-      
+      setTimeout(whoTurn, 1000);      
     }
     renderMap(true);
   });
@@ -268,11 +286,14 @@ showQuestionResult = function(response){
       $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
       $unit.find('.answer').text('Ответ: '+_answ.answer);
     })
+    if (whoTurn_is_run == false) {
+      whoTurn();
+    }
     orderPlayers();
     setTimeout(hidePoppups, 4000);
   })
   //alert(_s);
-  whoTurn();
+  //whoTurn();
 }
 
 
