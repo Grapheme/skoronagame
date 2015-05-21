@@ -50,6 +50,7 @@ getNormalQuestion = function(callback){
         success: function (response) {
             if (response.status) {
                 //GAME.user_step = 0;
+                console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
                 parseGameData(response);
                 /*GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
@@ -156,9 +157,13 @@ function parseGameData(response) {
     GAME.map = response.responseJSON.map;
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
+        if (response.responseJSON.settings.duel) {
+            GAME.duel = response.responseJSON.settings.duel;
+        } else {
+            GAME.duel = {};
+        }
     }
     GAME.response = response.responseJSON;
-    
 }
 
 /*

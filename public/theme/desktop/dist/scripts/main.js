@@ -50,6 +50,7 @@ getNormalQuestion = function(callback){
         success: function (response) {
             if (response.status) {
                 //GAME.user_step = 0;
+                console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
                 parseGameData(response);
                 /*GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
@@ -156,9 +157,13 @@ function parseGameData(response) {
     GAME.map = response.responseJSON.map;
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
+        if (response.responseJSON.settings.duel) {
+            GAME.duel = response.responseJSON.settings.duel;
+        } else {
+            GAME.duel = {};
+        }
     }
     GAME.response = response.responseJSON;
-    
 }
 
 /*
@@ -504,7 +509,7 @@ $('body').on('click', '#map .area', function(event){
       });
     });
   } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
-    renderNormalQuestion($(this).data('info').user_id);
+    renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
   }
 })
 
@@ -548,10 +553,16 @@ function renderMap(nodelay) {
 }
 
 
-renderNormalQuestion = function(enemy_id){
-  GAME.users_question = [GAME.user.id, enemy_id]
+renderNormalQuestion = function(conqu, enemy_id){
+  conqu = conqu || GAME.user.id;
+  GAME.users_question = {
+    conqu: conqu,
+    def: enemy_id
+  }
   getNormalQuestion(function(){
-    console.log(GAME.response);
+    //console.log(GAME.response);
+    $('#question-2 .q').text(GAME.question.text);
+    //$('#question-2 .a')
     openFrame('question-2');
     showPoppups();
   })
@@ -572,7 +583,6 @@ whoTurn = function() {
       } else {
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
-  
           var user_turn = getUserById(GAME.next_turn);
           if (user_turn) {
             //alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
@@ -592,12 +602,26 @@ whoTurn = function() {
         alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
+        
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //var user_turn = getUserById(GAME.next_turn);
+        };
+        
+        if (GAME.duel) {
+          GAME.duel.def == GAME.user.id;
+          renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
         }
+        /*$.each(GAME.duel, function(index, value){
+          if (value == GAME.user.id) {
+            renderNormalQuestion()
+          }
+        });*/
+        
         getResultQuestion();
+        whoTurn();
       }
+      
     }
     renderMap(true);
   });
