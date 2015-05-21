@@ -549,7 +549,7 @@ function renderMap(nodelay) {
         }).data('zone', value.zone);
       }, delay*index);
     }
-  }); 
+  });
 }
 
 
@@ -561,7 +561,11 @@ renderNormalQuestion = function(conqu, enemy_id){
   }
   getNormalQuestion(function(){
     //console.log(GAME.response);
-    $('#question-2 .q').text(GAME.question.text);
+    $('#question-2 .q').html(GAME.question.text);
+    $('#question-2 .a').html();
+    $.each(GAME.question.answers, function(index, value){
+      $('#question-2 .a').append('<a href="">'+value+'</a>');
+    });
     //$('#question-2 .a')
     openFrame('question-2');
     showPoppups();
@@ -618,8 +622,8 @@ whoTurn = function() {
           }
         });*/
         
-        getResultQuestion();
-        whoTurn();
+        //getResultQuestion();
+        setTimeout(whoTurn, 1000);
       }
       
     }
