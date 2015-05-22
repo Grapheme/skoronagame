@@ -420,6 +420,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('zone'=>'required'));
         if($validation->passes()):
             if ($this->initGame()):
+            
                 if($this->validGameStage(1)):
                     if ($this->changeGameUsersSteps()):
                         $this->conquestTerritory(Input::get('zone'));
@@ -442,6 +443,7 @@ class GameController extends BaseController {
                         $this->json_request['status'] = TRUE;
                     endif;
                 elseif($this->validGameStage(2)):
+                #Helper::tad($this->user);
                     if ($this->changeGameUsersSteps()):
                         $this->conquestTerritory(Input::get('zone'));
                         $points = $this->getTerritoryPoints(Input::get('zone'));

@@ -221,9 +221,9 @@ getResultQuestion = function(){
             if(GAME.question.type=='quiz'){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
-                  if (GAME.stage == 1) {
+                  //if (GAME.stage == 1) {
                     setTimeout(getResultQuestion, 500)
-                  }
+                  //}
                 } else if (response.responseJSON.result == 'standoff') {
                   alert('Ничья')
                   //console.log(response)
@@ -231,6 +231,7 @@ getResultQuestion = function(){
                   showQuestionResult(response);
                   if (GAME.stage == 2) {
                     tryToConquer();
+                    GAME.question = {};
                   }
                 }
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
@@ -240,10 +241,11 @@ getResultQuestion = function(){
                     quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
-                    //setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 500)
                 }else if(typeof response.responseJSON.result == "object"){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
                     tryToConquer();
+                    GAME.question = {};
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
