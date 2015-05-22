@@ -275,7 +275,6 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('users' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
-            #Helper::tad($this->game);
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $this->createStepInSecondStage();
@@ -419,7 +418,6 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('zone'=>'required'));
         if($validation->passes()):
             if ($this->initGame()):
-            
                 if($this->validGameStage(1)):
                     if ($this->changeGameUsersSteps()):
                         $this->conquestTerritory(Input::get('zone'));
@@ -442,7 +440,6 @@ class GameController extends BaseController {
                         $this->json_request['status'] = TRUE;
                     endif;
                 elseif($this->validGameStage(2)):
-                #Helper::tad($this->user);
                     if ($this->changeGameUsersSteps()):
                         $points = $this->getTerritoryPoints(Input::get('zone'));
                         $this->changeUserPoints(Auth::user()->id,$points,$this->user);
@@ -529,16 +526,6 @@ class GameController extends BaseController {
         $this->game->touch();
         GameUser::where('game_id',$this->game->id)->update(array('status'=>99));
         GameUserQuestions::where('game_id',$this->game->id)->update(array('status'=>99));
-    }
-
-    private function setWinners(){
-
-        $winners = GameUser::where('game_id',$this->game->id)->orderBy('points','DESC')->lists('id');
-        if (count($winners) > 1):
-            # несколько победителей
-        else:
-            #один победитель
-        endif;
     }
 
     private function setGameStatus(){
@@ -873,7 +860,8 @@ class GameController extends BaseController {
     private function conquestTerritory($zone){
 
         if ($this->validGameStatus($this->game_statuses[2])):
-            if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', Auth::user()->id)->where('zone', $zone)->where('capital', 0)->first()):
+            #if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', Auth::user()->id)->where('zone', $zone)->where('capital', 0)->first()):
+            if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', Auth::user()->id)->where('zone', $zone)->first()):
                 if ($this->validGameStage(2)):
                     $conquest->points += 200;
                 endif;
@@ -987,18 +975,7 @@ class GameController extends BaseController {
                     $winners[$user_id] = @$this->game_answers['answers_times'][$user_id];
                 endif;
             endforeach;
-            if (count($winners) > 1):
-                asort($winners);
-                $users_ids = array_keys($winners);
-                $users_times = array_values($winners);
-                if ($users_times[0] > $users_times[1]):
-                    $this->game_winners[$users_ids[1]] = 1;
-                elseif($users_times[0] < $users_times[1]):
-                    $this->game_winners[$users_ids[0]] = 1;
-                else:
-                    $this->game_winners = 'standoff';
-                endif;
-            elseif(count($winners) == 1):
+            if(count($winners) == 1):
                 $users_ids = array_keys($winners);
                 $this->game_winners[$users_ids[0]] = 1;
             else:
@@ -1030,11 +1007,30 @@ class GameController extends BaseController {
                     endif;
                 endforeach;
             elseif($current_tour == 3):
-                if ($winner = $this->getWinnerByPoints()):
-                    $this->nextStep($winner);
+                $firstStep = TRUE;
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == TRUE):
+                        $firstStep = FALSE;
+                        break;
+                    endif;
+                endforeach;
+                if($firstStep):
+                    if ($winner = $this->getWinnerByPoints()):
+                        $this->nextStep($winner);
+                    else:
+                        $this->randomStep();
+                    endif;
                 else:
-                    $this->randomStep();
+                    foreach($stage2_tours[$current_tour] as $user_id => $status):
+                        if ($status == FALSE):
+                            $this->nextStep($user_id);
+                            break;
+                        endif;
+                    endforeach;
                 endif;
+            elseif($current_tour > 3):
+                $this->changeGameStatus($this->game_statuses[3]);
+                $this->nextStep();
             endif;
         endif;
     }
