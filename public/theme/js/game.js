@@ -238,7 +238,7 @@ GAME.getResultQuestion = function(){
     $.ajax({
         type: "POST",
         url: '/game/question/get-result',
-        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
             $("#js-server-response").html('');
@@ -667,6 +667,7 @@ $(document).ready(function () {
     $(document).on("click",".js-map-empty-block",function(event){
         event.preventDefault();
         GAME.isCapital = 0;
+        GAME.conquerorZone = 0;
         if(GAME.steps > 0){
             if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
                 GAME.sendConquestEmptyTerritory(this);
