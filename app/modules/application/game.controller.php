@@ -1161,7 +1161,8 @@ class GameController extends BaseController {
                     $lives = GameMap::where('game_id',$this->game->id)->where('zone',Input::get('zone'))->pluck('lives');
                 endif;
                 $this->changeUserPoints($duel['def'],100*$lives);
-                if(TRUE):
+                $json_settings = json_decode($this->game->json_settings, TRUE);
+                if($json_settings['current_tour'] > 3):
                     $users = GameUser::where('game_id', $this->game->id)->get();
                     $this->changeGameUsersStatus(2, $users);
                 endif;
