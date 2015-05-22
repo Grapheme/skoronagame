@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 1;                                       // id игры
+GAME.game_id = 0;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -36,11 +36,33 @@ var getGame = function(callback){
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
+                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) {
+                    overGame();
+                }
+                
             }
         },
         error: function (xhr, textStatus, errorThrown) {}
     });
 };
+
+overGame = function(){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/over-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                alert('КОнец')
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
 
 getNormalQuestion = function(callback){
     callback = callback || function(){};
@@ -212,7 +234,7 @@ getResultQuestion = function(){
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
-      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.conquerorZone},
       dataType: 'json',
       success: function (response) {
           if (response.status) {

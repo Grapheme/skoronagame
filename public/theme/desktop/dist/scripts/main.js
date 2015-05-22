@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 1;                                       // id игры
+GAME.game_id = 0;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -36,11 +36,33 @@ var getGame = function(callback){
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
+                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) {
+                    overGame();
+                }
+                
             }
         },
         error: function (xhr, textStatus, errorThrown) {}
     });
 };
+
+overGame = function(){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/over-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                alert('КОнец')
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
 
 getNormalQuestion = function(callback){
     callback = callback || function(){};
@@ -212,7 +234,7 @@ getResultQuestion = function(){
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
-      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.conquerorZone},
       dataType: 'json',
       success: function (response) {
           if (response.status) {
@@ -503,7 +525,7 @@ function matchmaking() {
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  hidePoppups();
+  setTimeout(hidePoppups, 4000);
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
@@ -542,7 +564,8 @@ function renderPlayers() {
     //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
     //}
-    var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
+    var $user = $('#user-list .user.'+value.color);
+    $user.find('.name').text(value.name);
     $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
       $('#user-list .user.'+value.color).find('.name').text('Вы');
@@ -590,7 +613,6 @@ $('body').on('click', '#map .area', function(event){
 })
 
 function renderMap(nodelay) {
-  console.log('ПЕРЕРИСОВЫВАЕМ КАРТУ!!!!')
   nodelay = nodelay || false;
   if (nodelay) {
     var delay = 0
@@ -632,6 +654,7 @@ function renderMap(nodelay) {
 
 normalQuestionIsrender = false;
 renderNormalQuestion = function(conqu, enemy_id){
+  clearInterval(normal_interval);
   normalQuestionIsrender = true;
   conqu = conqu || GAME.user.id;
   GAME.users_question = {
