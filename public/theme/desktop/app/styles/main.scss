@@ -165,10 +165,11 @@ body {
             display: block;
             float: left;
             text-decoration: none;
-            line-height: 220%;
+            line-height: 100%;
+            padding: 10px 0px;
             margin: 0 15px;
             margin-bottom: 20px;
-            &:hover {
+            &:hover, &.active {
               background: rgba(#002819, 0.5);
               color: white;
             }

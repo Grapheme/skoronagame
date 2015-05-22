@@ -79,7 +79,7 @@ function matchmaking() {
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  hidePoppups();
+  setTimeout(hidePoppups, 4000);
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
@@ -118,7 +118,8 @@ function renderPlayers() {
     //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
     //}
-    var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
+    var $user = $('#user-list .user.'+value.color);
+    $user.find('.name').text(value.name);
     $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
       $('#user-list .user.'+value.color).find('.name').text('Вы');
@@ -166,7 +167,6 @@ $('body').on('click', '#map .area', function(event){
 })
 
 function renderMap(nodelay) {
-  console.log('ПЕРЕРИСОВЫВАЕМ КАРТУ!!!!')
   nodelay = nodelay || false;
   if (nodelay) {
     var delay = 0
@@ -208,6 +208,7 @@ function renderMap(nodelay) {
 
 normalQuestionIsrender = false;
 renderNormalQuestion = function(conqu, enemy_id){
+  clearInterval(normal_interval);
   normalQuestionIsrender = true;
   conqu = conqu || GAME.user.id;
   GAME.users_question = {
