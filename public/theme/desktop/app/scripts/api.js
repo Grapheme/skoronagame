@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 1;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -37,7 +37,7 @@ var getGame = function(callback){
                 //GAME.map = GAME.response.map;
                 
 
-                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0 && GAME.status == "over") {
+                if ((GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) || GAME.status == "over") {
                     var _status = true;
                     $.each(GAME.users, function(index, value){
                         if (value.status != 2) {
@@ -94,6 +94,8 @@ getNormalQuestion = function(callback){
                 callback();
                 //GAME.parseQuestionResponse();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getNormalQuestion(callback);
             }
         },
         error: function (xhr, textStatus, errorThrown) {}
@@ -124,10 +126,14 @@ getQuizQuestion = function(_users, callback){
                 //GAME.question.type = GAME.response.question.type;
                 //GAME.parseQuestionResponse();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getQuizQuestion(_users, callback);
             }
             //$("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            
+        }
     });
 }
 
@@ -257,7 +263,12 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                  quizQuesionRender();
+                  
+                  if (GAME.stage == 2) {
+                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                  } else {
+                    quizQuesionRender();
+                  }
                   //console.log(response)
                 } else {
                   showQuestionResult(response);

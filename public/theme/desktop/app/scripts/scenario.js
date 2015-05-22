@@ -240,6 +240,7 @@ renderNormalQuestion = function(conqu, enemy_id){
     conqu: conqu,
     def: enemy_id
   }
+  
   clearInterval(quiz_interval);
   clearInterval(normal_interval);
   getNormalQuestion(function(){
