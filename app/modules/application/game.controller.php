@@ -315,10 +315,6 @@ class GameController extends BaseController {
 
     public function getResultQuestion(){
 
-        $this->initGame();
-        $this->nextStepInSecondStage();
-        exit;
-
 
         if (!Request::ajax()) return App::abort(404);
         $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required'));

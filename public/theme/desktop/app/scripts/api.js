@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 1;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -44,6 +44,7 @@ var getGame = function(callback){
 
 getNormalQuestion = function(callback){
     callback = callback || function(){};
+    console.log('Получить нормальный вопрос! Данные отправлены:', {game: GAME.game_id, users: GAME.users_question});
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
@@ -73,7 +74,7 @@ getQuizQuestion = function(_users, callback){
     _users = _users || GAME.users
     //console.log(arguments)
     if (GAME.stage==2) {
-        alert('тревога. Лишний запрос!')
+        //alert('тревога. Лишний запрос!')
     }
     $.ajax({
         type: "POST",
@@ -207,6 +208,7 @@ getUsersResultQuestions = function (callback) {
 }
 
 getResultQuestion = function(){
+    console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -214,24 +216,28 @@ getResultQuestion = function(){
       dataType: 'json',
       success: function (response) {
           if (response.status) {
-            if(GAME.stage == 1){
+            console.log(response.responseJSON.result);
+            //if(GAME.stage == 1 || GAME.question.type=='quiz'){
+            if(GAME.question.type=='quiz'){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
-                  setTimeout(getResultQuestion, 500)
+                  //setTimeout(getResultQuestion, 500)
                 } else if (response.responseJSON.result == 'standoff') {
                   alert('Ничья')
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
                 }
-            } else if (GAME.stage == 2) {
-                if(GAME.response.result === 'standoff'){
-                    alert('Ничья');
+            //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
+            } else if (GAME.question.type=='normal') {
+                if(response.responseJSON.result === 'standoff'){
+                    console.log('Ничья');
+                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
-                }else if(GAME.response.result === 'retry'){
-                    setTimeout(getResultQuestion, 500)
-                }else if(typeof GAME.response.result == "object"){
-                    console.log('РЕЗУЛЬТАТ!!!', GAME.response.result)
+                }else if(response.responseJSON.result === 'retry'){
+                    //setTimeout(getResultQuestion, 500)
+                }else if(typeof response.responseJSON.result == "object"){
+                    console.log('РЕЗУЛЬТАТ!!!', response.responseJSON.result)
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];

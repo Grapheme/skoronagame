@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 1;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -44,6 +44,7 @@ var getGame = function(callback){
 
 getNormalQuestion = function(callback){
     callback = callback || function(){};
+    console.log('Получить нормальный вопрос! Данные отправлены:', {game: GAME.game_id, users: GAME.users_question});
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
@@ -73,7 +74,7 @@ getQuizQuestion = function(_users, callback){
     _users = _users || GAME.users
     //console.log(arguments)
     if (GAME.stage==2) {
-        alert('тревога. Лишний запрос!')
+        //alert('тревога. Лишний запрос!')
     }
     $.ajax({
         type: "POST",
@@ -207,6 +208,7 @@ getUsersResultQuestions = function (callback) {
 }
 
 getResultQuestion = function(){
+    console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -214,24 +216,28 @@ getResultQuestion = function(){
       dataType: 'json',
       success: function (response) {
           if (response.status) {
-            if(GAME.stage == 1){
+            console.log(response.responseJSON.result);
+            //if(GAME.stage == 1 || GAME.question.type=='quiz'){
+            if(GAME.question.type=='quiz'){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
-                  setTimeout(getResultQuestion, 500)
+                  //setTimeout(getResultQuestion, 500)
                 } else if (response.responseJSON.result == 'standoff') {
                   alert('Ничья')
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
                 }
-            } else if (GAME.stage == 2) {
-                if(GAME.response.result === 'standoff'){
-                    alert('Ничья');
+            //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
+            } else if (GAME.question.type=='normal') {
+                if(response.responseJSON.result === 'standoff'){
+                    console.log('Ничья');
+                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
-                }else if(GAME.response.result === 'retry'){
-                    setTimeout(getResultQuestion, 500)
-                }else if(typeof GAME.response.result == "object"){
-                    console.log('РЕЗУЛЬТАТ!!!', GAME.response.result)
+                }else if(response.responseJSON.result === 'retry'){
+                    //setTimeout(getResultQuestion, 500)
+                }else if(typeof response.responseJSON.result == "object"){
+                    console.log('РЕЗУЛЬТАТ!!!', response.responseJSON.result)
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
@@ -264,6 +270,28 @@ sendQuestionAnswer = function(callback){
 }
 /* jshint devel:true */
 console.log('\'Allo \'Allo!');
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
+}
 
 var bg_width = $('#map').width();
 
@@ -393,6 +421,8 @@ var quiz_timer_default = 10;
 var quiz_interval;
 var normal_interval;
 
+var mustConquer;
+
 function startQuizeTimer() {
   var timer = quiz_timer_default;
   $('#question-1 .right .timer').text(timer);
@@ -411,9 +441,11 @@ function startNormalTimer() {
   }, 1000)
 }
 
-function quizQuesionRender() {
+function quizQuesionRender(players) {
+  players = players || [];
   clearInterval(quiz_interval);
   renderPlayers();
+  
   getQuizQuestion([], function(){
     //alert(GAME.question.text);
     $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
@@ -446,7 +478,12 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
-        takingLand();
+        if (GAME.stage==1) {
+          takingLand();
+        }
+        if (GAME.stage==2) {
+          whoTurn();
+        }
         //setTimeout(takingLand, 10000);
       }
     }
@@ -475,7 +512,7 @@ function renderPlayers() {
       orderPlayers();*/
     }
     
-    if (GAME.stage==1 && GAME.status =='ready') {
+    if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
     }
     var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
@@ -520,6 +557,7 @@ $('body').on('click', '#map .area', function(event){
       });
     });
   } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
+    mustConquer = $(this).data('info').user_id;
     renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
   }
 })
@@ -532,7 +570,6 @@ function renderMap(nodelay) {
     var delay = 500
     
   }
-  $('.temp-map').html('');
   $('#map').addClass('user_'+GAME.user.color);
   $.each(GAME.map, function(index, value){
     if (nodelay) {
@@ -633,18 +670,20 @@ whoTurn = function() {
           //var user_turn = getUserById(GAME.next_turn);
         };
         
-        if (GAME.duel) {
+        if (!isEmpty(GAME.duel)) {
           if (GAME.duel.def == GAME.user.id) {
             if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
           }
-          getResultQuestion();
         }
-        
         //getResultQuestion();
         //setTimeout(whoTurn, 1000);
       }
+      if (GAME.question.type == 'quize') {
+        //getResultQuestion();
+      }
+      getResultQuestion();
       setTimeout(whoTurn, 1000);      
     }
     renderMap(true);
@@ -665,6 +704,7 @@ showQuestionResult = function(response){
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
   getUsersResultQuestions(function(){
+    console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');

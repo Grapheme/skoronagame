@@ -144,7 +144,7 @@ class QuestionsController extends BaseController {
                     $questions[] = array('title' => trim(@$file_lines[$i]), 'question' => trim(@$file_lines[$i]),
                         'type' => $type_question,
                         'answers' => '[' . json_encode(array('title' => trim(@$file_lines[$i + 1]),'current' => "1")) . ']',
-                        'created_at' => date('c'), 'updated_at' => date('c'));
+                        'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
                 endfor;
             elseif($type_question = 'normal'):
                 for ($i = 0,$index = 0; $i < count($file_lines); $i++):
@@ -164,7 +164,7 @@ class QuestionsController extends BaseController {
                             $questions[$index] = array('title' => trim(@$file_lines[$i]),
                                 'question' => trim(@$file_lines[$i]),
                                 'type' => $type_question, 'answers' =>json_encode($answers),
-                                'created_at' => date('c'), 'updated_at' => date('c'));
+                                'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
                             $index++;
                             $i = $j;
                             break;

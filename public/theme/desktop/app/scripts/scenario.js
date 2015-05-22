@@ -5,6 +5,8 @@ var quiz_timer_default = 10;
 var quiz_interval;
 var normal_interval;
 
+var mustConquer;
+
 function startQuizeTimer() {
   var timer = quiz_timer_default;
   $('#question-1 .right .timer').text(timer);
@@ -23,9 +25,11 @@ function startNormalTimer() {
   }, 1000)
 }
 
-function quizQuesionRender() {
+function quizQuesionRender(players) {
+  players = players || [];
   clearInterval(quiz_interval);
   renderPlayers();
+  
   getQuizQuestion([], function(){
     //alert(GAME.question.text);
     $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
@@ -58,7 +62,12 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
-        takingLand();
+        if (GAME.stage==1) {
+          takingLand();
+        }
+        if (GAME.stage==2) {
+          whoTurn();
+        }
         //setTimeout(takingLand, 10000);
       }
     }
@@ -87,7 +96,7 @@ function renderPlayers() {
       orderPlayers();*/
     }
     
-    if (GAME.stage==1 && GAME.status =='ready') {
+    if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
     }
     var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
@@ -132,6 +141,7 @@ $('body').on('click', '#map .area', function(event){
       });
     });
   } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
+    mustConquer = $(this).data('info').user_id;
     renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
   }
 })
@@ -144,7 +154,6 @@ function renderMap(nodelay) {
     var delay = 500
     
   }
-  $('.temp-map').html('');
   $('#map').addClass('user_'+GAME.user.color);
   $.each(GAME.map, function(index, value){
     if (nodelay) {
@@ -245,18 +254,20 @@ whoTurn = function() {
           //var user_turn = getUserById(GAME.next_turn);
         };
         
-        if (GAME.duel) {
+        if (!isEmpty(GAME.duel)) {
           if (GAME.duel.def == GAME.user.id) {
             if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
           }
-          getResultQuestion();
         }
-        
         //getResultQuestion();
         //setTimeout(whoTurn, 1000);
       }
+      if (GAME.question.type == 'quize') {
+        //getResultQuestion();
+      }
+      getResultQuestion();
       setTimeout(whoTurn, 1000);      
     }
     renderMap(true);
@@ -277,6 +288,7 @@ showQuestionResult = function(response){
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
   getUsersResultQuestions(function(){
+    console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
