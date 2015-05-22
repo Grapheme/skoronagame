@@ -36,8 +36,17 @@ var getGame = function(callback){
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
-                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) {
-                    overGame();
+
+                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0 && GAME.status == "over") {
+                    var _status = true;
+                    $.each(GAME.users, function(index, value){
+                        if (value.status != 2) {
+                            _status = false;
+                        }
+                    })
+                    if (_status == true) {
+                        overGame();
+                    }
                 }
                 
             }
@@ -247,7 +256,8 @@ getResultQuestion = function(){
                     setTimeout(getResultQuestion, 500)
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
-                  alert('Ничья')
+                  //alert('Ничья');
+                  quizQuesionRender();
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
