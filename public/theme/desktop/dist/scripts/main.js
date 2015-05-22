@@ -36,8 +36,17 @@ var getGame = function(callback){
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
-                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) {
-                    overGame();
+
+                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0 && GAME.status == "over") {
+                    var _status = true;
+                    $.each(GAME.users, function(index, value){
+                        if (value.status != 2) {
+                            _status = false;
+                        }
+                    })
+                    if (_status == true) {
+                        overGame();
+                    }
                 }
                 
             }
@@ -247,7 +256,8 @@ getResultQuestion = function(){
                     setTimeout(getResultQuestion, 500)
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
-                  alert('Ничья')
+                  //alert('Ничья');
+                  quizQuesionRender();
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
@@ -458,7 +468,17 @@ function startQuizeTimer() {
   quiz_interval = setInterval(function(){
     $('#question-1 .right .timer').text(timer);
     timer--
+    if (timer < 0) {
+      quizeExpire();
+    }
   }, 1000)
+}
+
+function quizeExpire() {
+  if ($('.numpad').is(':visible')) {
+    $('#question-1 form.a').find('input').val(99999);
+    $('#question-1 form.a').submit();
+  }
 }
 
 function startNormalTimer() {
@@ -467,12 +487,25 @@ function startNormalTimer() {
   normal_interval = setInterval(function(){
     $('#question-2 .timer').text(timer);
     timer--
+    if (timer <= 0) {
+      //normalExpire();
+    }
   }, 1000)
+}
+
+function normalExpire() {
+  GAME.question.answer = 99999;
+  GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
+  sendQuestionAnswer(function(){
+    getResultQuestion();
+    //normalQuestionIsrender=false;
+  });
 }
 
 function quizQuesionRender(players) {
   players = players || [];
   clearInterval(quiz_interval);
+  clearInterval(normal_interval);
   renderPlayers();
   
   getQuizQuestion(players, function(){
@@ -525,7 +558,7 @@ function matchmaking() {
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  setTimeout(hidePoppups, 4000);
+  setTimeout(hidePoppups, 7000);
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
@@ -590,13 +623,15 @@ function renderPlayers() {
 
 $('body').on('click', '#question-2 .a a', function(e){
   e.preventDefault();
-  GAME.question.answer = $(this).text();
-  GAME.question.time = 10 - $('#question-2 .timer').text();
-  $(this).addClass('active');
-  sendQuestionAnswer(function(){
-    getResultQuestion();
-    //normalQuestionIsrender=false;
-  });
+  if ($('#question-2 .a a.active').size()==0) {
+    GAME.question.answer = $(this).text();
+    GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
+    $(this).addClass('active');
+    sendQuestionAnswer(function(){
+      getResultQuestion();
+      //normalQuestionIsrender=false;
+    });
+  }
 });
 
 $('body').on('click', '#map .area', function(event){
@@ -654,16 +689,18 @@ function renderMap(nodelay) {
 
 normalQuestionIsrender = false;
 renderNormalQuestion = function(conqu, enemy_id){
-  clearInterval(normal_interval);
   normalQuestionIsrender = true;
   conqu = conqu || GAME.user.id;
+  
   GAME.users_question = {
     conqu: conqu,
     def: enemy_id
   }
+  clearInterval(quiz_interval);
+  clearInterval(normal_interval);
   getNormalQuestion(function(){
-    //console.log(GAME.response);
     clearInterval(quiz_interval);
+    clearInterval(normal_interval);
     startNormalTimer();
     $('#question-2 .left').removeClass('red green blue');
     $('#question-2 .right').removeClass('red green blue');
@@ -773,7 +810,7 @@ showQuestionResult = function(response){
     }
     tryToConquer();
     orderPlayers();
-    setTimeout(hidePoppups, 4000);
+    setTimeout(hidePoppups, 7000);
   })
   //alert(_s);
   //whoTurn();
@@ -792,7 +829,7 @@ $(document).ready(function () {
     $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
     GAME.question.answer
     $(this).find('input').val('');
-    GAME.question.time = 10 - $('#question-1 .right .timer').text();
+    GAME.question.time = quiz_timer_default - $('#question-1 .right .timer').text();
     sendQuestionAnswer(function(){
       afterAnswer();
       getResultQuestion();

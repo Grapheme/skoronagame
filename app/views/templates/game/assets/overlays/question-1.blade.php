@@ -2,7 +2,7 @@
     <div class="left">
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+                <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             </div>
             <div class="info">
                 <div class="name">Наполеон</div>
@@ -17,7 +17,7 @@
         </div>
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+                <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             </div>
             <div class="info">
                 <div class="name">Хамон</div>
@@ -32,7 +32,7 @@
         </div>
         <div class="unit">
             <div class="ava">
-                <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+                <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             </div>
             <div class="info">
                 <div class="name">Мамон</div>

@@ -2,15 +2,15 @@
     <div class="title">Подбор игроков</div>
     <div class="row">
         <div class="ava">
-            <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+            <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             <div class="name">&nbsp;</div>
         </div>
         <div class="ava reserved">
-            <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+            <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             <div class="name">Вы</div>
         </div>
         <div class="ava">
-            <div class="mask"></div><img src="http://lorempixel.com/86/98/">
+            <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
             <div class="name">&nbsp;</div>
         </div>
     </div><br>

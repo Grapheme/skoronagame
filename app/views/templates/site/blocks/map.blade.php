@@ -1,21 +1,21 @@
 <div id="user-list">
   <div class="user red">
     <div class="ava">
-      <div class="mask"></div><img src="http://lorempixel.com/70/80/">
+      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
     </div>
     <div class="name">Вы</div>
     <div class="points">00000</div>
   </div>
   <div class="user blue">
     <div class="ava">
-      <div class="mask"></div><img src="http://lorempixel.com/70/80/">
+      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
     </div>
     <div class="name">Николай Бульбулятор</div>
     <div class="points">00000</div>
   </div>
   <div class="user green">
     <div class="ava">
-      <div class="mask"></div><img src="http://lorempixel.com/70/80/">
+      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
     </div>
     <div class="name">Максим Фаггот</div>
     <div class="points">00000</div>
