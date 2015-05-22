@@ -275,6 +275,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('users' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
+            #Helper::tad($this->game);
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $this->createStepInSecondStage();

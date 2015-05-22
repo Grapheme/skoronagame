@@ -5,7 +5,6 @@ var quiz_timer_default = 10;
 var quiz_interval;
 var normal_interval;
 
-var mustConquer;
 
 function startQuizeTimer() {
   var timer = quiz_timer_default;
@@ -62,6 +61,10 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
+        
+        if (GAME.stage==0) {
+          takingLand();
+        }
         if (GAME.stage==1) {
           takingLand();
         }
@@ -72,6 +75,18 @@ function matchmaking() {
       }
     }
   });
+}
+
+function tryToConquer() {
+  //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
+  hidePoppups();
+  console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
+  if (GAME.stage == 2 && GAME.mustConquer && GAME.user.available_steps > 0) {
+    sendConquestEmptyTerritory(GAME.mustConquer, function(){
+      alert('ЗАХВАт')
+    })
+    //GAME.mustConquer = null
+  }
 }
 
 function createPlayers() {
@@ -96,9 +111,9 @@ function renderPlayers() {
       orderPlayers();*/
     }
     
-    if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
+    //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
-    }
+    //}
     var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
     $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
@@ -141,7 +156,7 @@ $('body').on('click', '#map .area', function(event){
       });
     });
   } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
-    mustConquer = $(this).data('info').user_id;
+    GAME.mustConquer = $(this).data('info').user_id;
     renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
   }
 })
@@ -288,7 +303,7 @@ showQuestionResult = function(response){
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
   getUsersResultQuestions(function(){
-    console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
+    //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
@@ -301,6 +316,7 @@ showQuestionResult = function(response){
     if (whoTurn_is_run == false) {
       whoTurn();
     }
+    tryToConquer();
     orderPlayers();
     setTimeout(hidePoppups, 4000);
   })

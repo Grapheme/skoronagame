@@ -16,7 +16,7 @@ GAME.user_step = 0;                                     // id пользоват
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.users = {};
 GAME.question;
-
+GAME.mustConquer = null;
 
 var getGame = function(callback){
     callback = callback || function(){}
@@ -31,7 +31,7 @@ var getGame = function(callback){
                 parseGameData(response);
                 callback();
                 renderPlayers();
-                console.log(response);
+                //console.log(response);
                 console.log(GAME.status);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
@@ -53,7 +53,7 @@ getNormalQuestion = function(callback){
         success: function (response) {
             if (response.status) {
                 //GAME.user_step = 0;
-                console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
+                //console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
                 parseGameData(response);
                 /*GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
@@ -120,7 +120,7 @@ sendConquestEmptyTerritory = function(territory, callback){
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                console.log(response);
+                console.log(response, 'ОТВЕТ НА ЗАХВАТ');
                 callback();
             }
         },
@@ -197,7 +197,7 @@ getUsersResultQuestions = function (callback) {
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                console.log(response, 'ВНИМАНИЕ!!');
+                //console.log(response, 'ВНИМАНИЕ!!');
                 GAME.resultQuestion = response.responseJSON;
                 callback();
             }
@@ -208,7 +208,7 @@ getUsersResultQuestions = function (callback) {
 }
 
 getResultQuestion = function(){
-    console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
+    //console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -221,12 +221,17 @@ getResultQuestion = function(){
             if(GAME.question.type=='quiz'){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
-                  //setTimeout(getResultQuestion, 500)
+                  if (GAME.stage == 1) {
+                    setTimeout(getResultQuestion, 500)
+                  }
                 } else if (response.responseJSON.result == 'standoff') {
                   alert('Ничья')
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
+                  if (GAME.stage == 2) {
+                    tryToConquer();
+                  }
                 }
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
             } else if (GAME.question.type=='normal') {
@@ -237,7 +242,8 @@ getResultQuestion = function(){
                 }else if(response.responseJSON.result === 'retry'){
                     //setTimeout(getResultQuestion, 500)
                 }else if(typeof response.responseJSON.result == "object"){
-                    console.log('РЕЗУЛЬТАТ!!!', response.responseJSON.result)
+                    console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
+                    tryToConquer();
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
@@ -260,7 +266,7 @@ sendQuestionAnswer = function(callback){
     dataType: 'json',
     success: function (response) {
       if (response.status) {
-        console.log(response);
+        //console.log(response);
         callback();
       }
     },
@@ -421,7 +427,6 @@ var quiz_timer_default = 10;
 var quiz_interval;
 var normal_interval;
 
-var mustConquer;
 
 function startQuizeTimer() {
   var timer = quiz_timer_default;
@@ -478,6 +483,10 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
+        
+        if (GAME.stage==0) {
+          takingLand();
+        }
         if (GAME.stage==1) {
           takingLand();
         }
@@ -488,6 +497,18 @@ function matchmaking() {
       }
     }
   });
+}
+
+function tryToConquer() {
+  //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
+  hidePoppups();
+  console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
+  if (GAME.stage == 2 && GAME.mustConquer && GAME.user.available_steps > 0) {
+    sendConquestEmptyTerritory(GAME.mustConquer, function(){
+      alert('ЗАХВАт')
+    })
+    //GAME.mustConquer = null
+  }
 }
 
 function createPlayers() {
@@ -512,9 +533,9 @@ function renderPlayers() {
       orderPlayers();*/
     }
     
-    if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
+    //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
       $('#user-list').show();
-    }
+    //}
     var $user = $('#user-list .user.'+value.color).find('.name').text(value.name).find('.points');
     $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
@@ -557,7 +578,7 @@ $('body').on('click', '#map .area', function(event){
       });
     });
   } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
-    mustConquer = $(this).data('info').user_id;
+    GAME.mustConquer = $(this).data('info').user_id;
     renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
   }
 })
@@ -704,7 +725,7 @@ showQuestionResult = function(response){
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
   });
   getUsersResultQuestions(function(){
-    console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
+    //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
@@ -717,6 +738,7 @@ showQuestionResult = function(response){
     if (whoTurn_is_run == false) {
       whoTurn();
     }
+    tryToConquer();
     orderPlayers();
     setTimeout(hidePoppups, 4000);
   })
