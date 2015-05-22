@@ -56,6 +56,7 @@ class GameController extends BaseController {
             Route::post('question/get-result', array('as'=>'get-result-question','uses'=>$class.'@getResultQuestion'));
             Route::post('question/get-users-results', array('as'=>'get-users-results-question','uses'=>$class.'@getUsersResultsQuestion'));
             Route::post('conquest/territory', array('as'=>'send-conquest-territory','uses'=>$class.'@sendConquestTerritory'));
+            Route::post('conquest/capital', array('as'=>'send-conquest-capital','uses'=>$class.'@sendConquestCapital'));
         });
     }
     /****************************************************************************/
@@ -447,6 +448,28 @@ class GameController extends BaseController {
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
+                endif;
+            endif;
+        endif;
+        return Response::json($this->json_request, 200);
+    }
+
+    public function sendConquestCapital(){
+
+        $validation = Validator::make(Input::all(), array('zone'=>'required'));
+        if($validation->passes()):
+            if ($this->initGame()):
+                if($this->validGameStage(2)):
+//                    if ($this->changeGameUsersSteps()):
+//                        $this->conquestTerritory(Input::get('zone'));
+//                        $points = $this->getTerritoryPoints(Input::get('zone'));
+//                        $this->changeUserPoints(Auth::user()->id,$points,$this->user);
+//                        $this->json_request['responseText'] = 'Вы заняли столицу.';
+//                        $this->json_request['status'] = TRUE;
+//                    endif;
+                Helper::tad(Input::all());
+                    $this->json_request['responseText'] = 'Вы заняли столицу.';
+                    $this->json_request['status'] = TRUE;
                 endif;
             endif;
         endif;
@@ -929,7 +952,7 @@ class GameController extends BaseController {
         if ($this->game_answers['current_answer'] !== FALSE):
             $this->game_winners = $winners = array();
             foreach($this->game_answers['answers_titles'] as $user_id => $answers_title):
-                $this->game_winners[$user_id] = 0;
+                $this->game_winners[$user_id] = 2;
                 if($answers_title == $this->game_answers['current_answer']):
                     $winners[$user_id] = @$this->game_answers['answers_times'][$user_id];
                 endif;

@@ -19,6 +19,7 @@ GAME.reInitialize = function(){
     GAME.steps = 0;                                         // доступные шаги
     GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
     GAME.conquerorZone = 0                                  // номер зоны для завоевания
+    GAME.isCapital = 0;                                     // признак того что нападают на сталицу
     GAME.timer = {timer_object:{},time:10};
 }
 
@@ -295,6 +296,7 @@ GAME.getUsersResultQuestions = function () {
         }
     });
 }
+
 /*
  Метод отправляет запрос на захват пустой территории
  Отправляет:
@@ -331,12 +333,60 @@ GAME.sendConquestEmptyTerritory = function(territory){
     });
 }
 
+/*
+ Метод отправляет запрос на захват занятой территории
+ Отправляет:
+ game  - (int)ID игры.
+ zone  - (int)номер зоны.
+ Результат:
+ ...
+ status - (boolean) результат обработки
+ responseText - (string) текст результата (не обязательно)
+ */
 GAME.sendConquestTerritory = function(){
 
     var territory = $(".territory-block[data-zone='"+GAME.conquerorZone+"']");
     $.ajax({
         type: "POST",
         url: '/game/conquest/territory',
+        data: {game: GAME.game_id, zone: GAME.conquerorZone},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                $(".js-map-block[data-zone='"+GAME.conquerorZone+"']").css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives') + '<br>Points: ' + $(territory).data('points'));
+                GAME.response = response.responseJSON;
+                GAME.steps--;
+                GAME.conquerorZone = 0;
+                if (GAME.steps == 0) {
+                    $("#js-question-game").parent().show();
+                }
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+
+/*
+ Метод отправляет запрос на захват столицы
+ Отправляет:
+ game  - (int)ID игры.
+ zone  - (int)номер зоны.
+ Результат:
+ ...
+ status - (boolean) результат обработки
+ responseText - (string) текст результата (не обязательно)
+ */
+GAME.sendConquestCapital = function(){
+
+    var territory = $(".territory-block[data-zone='"+GAME.conquerorZone+"']");
+    $.ajax({
+        type: "POST",
+        url: '/game/conquest/capital',
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
@@ -481,7 +531,11 @@ GAME.parseResultQuestionResponse = function(){
                 }
             }
             if(GAME.steps > 0){
-                GAME.sendConquestTerritory();
+                if(GAME.isCapital == 0){
+                    GAME.sendConquestTerritory();
+                }else{
+                    GAME.sendConquestCapital();
+                }
             }
         }
     }
@@ -612,7 +666,7 @@ $(document).ready(function () {
     });
     $(document).on("click",".js-map-empty-block",function(event){
         event.preventDefault();
-
+        GAME.isCapital = 0;
         if(GAME.steps > 0){
             if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
                 GAME.sendConquestEmptyTerritory(this);
@@ -622,7 +676,23 @@ $(document).ready(function () {
     $(document).on("click",".js-map-block",function(event){
         event.preventDefault();
         if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
-            GAME.users_question = [GAME.user.id,$(this).data('user')];
+            GAME.isCapital = 0;
+            GAME.settings.duel = GAME.settings.duel || {};
+            GAME.settings.duel.conqu = GAME.user.id;
+            GAME.settings.duel.def = $(this).data('user');
+            GAME.users_question = [GAME.settings.duel.conqu,GAME.settings.duel.def];
+            GAME.conquerorZone = $(this).data('zone');
+            GAME.getNormalQuestion();
+        }
+    });
+    $(document).on("click",".js-map-capital-block",function(event){
+        event.preventDefault();
+        if($(this).attr('data-user') != GAME.user.id && GAME.user_step == GAME.user.id){
+            GAME.isCapital = 1;
+            GAME.settings.duel = GAME.settings.duel || {};
+            GAME.settings.duel.conqu = GAME.user.id;
+            GAME.settings.duel.def = $(this).data('user');
+            GAME.users_question = [GAME.settings.duel.conqu,GAME.settings.duel.def];
             GAME.conquerorZone = $(this).data('zone');
             GAME.getNormalQuestion();
         }
