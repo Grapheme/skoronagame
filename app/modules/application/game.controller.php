@@ -236,7 +236,7 @@ class GameController extends BaseController {
             if (!empty($this->game->users)):
                 foreach($this->game->users as $user):
                     if ($user->user_id == Auth::user()->id):
-                        $this->finishGame();
+                        $this->finishGame(0);
                         $this->json_request['responseText'] = Auth::user()->name.' завершил игру.';
                         $this->json_request['status'] = TRUE;
                         break;
@@ -444,7 +444,7 @@ class GameController extends BaseController {
                         $this->changeUserPoints(Auth::user()->id,$points,$this->user);
                         $this->conquestTerritory(Input::get('zone'));
                         $users = GameUser::where('game_id', $this->game->id)->get();
-                        $this->changeGameUsersStatus(0, $users);
+                        $this->changeGameUsersStatus(2, $users);
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
@@ -466,7 +466,7 @@ class GameController extends BaseController {
                             $this->changeUserPoints(Auth::user()->id, 1000, $this->user);
                             $this->nextStepInSecondStage();
                             $users = GameUser::where('game_id', $this->game->id)->get();
-                            $this->changeGameUsersStatus(0, $users);
+                            $this->changeGameUsersStatus(2, $users);
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                         elseif ($lives > 1):
                             $this->json_request['responseText'] = 'Продолжайте захват столицы';
@@ -519,16 +519,13 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function finishGame(){
+    private function finishGame($status_over = 1){
 
         $this->game->status = $this->game_statuses[3];
-        $this->game->status_over = 1;
+        $this->game->status_over = $status_over;
         $this->game->date_over = Carbon::now()->format('Y-m-d H:i:s');
-        $this->game->json_settings = json_encode(array('next_step'=>0,'message'=>Auth::user()->name.' завершил игру.'));
         $this->game->save();
         $this->game->touch();
-        GameUser::where('game_id',$this->game->id)->update(array('status'=>99));
-        GameUserQuestions::where('game_id',$this->game->id)->update(array('status'=>99));
     }
 
     private function setGameStatus(){
@@ -1031,10 +1028,9 @@ class GameController extends BaseController {
                         endif;
                     endforeach;
                 endif;
-            elseif($current_tour > 3):
-                $this->changeGameStatus($this->game_statuses[3]);
-                $this->nextStep();
             endif;
+        elseif($current_tour > 3):
+            $this->finishGame(1);
         endif;
     }
 
@@ -1165,6 +1161,10 @@ class GameController extends BaseController {
                     $lives = GameMap::where('game_id',$this->game->id)->where('zone',Input::get('zone'))->pluck('lives');
                 endif;
                 $this->changeUserPoints($duel['def'],100*$lives);
+                if(TRUE):
+                    $users = GameUser::where('game_id', $this->game->id)->get();
+                    $this->changeGameUsersStatus(2, $users);
+                endif;
             endif;
         endif;
         return $available_steps;
