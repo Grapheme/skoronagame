@@ -526,13 +526,13 @@ GAME.parseResultQuestionResponse = function(){
             GAME.users_question = [];
             GAME.steps = 0;
             if(typeof GAME.settings.duel == "object"){
-                if(GAME.settings.duel.conqu == GAME.user.id){
-                    GAME.steps = GAME.response.result[GAME.user.id];
+                if(GAME.settings.duel.conqu == GAME.user.id && GAME.response.result[GAME.user.id] == 1){
+                    GAME.steps = 1;
                 }
             }
             if(GAME.steps > 0){
                 if(GAME.isCapital == 0){
-                    GAME.sendConquestTerritory();
+                    //GAME.sendConquestTerritory();
                 }else{
                     GAME.sendConquestCapital();
                 }

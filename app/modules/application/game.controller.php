@@ -339,13 +339,12 @@ class GameController extends BaseController {
                     if ($this->game_winners === 'standoff'):
                         $this->resetQuestions();
                     elseif (count($this->game_winners) == $number_participants):
+                        GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                         foreach ($this->game_winners as $user_id => $place):
                             GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)->first()
                                 ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
                             $available_steps = $this->getAvailableSteps($user_id, $place);
-                            GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)
-                                ->update(array('status' => 0, 'available_steps' => $available_steps, 'make_steps' => 0,
-                                    'updated_at' => date('Y-m-d H:i:s')));
+                            GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('available_steps' => $available_steps));
                         endforeach;
                         if($this->validGameStage(2)):
                             $this->createDuel();
@@ -444,6 +443,8 @@ class GameController extends BaseController {
                         $points = $this->getTerritoryPoints(Input::get('zone'));
                         $this->changeUserPoints(Auth::user()->id,$points,$this->user);
                         $this->conquestTerritory(Input::get('zone'));
+                        $users = GameUser::where('game_id', $this->game->id)->get();
+                        $this->changeGameUsersStatus(0, $users);
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
@@ -464,6 +465,8 @@ class GameController extends BaseController {
                         if ($lives == 1):
                             $this->changeUserPoints(Auth::user()->id, 1000, $this->user);
                             $this->nextStepInSecondStage();
+                            $users = GameUser::where('game_id', $this->game->id)->get();
+                            $this->changeGameUsersStatus(0, $users);
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                         elseif ($lives > 1):
                             $this->json_request['responseText'] = 'Продолжайте захват столицы';
