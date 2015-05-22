@@ -275,6 +275,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('users' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
+            #Helper::tad($this->game);
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $this->createStepInSecondStage();
@@ -418,6 +419,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('zone'=>'required'));
         if($validation->passes()):
             if ($this->initGame()):
+            
                 if($this->validGameStage(1)):
                     if ($this->changeGameUsersSteps()):
                         $this->conquestTerritory(Input::get('zone'));
@@ -440,6 +442,7 @@ class GameController extends BaseController {
                         $this->json_request['status'] = TRUE;
                     endif;
                 elseif($this->validGameStage(2)):
+                #Helper::tad($this->user);
                     if ($this->changeGameUsersSteps()):
                         $points = $this->getTerritoryPoints(Input::get('zone'));
                         $this->changeUserPoints(Auth::user()->id,$points,$this->user);

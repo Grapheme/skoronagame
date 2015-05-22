@@ -16,7 +16,7 @@ GAME.user_step = 0;                                     // id пользоват
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.users = {};
 GAME.question;
-
+GAME.mustConquer = null;
 
 var getGame = function(callback){
     callback = callback || function(){}
@@ -31,7 +31,7 @@ var getGame = function(callback){
                 parseGameData(response);
                 callback();
                 renderPlayers();
-                console.log(response);
+                //console.log(response);
                 console.log(GAME.status);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
@@ -53,7 +53,7 @@ getNormalQuestion = function(callback){
         success: function (response) {
             if (response.status) {
                 //GAME.user_step = 0;
-                console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
+                //console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
                 parseGameData(response);
                 /*GAME.response = response.responseJSON;
                 GAME.question.id = GAME.response.question.id;
@@ -120,7 +120,7 @@ sendConquestEmptyTerritory = function(territory, callback){
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                console.log(response);
+                console.log(response, 'ОТВЕТ НА ЗАХВАТ');
                 callback();
             }
         },
@@ -197,7 +197,7 @@ getUsersResultQuestions = function (callback) {
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                console.log(response, 'ВНИМАНИЕ!!');
+                //console.log(response, 'ВНИМАНИЕ!!');
                 GAME.resultQuestion = response.responseJSON;
                 callback();
             }
@@ -208,7 +208,7 @@ getUsersResultQuestions = function (callback) {
 }
 
 getResultQuestion = function(){
-    console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
+    //console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -221,12 +221,18 @@ getResultQuestion = function(){
             if(GAME.question.type=='quiz'){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
-                  //setTimeout(getResultQuestion, 500)
+                  //if (GAME.stage == 1) {
+                    setTimeout(getResultQuestion, 500)
+                  //}
                 } else if (response.responseJSON.result == 'standoff') {
                   alert('Ничья')
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
+                  if (GAME.stage == 2) {
+                    tryToConquer();
+                    GAME.question = {};
+                  }
                 }
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
             } else if (GAME.question.type=='normal') {
@@ -235,9 +241,11 @@ getResultQuestion = function(){
                     quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
-                    //setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 500)
                 }else if(typeof response.responseJSON.result == "object"){
-                    console.log('РЕЗУЛЬТАТ!!!', response.responseJSON.result)
+                    console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
+                    tryToConquer();
+                    GAME.question = {};
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
@@ -260,7 +268,7 @@ sendQuestionAnswer = function(callback){
     dataType: 'json',
     success: function (response) {
       if (response.status) {
-        console.log(response);
+        //console.log(response);
         callback();
       }
     },
