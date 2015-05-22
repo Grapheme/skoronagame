@@ -46,6 +46,24 @@ function normalExpire() {
   });
 }
 
+function compareUsers(userA, userB) {
+  return userB.points - userA.points;
+}
+
+function renderGameOver() {
+  
+  GAME.users.sort(compareUsers);
+  
+  $('#winer .places .first .name').text(GAME.users[0].name)
+  
+  $('#winer .places .second .name').text(GAME.users[1].name)
+  
+  $('#winer .places .third .name').text(GAME.users[2].name)
+  
+  openFrame('winer');
+  showPoppups();
+}
+
 function quizQuesionRender(players) {
   players = players || [];
   clearInterval(quiz_interval);
@@ -168,7 +186,7 @@ function renderPlayers() {
 $('body').on('click', '#question-2 .a a', function(e){
   e.preventDefault();
   if ($('#question-2 .a a.active').size()==0) {
-    GAME.question.answer = $(this).text();
+    GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass('active');
     sendQuestionAnswer(function(){
@@ -256,7 +274,8 @@ renderNormalQuestion = function(conqu, enemy_id){
     $('#question-2 .q').html(GAME.question.text);
     $('#question-2 .a').html('');
     $.each(GAME.question.answers, function(index, value){
-      $('#question-2 .a').append('<a href="">'+value+'</a>');
+      //$('#question-2 .a').append
+      $('<a href="">'+value+'</a>').appendTo($('#question-2 .a')).data('id', index);
     });
     //$('#question-2 .a')
     openFrame('question-2');

@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 1;                                       // id игры
+GAME.game_id = 0;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -55,6 +55,8 @@ var getGame = function(callback){
     });
 };
 
+
+
 overGame = function(){
 
     $.ajax({
@@ -65,7 +67,8 @@ overGame = function(){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
-                alert('КОнец')
+                renderGameOver();
+                //alert('КОнец')
             }
         },
         error: function (xhr, textStatus, errorThrown) {}

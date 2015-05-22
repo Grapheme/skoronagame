@@ -23,5 +23,5 @@
             <div class="place">занял 3 место</div>
         </div>
     </div><img src="{{ asset(Config::get('site.theme_path').'/images/podium.png') }}" style="margin-top: -40px;"><br>
-    <center><a href="#menu" class="btn">Закрыть</a></center>
+    <center><a href="" class="btn">Закрыть</a></center>
 </div>
