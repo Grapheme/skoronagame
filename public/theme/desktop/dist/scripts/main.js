@@ -262,7 +262,7 @@ getResultQuestion = function(){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
                   //if (GAME.stage == 1) {
-                    setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 1000)
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
@@ -287,7 +287,7 @@ getResultQuestion = function(){
                     quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
-                    setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 1000)
                 }else if(typeof response.responseJSON.result == "object"){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
                     tryToConquer();
@@ -477,6 +477,7 @@ var normal_interval;
 
 
 function startQuizeTimer() {
+  clearInterval(quiz_interval);
   var timer = quiz_timer_default;
   $('#question-1 .right .timer').text(timer);
   quiz_interval = setInterval(function(){
@@ -489,6 +490,7 @@ function startQuizeTimer() {
 }
 
 function quizeExpire() {
+  clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
     $('#question-1 form.a').find('input').val(99999);
     $('#question-1 form.a').submit();
@@ -496,18 +498,20 @@ function quizeExpire() {
 }
 
 function startNormalTimer() {
+  clearInterval(normal_interval);
   var timer = quiz_timer_default;
   $('#question-2 .timer').text(timer);
   normal_interval = setInterval(function(){
     $('#question-2 .timer').text(timer);
     timer--
     if (timer <= 0) {
-      //normalExpire();
+      normalExpire();
     }
   }, 1000)
 }
 
 function normalExpire() {
+  clearInterval(normal_interval);
   GAME.question.answer = 99999;
   GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
   sendQuestionAnswer(function(){
