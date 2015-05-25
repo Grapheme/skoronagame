@@ -319,9 +319,12 @@ sendQuestionAnswer = function(callback){
       if (response.status) {
         //console.log(response);
         callback();
+      } else {
+        sendQuestionAnswer(callback);
       }
     },
     error: function (xhr, textStatus, errorThrown) {
+        sendQuestionAnswer(callback);
     }
   });
 }
@@ -670,6 +673,7 @@ function renderPlayers() {
 $('body').on('click', '#question-2 .a a', function(e){
   e.preventDefault();
   if ($('#question-2 .a a.active').size()==0) {
+    clearInterval(normal_interval);
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass('active');
