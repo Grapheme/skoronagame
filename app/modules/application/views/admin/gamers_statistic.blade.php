@@ -11,11 +11,11 @@
                     </tr>
                     <tr>
                         <td>Среднее время, проведенное в игре</td>
-                        <td>{{ $game_medium_time }}</td>
+                        <td>{{ $game_medium_time }} мин.</td>
                     </tr>
                     <tr>
                         <td>Среднее время ответов</td>
-                        <td>{{ $question_medium_time }}</td>
+                        <td>{{ $question_medium_time }} сек.</td>
                     </tr>
                 </tbody>
             </table>
