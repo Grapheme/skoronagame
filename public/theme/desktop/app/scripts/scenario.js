@@ -135,7 +135,7 @@ function tryToConquer() {
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
-    if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || GAME.question.result[GAME.user.id]==1 )) {
+    if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || (GAME.question.result && GAME.question.result[GAME.user.id]==1) )) {
       sendConquestEmptyTerritory(GAME.mustConquer, function(){
         //normalQuestionIsrender=false;
         //GAalert('ЗАХВАт')
