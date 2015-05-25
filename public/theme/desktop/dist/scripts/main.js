@@ -137,7 +137,7 @@ getQuizQuestion = function(_users, callback){
             //$("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
-            
+            getQuizQuestion(_users, callback);
         }
     });
 }
@@ -486,7 +486,7 @@ function startQuizeTimer() {
   quiz_interval = setInterval(function(){
     $('#question-1 .right .timer').text(timer);
     timer--
-    if (timer <= 0) {
+    if (timer < 0) {
       quizeExpire();
     }
   }, 1000)
@@ -507,7 +507,7 @@ function startNormalTimer() {
   normal_interval = setInterval(function(){
     $('#question-2 .timer').text(timer);
     timer--
-    if (timer <= 0) {
+    if (timer < 0) {
       normalExpire();
     }
   }, 1000)
@@ -515,12 +515,14 @@ function startNormalTimer() {
 
 function normalExpire() {
   clearInterval(normal_interval);
-  GAME.question.answer = 99999;
-  GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
-  sendQuestionAnswer(function(){
-    getResultQuestion();
-    //normalQuestionIsrender=false;
-  });
+  if ($('#question-2 .a a.active').size()>0) {
+    GAME.question.answer = 99999;
+    GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
+    sendQuestionAnswer(function(){
+      getResultQuestion();
+      //normalQuestionIsrender=false;
+    });
+  }
 }
 
 function compareUsers(userA, userB) {
@@ -859,8 +861,8 @@ showQuestionResult = function(response){
 
 
 function afterAnswer() {
-  $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideUp();
-  $('#question-1 .right .answerlkhbdsfksdlhfg').slideDown();
+  $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideUp(100);
+  $('#question-1 .right .answerlkhbdsfksdlhfg').slideDown(100);
 }
 
 $(document).ready(function () {
@@ -871,8 +873,9 @@ $(document).ready(function () {
     GAME.question.answer
     $(this).find('input').val('');
     GAME.question.time = quiz_timer_default - $('#question-1 .right .timer').text();
+    afterAnswer();
     sendQuestionAnswer(function(){
-      afterAnswer();
+      //afterAnswer();
       getResultQuestion();
     });
     //GAME.sendQuestionAnswer();
