@@ -51,7 +51,9 @@ var getGame = function(callback){
                 
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            getGame(callback);
+        }
     });
 };
 
@@ -301,6 +303,7 @@ getResultQuestion = function(){
           }
       },
       error: function (xhr, textStatus, errorThrown) {
+        getResultQuestion();
       }
   });
 }
