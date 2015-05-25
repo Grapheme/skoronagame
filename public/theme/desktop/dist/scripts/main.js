@@ -483,7 +483,7 @@ function startQuizeTimer() {
   quiz_interval = setInterval(function(){
     $('#question-1 .right .timer').text(timer);
     timer--
-    if (timer < 0) {
+    if (timer <= 0) {
       quizeExpire();
     }
   }, 1000)
