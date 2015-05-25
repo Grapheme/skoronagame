@@ -346,7 +346,7 @@ class GameController extends BaseController {
                         $this->game_answers['answers_titles'][$userGameQuestion->user_id] = $userGameQuestion->answer;
                         $this->game_answers['answers_times'][$userGameQuestion->user_id] = $userGameQuestion->seconds;
                     endforeach;
-                    if(!empty($this->game_answers['current_answer']) && !empty($this->game_answers['answers_titles']) && !empty($this->game_answers['answers_times'])):
+                    if($this->game_answers['current_answer'] !== FALSE && !empty($this->game_answers['answers_titles']) && !empty($this->game_answers['answers_times'])):
                         if (Input::get('type') == 'quiz'):
                             $this->setQuizQuestionWinner();
                         elseif (Input::get('type') == 'normal'):
