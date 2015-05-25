@@ -37,7 +37,7 @@ var getGame = function(callback){
                 //GAME.map = GAME.response.map;
                 
 
-                if (GAME.response.settings.current_tour == 4 && GAME.next_turn == 0 && GAME.status == "over") {
+                if ((GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) || GAME.status == "over") {
                     var _status = true;
                     $.each(GAME.users, function(index, value){
                         if (value.status != 2) {
@@ -55,6 +55,8 @@ var getGame = function(callback){
     });
 };
 
+
+
 overGame = function(){
 
     $.ajax({
@@ -65,7 +67,8 @@ overGame = function(){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
-                alert('КОнец')
+                renderGameOver();
+                //alert('КОнец')
             }
         },
         error: function (xhr, textStatus, errorThrown) {}
@@ -94,6 +97,8 @@ getNormalQuestion = function(callback){
                 callback();
                 //GAME.parseQuestionResponse();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getNormalQuestion(callback);
             }
         },
         error: function (xhr, textStatus, errorThrown) {}
@@ -124,10 +129,14 @@ getQuizQuestion = function(_users, callback){
                 //GAME.question.type = GAME.response.question.type;
                 //GAME.parseQuestionResponse();
                 //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getQuizQuestion(_users, callback);
             }
             //$("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            
+        }
     });
 }
 
@@ -257,7 +266,12 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                  quizQuesionRender();
+                  
+                  if (GAME.stage == 2) {
+                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                  } else {
+                    quizQuesionRender();
+                  }
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
@@ -502,6 +516,24 @@ function normalExpire() {
   });
 }
 
+function compareUsers(userA, userB) {
+  return userB.points - userA.points;
+}
+
+function renderGameOver() {
+  
+  GAME.users.sort(compareUsers);
+  
+  $('#winer .places .first .name').text(GAME.users[0].name)
+  
+  $('#winer .places .second .name').text(GAME.users[1].name)
+  
+  $('#winer .places .third .name').text(GAME.users[2].name)
+  
+  openFrame('winer');
+  showPoppups();
+}
+
 function quizQuesionRender(players) {
   players = players || [];
   clearInterval(quiz_interval);
@@ -624,7 +656,7 @@ function renderPlayers() {
 $('body').on('click', '#question-2 .a a', function(e){
   e.preventDefault();
   if ($('#question-2 .a a.active').size()==0) {
-    GAME.question.answer = $(this).text();
+    GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass('active');
     sendQuestionAnswer(function(){
@@ -696,6 +728,7 @@ renderNormalQuestion = function(conqu, enemy_id){
     conqu: conqu,
     def: enemy_id
   }
+  
   clearInterval(quiz_interval);
   clearInterval(normal_interval);
   getNormalQuestion(function(){
@@ -711,7 +744,8 @@ renderNormalQuestion = function(conqu, enemy_id){
     $('#question-2 .q').html(GAME.question.text);
     $('#question-2 .a').html('');
     $.each(GAME.question.answers, function(index, value){
-      $('#question-2 .a').append('<a href="">'+value+'</a>');
+      //$('#question-2 .a').append
+      $('<a href="">'+value+'</a>').appendTo($('#question-2 .a')).data('id', index);
     });
     //$('#question-2 .a')
     openFrame('question-2');
