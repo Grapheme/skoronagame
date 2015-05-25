@@ -2,7 +2,7 @@
 return array(
 
     'number_participants' => 3,
-    'time_activity' => time()-300,
+    'time_activity' => time()-(1000*3*60),
     'number_places_on_map' => 15,
     'map_empty_place_lives' => 1,
     'map_capital_place_lives' => 3,

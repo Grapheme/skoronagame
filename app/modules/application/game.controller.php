@@ -123,7 +123,7 @@ class GameController extends BaseController {
         if (!Request::ajax()) return App::abort(404);
         $validator = Validator::make(Input::all(), array('email' => 'required|email', 'password' => 'required'));
         if ($validator->passes()):
-//          Auth::loginUsingId(16);
+//          Auth::loginUsingId(3);
 //          $this->json_request['redirect'] = AuthAccount::getStartPage();
 //          $this->json_request['status'] = TRUE;
             if (Auth::attempt(array('email' => Input::get('email'), 'password' => Input::get('password'),
@@ -693,12 +693,14 @@ class GameController extends BaseController {
 
         if ($this->game):
             $users = $map = array();
+            $activeUsers = Sessions::getUserIDsLastActivity();
             foreach (GameUser::where('game_id', $this->game->id)->with('user')->get() as $user_game):
                 $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
                     'email' => $user_game->user->email, 'photo' => $user_game->user->photo,
                     'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
                     'status' => $user_game->status,
                     'available_steps' => $user_game->available_steps,'make_steps' => $user_game->make_steps,
+                    'active' => in_array($user_game->user->id,$activeUsers),
                     'settings' => json_decode($user_game->json_settings, TRUE));
             endforeach;
             foreach (GameMap::where('game_id', $this->game->id)->orderBy('id')->get() as $map_place):
@@ -1311,4 +1313,5 @@ class GameController extends BaseController {
         endif;
         return TRUE;
     }
+
 }
