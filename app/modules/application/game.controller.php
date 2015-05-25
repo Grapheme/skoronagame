@@ -641,17 +641,17 @@ class GameController extends BaseController {
             endforeach;
             try {
                 // первый тур
-                $json_settings['stage2_tours'][0][0][$user_ids[1]] = FALSE;
-                $json_settings['stage2_tours'][0][1][$user_ids[2]] = FALSE;
-                $json_settings['stage2_tours'][0][2][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[3]] = FALSE;
                 // второй тур
-                $json_settings['stage2_tours'][1][0][$user_ids[2]] = FALSE;
-                $json_settings['stage2_tours'][1][1][$user_ids[3]] = FALSE;
-                $json_settings['stage2_tours'][1][2][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[1]] = FALSE;
                 // третий тур
-                $json_settings['stage2_tours'][2][0][$user_ids[3]] = FALSE;
-                $json_settings['stage2_tours'][2][1][$user_ids[1]] = FALSE;
-                $json_settings['stage2_tours'][2][2][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[2]] = FALSE;
             } catch(Exception $e){
 
             }
