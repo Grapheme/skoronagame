@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 1;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -491,6 +491,11 @@ function startQuizeTimer() {
     }
   }, 1000)
 }
+
+/*stage2_tours = [
+[{4:false},{5:true},{6:true}],
+[{6:true},{4:false},{5:true}]
+]*/
 
 function quizeExpire() {
   clearInterval(quiz_interval)

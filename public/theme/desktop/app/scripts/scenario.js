@@ -19,6 +19,11 @@ function startQuizeTimer() {
   }, 1000)
 }
 
+/*stage2_tours = [
+[{4:false},{5:true},{6:true}],
+[{6:true},{4:false},{5:true}]
+]*/
+
 function quizeExpire() {
   clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
