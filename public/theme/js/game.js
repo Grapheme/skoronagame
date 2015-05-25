@@ -445,7 +445,6 @@ GAME.parseGameResponse = function(){
             }
         }
     }else if(GAME.status == GAME.statuses[3]){
-        alert(GAME.settings.message);
         GAME.reInitialize();
         location.reload();
     }

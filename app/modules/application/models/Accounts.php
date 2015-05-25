@@ -17,4 +17,9 @@ class Accounts extends BaseModel {
 
         return $this->hasMany('GameUserBadges','user_id','id');
     }
+
+    public function rating(){
+
+        return $this->hasMany('GameUserRating','user_id','id');
+    }
 }

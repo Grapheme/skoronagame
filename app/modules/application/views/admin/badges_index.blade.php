@@ -49,8 +49,8 @@
 @stop
 @section('scripts')
     <script>
-        var essence = 'question';
-        var essence_name = 'вопрос';
+        var essence = 'badge';
+        var essence_name = 'бейдж';
     </script>
     {{ HTML::script('private/js/modules/standard.js') }}
 @stop

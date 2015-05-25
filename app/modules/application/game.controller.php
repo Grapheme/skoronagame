@@ -87,6 +87,16 @@ class GameController extends BaseController {
             'link' => self::$name.'/'.BadgesController::$name,
             'class' => 'fa-trophy',
         );
+        $menu_child[] = array(
+            'title' => 'Игроки',
+            'link' => self::$name.'/'.GamerController::$name,
+            'class' => 'fa-users',
+        );
+        $menu_child[] = array(
+            'title' => 'Статистика',
+            'link' => self::$name.'/statistic',
+            'class' => 'fa-bar-chart',
+        );
         $menu[] = array(
             'title' => 'Игра',
             'link' => '#',
@@ -336,29 +346,33 @@ class GameController extends BaseController {
                         $this->game_answers['answers_titles'][$userGameQuestion->user_id] = $userGameQuestion->answer;
                         $this->game_answers['answers_times'][$userGameQuestion->user_id] = $userGameQuestion->seconds;
                     endforeach;
-                    if (Input::get('type') == 'quiz'):
-                        $this->setQuizQuestionWinner();
-                    elseif (Input::get('type') == 'normal'):
-                        $this->setNormalQuestionWinner();
-                    endif;
-                    if ($this->game_winners === 'standoff'):
-                        $this->resetQuestions();
-                    elseif (count($this->game_winners) == $number_participants):
-                        try{
-                            GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
-                            foreach ($this->game_winners as $user_id => $place):
-                                GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
-                                    ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
-                                $available_steps = $this->getAvailableSteps($user_id, $place);
-                                GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('available_steps' => $available_steps));
-                            endforeach;
-                            if($this->validGameStage(2)):
-                                $this->createDuel();
-                                $this->nextStepInSecondStage();
-                            endif;
-                        }catch (Exception $e){
+                    if(!empty($this->game_answers['current_answer']) && !empty($this->game_answers['answers_titles']) && !empty($this->game_answers['answers_times'])):
+                        if (Input::get('type') == 'quiz'):
+                            $this->setQuizQuestionWinner();
+                        elseif (Input::get('type') == 'normal'):
+                            $this->setNormalQuestionWinner();
+                        endif;
+                        if ($this->game_winners === 'standoff'):
+                            $this->resetQuestions();
+                        elseif (count($this->game_winners) == $number_participants):
+                            try{
+                                GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+                                foreach ($this->game_winners as $user_id => $place):
+                                    GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
+                                        ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
+                                    $available_steps = $this->getAvailableSteps($user_id, $place);
+                                    GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('available_steps' => $available_steps));
+                                endforeach;
+                                if($this->validGameStage(2)):
+                                    $this->createDuel();
+                                    $this->nextStepInSecondStage();
+                                endif;
+                            }catch (Exception $e){
 
-                        }
+                            }
+                        endif;
+                    else:
+                        $this->game_winners = 'retry';
                     endif;
                 elseif ($userQuestion = GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 2)->first()):
                     $this->game_winners = GameUserQuestions::where('game_id', $this->game->id)->where('status', 2)->where('group_id', $userQuestion->group_id)->lists('place','user_id');
