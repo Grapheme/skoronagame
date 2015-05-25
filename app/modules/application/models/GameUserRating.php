@@ -1,10 +1,10 @@
 <?php
 
-class GameMap extends \BaseModel {
+class GameUserRating extends \BaseModel {
 
-    protected $table = 'game_mapfields';
+    protected $table = 'game_users_rating';
     protected $guarded = array('id','_method','_token');
-    protected $fillable = array('game_id','user_id','zone','capital','lives','status','points','json_settings');
+    protected $fillable = array('game_id','user_id','rating');
     public static $rules = array();
 
     public function user(){

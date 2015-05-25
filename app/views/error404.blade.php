@@ -34,6 +34,5 @@
 
 @stop
 
-
 @section('scripts')
 @stop
