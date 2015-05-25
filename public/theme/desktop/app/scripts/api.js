@@ -262,7 +262,7 @@ getResultQuestion = function(){
                 if (response.responseJSON.result == 'retry') {
                   //console.log(response)
                   //if (GAME.stage == 1) {
-                    setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 1000)
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
@@ -287,7 +287,7 @@ getResultQuestion = function(){
                     quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
-                    setTimeout(getResultQuestion, 500)
+                    setTimeout(getResultQuestion, 1000)
                 }else if(typeof response.responseJSON.result == "object"){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
                     tryToConquer();
