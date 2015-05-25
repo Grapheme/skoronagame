@@ -137,7 +137,7 @@ getQuizQuestion = function(_users, callback){
             //$("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
-            
+            getQuizQuestion(_users, callback);
         }
     });
 }
