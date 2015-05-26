@@ -131,7 +131,7 @@ function matchmaking() {
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  setTimeout(hidePoppups, 7000);
+  setTimeout(hidePoppups, 1000);
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
