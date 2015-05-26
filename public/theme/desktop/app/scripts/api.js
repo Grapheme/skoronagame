@@ -207,6 +207,11 @@ function parseGameData(response) {
         } else {
             GAME.duel = {};
         }
+        
+        if (response.responseJSON.settings.stage2_tours_json) {
+            GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            renderSteps();
+        }
     }
     GAME.response = response.responseJSON;
 }

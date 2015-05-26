@@ -22,6 +22,105 @@ body {
   background: #5b6d7a;
 }
 
+.infowindow {
+  position: absolute;
+  color: #eee;
+  font-family: "Verdana";
+  bottom: 30px;
+  left: 30px;
+  .top {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: rgba(#00341f, 0.5);
+    padding: 6px 0;
+    padding-left: 18px;
+  }
+  .bottom {
+    background: rgba(#00341f, 0.5);
+    height: 15px;
+    width: 100%;
+  }
+  .middle {
+    padding-top: 22px;
+    background: rgba(black, 0.3);
+    padding-bottom: 11px;
+    @include cf();
+    .text {
+      float: left;
+      font-size: 12px;
+      opacity: 0.6;
+      padding-left: 18px;
+      margin-right: 40px;
+      width: 42px;
+    }
+    .tour {
+      float: left;
+      margin-right: 22px;
+      position: relative;
+      .flags {
+        @include cf();
+        .flag {
+          svg {
+            width: 18px;
+            fill: white;
+          }
+          float: left;
+          margin-right: 9px;
+          -webkit-animation-duration: 1s;
+          animation-duration: 1s;
+          -webkit-animation-fill-mode: both;
+          animation-fill-mode: both;
+          animation-iteration-count:infinite;
+          -webkit-animation-iteration-count:infinite;
+          &:last-of-type {
+            margin-right: 0;
+          }
+          &.red {
+            svg {
+              fill: #ad062e;
+            }
+          }
+          &.blue {
+            svg {
+              fill: #ad062e;
+            }
+            fill: #0000ff;
+          }
+          &.green {
+            svg {
+              fill: #ad062e;
+            }
+            fill: #d39500;
+          }
+          &.active {
+            -webkit-animation-name: bounce; 
+            animation-name: bounce; 
+          }
+        }
+      }
+      .title {
+        border-top: 1px solid white;
+        font-size: 9px;
+        text-align: center;
+        margin-top: 10px;
+        position: absolute;
+        width: 100%;
+      }
+    }
+  }
+}
+
+@-webkit-keyframes bounce { 
+  0%, 100% {-webkit-transform: translateY(2px);} 
+  50% {-webkit-transform: translateY(-10px);} 
+} 
+
+@keyframes bounce { 
+  0%, 100% {transform: translateY(2px);} 
+  50% {transform: translateY(-10px);} 
+} 
+
 .popup-wrapper {
   position: fixed;
   top: 0;
