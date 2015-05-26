@@ -328,12 +328,14 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('question'=>'required','answer'=>'','time'=>'required'));
         if($validation->passes()):
             if ($this->initGame()):
-                if($userGameQuestion = GameUserQuestions::where('game_id',$this->game->id)->where('id',Input::get('question'))->where('user_id',Auth::user()->id)->first()):
+                if($userGameQuestion = GameUserQuestions::where('game_id',$this->game->id)->where('id',Input::get('question'))->where('user_id',Auth::user()->id)->with('question')->first()):
+                    $this->sendBotsAnswers($userGameQuestion);
                     $userGameQuestion->status = 1;
                     $userGameQuestion->answer = (int)Input::get('answer');
                     $userGameQuestion->seconds = (int)Input::get('time');
                     $userGameQuestion->save();
                     $userGameQuestion->touch();
+                    $this->sendBotsAnswers($userGameQuestion->group_id);
                     if ($userGameQuestion->answer != 99999):
                         $this->json_request['responseText'] = "Спасибо. Ваш ответ принят.";
                     else:
@@ -371,7 +373,7 @@ class GameController extends BaseController {
                         endif;
                         if ($this->game_winners === 'standoff'):
                             $this->resetQuestions();
-                        elseif(!empty($this->game_winners) && is_object($this->game_winners)):
+                        elseif(!empty($this->game_winners) && is_array($this->game_winners)):
                             GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                             foreach ($this->game_winners as $user_id => $place):
                                 GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
@@ -564,13 +566,16 @@ class GameController extends BaseController {
         $user_games_count = GameUser::where('game_id', $this->game->id)->count();
         $bots = array();
         if ($user_games_count == 1):
-            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1, 'status' => 0, 'points' => 0,
-                'json_settings' => json_encode(array()));
-            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 4, 'is_bot' => 1, 'status' => 0, 'points' => 0,
-                'json_settings' => json_encode(array()));
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1,
+                'status' => 0, 'points' => 0,
+                'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 4, 'is_bot' => 1,
+                'status' => 0, 'points' => 0,
+                'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
         elseif ($user_games_count == 2):
-            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1, 'status' => 0, 'points' => 0,
-                'json_settings' => json_encode(array()));
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1,
+                'status' => 0, 'points' => 0,
+                'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
         endif;
         if (count($bots)):
             GameUser::insert($bots);
@@ -714,7 +719,7 @@ class GameController extends BaseController {
         foreach($json_settings['stage2_tours'] as $tour => $user_steps):
             $stage2_tours_steps = array();
             foreach($user_steps as $user_id => $step):
-                $stage2_tours_steps[] = '{'.$user_id.':'.(int)$step.'}';
+                $stage2_tours_steps[] = '{'.$user_id.':'.$step.'}';
             endforeach;
             $stage2_tours_json[] = '['.implode(',',$stage2_tours_steps).']';
         endforeach;
@@ -974,6 +979,15 @@ class GameController extends BaseController {
     private function validGameStage($stage){
 
         if ($this->game->stage == $stage):
+            return TRUE;
+        else:
+            return FALSE;
+        endif;
+    }
+
+    private function validGameBots(){
+
+        if(GameUser::where('game_id',$this->game->id)->where('is_bot',1)->exists()):
             return TRUE;
         else:
             return FALSE;
@@ -1376,6 +1390,38 @@ class GameController extends BaseController {
             endforeach;
         endif;
         return TRUE;
+    }
+
+    private function getGameBotsIDs(){
+
+        return GameUser::where('game_id',$this->game->id)->where('is_bot',1)->lists('user_id');
+    }
+
+    private function sendBotsAnswers($userGameQuestion){
+
+        if($bots_id = $this->getGameBotsIDs()):
+            $current_answer = (int) $this->getCurrentAnswer($userGameQuestion);
+            $question_id = isset($userGameQuestion->question_id) ? $userGameQuestion->question_id : 0;
+            if($question = GameQuestions::where('id',$question_id)->first()):
+                $question_type = $question->type;
+                if($question_type == 'quiz'):
+                    foreach($bots_id as $bot_id):
+                        $min_value = $current_answer - round($current_answer*0.4,0);
+                        $max_value = $current_answer + round($current_answer*0.4,0);
+                        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $bot_id)->first()):
+                            $botGameQuestion->status = 1;
+                            $botGameQuestion->answer = mt_rand($min_value, $max_value);
+                            $botGameQuestion->seconds = mt_rand(3, 7);
+                            $botGameQuestion->save();
+                            $botGameQuestion->touch();
+                        endif;
+                    endforeach;
+                elseif($question_type == 'normal'):
+
+                endif;
+            endif;
+
+        endif;
     }
 
 }

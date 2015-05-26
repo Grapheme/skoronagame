@@ -20,41 +20,42 @@ GAME.reInitialize = function(){
     GAME.conquerorZone = 0                                  // номер зоны для завоевания
     GAME.isCapital = 0;                                     // признак того что нападают на сталицу
     GAME.timer = {timer_object:{},time:10};
+    GAME.time_bot = 5;                                      // время в секундах до инициалицации ботов
 }
 /*
-Метод получает информацию о текущей игре или инициирует новую
-Отправляет:
-        game  - (int)ID игры или (string)null - если игра не существует.
-Результат:
+ Метод получает информацию о текущей игре или инициирует новую
+ Отправляет:
+ game  - (int)ID игры или (string)null - если игра не существует.
+ Результат:
  game_id - (int) ID текущей игры
  game_stage - (int) этап игры (0-не началась, 1,2 и т.д.)
  game_status - (string) статус игры. (GAME.statuses)
-        wait - ожидает начала
-        start - игра началась
-        ready - игра активная
-        over - игра завершена
+ wait - ожидает начала
+ start - игра началась
+ ready - игра активная
+ over - игра завершена
  current_user - (int) ID текущего пользователя
  users - список пользователей
-        color - цвет
-        points - очки
-        place - занятое место
-        status - статус пользователя
-        available_steps - доступно ходов
-        make_steps - сделано ходов
-        settings - (JSON) иные данные
- map - карта
-        id - (int) ID области
-        zone - (int) номер области (1-15)
-        user_id - (int) ID пользователя владельца области
-        capital - (int) Столица (1/0)
-        lives - (int) количество доступных жизней области
-        settings - (JSON) иные данные
-        settings.color - код цвета области
+ color - цвет
+ points - очки
+ place - занятое место
+ status - статус пользователя
+ available_steps - доступно ходов
+ make_steps - сделано ходов
  settings - (JSON) иные данные
-        settings.next_step - (int) ID пользователя который делает следующий шаг
-        settings.message - (string) сообщение для всех (необязательное)
+ map - карта
+ id - (int) ID области
+ zone - (int) номер области (1-15)
+ user_id - (int) ID пользователя владельца области
+ capital - (int) Столица (1/0)
+ lives - (int) количество доступных жизней области
+ settings - (JSON) иные данные
+ settings.color - код цвета области
+ settings - (JSON) иные данные
+ settings.next_step - (int) ID пользователя который делает следующий шаг
+ settings.message - (string) сообщение для всех (необязательное)
 
-*/
+ */
 GAME.getGame = function(){
     $.ajax({
         type: "POST",
@@ -96,6 +97,7 @@ GAME.getBots = function (){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
+                GAME.getGame();
                 $("#js-server-response").html(JSON.stringify(GAME.response));
             }
             $("#js-server-notification").html(response.responseText);
@@ -132,15 +134,15 @@ GAME.overGame = function(){
 /*
  Метод получает Квиз-вопрос
  Отправляет:
-        game  - (int)ID игры.
-        users - (array) id пользователей кому выдавать вопрос
+ game  - (int)ID игры.
+ users - (array) id пользователей кому выдавать вопрос
  Результат:
-    ...
+ ...
  question - вопрос
-        id - (int) ID вопроса
-        text - (string) текст вопроса
-        type - (string) тип вопроса (quiz/normal)
-*/
+ id - (int) ID вопроса
+ text - (string) текст вопроса
+ type - (string) тип вопроса (quiz/normal)
+ */
 GAME.getQuizQuestion = function(){
     $.ajax({
         type: "POST",
@@ -207,10 +209,10 @@ GAME.getNormalQuestion = function(){
 /*
  Метод отправляет ответ на вопрос
  Отправляет:
-        game  - (int)ID игры.
-        question  - (int)ID вопроса.
-        answer  - (int) ответ.
-        time  - (int) время потраченное на ответ.
+ game  - (int)ID игры.
+ question  - (int)ID вопроса.
+ answer  - (int) ответ.
+ time  - (int) время потраченное на ответ.
  Результат:
  ...
  status - (boolean) результат обработки
@@ -284,12 +286,12 @@ GAME.getResultQuestion = function(){
  current_answer - (string) Приавильный ответ
  results - (JSON) ответы пользователей
  results = {"15":{"answer":"9","seconds" :2,"place":1,"status":2,"correctly":1}
-    15 - (int)ID пользователя
-    answer - (string) ответ пользователя
-    seconds - (int) время потраченное на ответ пользователем
-    place - (int) занятое место по результам всех ответов
-    status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
-    correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
+ 15 - (int)ID пользователя
+ answer - (string) ответ пользователя
+ seconds - (int) время потраченное на ответ пользователем
+ place - (int) занятое место по результам всех ответов
+ status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
+ correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
  */
 GAME.getUsersResultQuestions = function () {
 
@@ -610,11 +612,10 @@ GAME.startBotTimer = function(){
     var time_interval = 0;
     GAME.timer.timer_object = setInterval(function () {
         time_interval++;
-        if (time_interval >= 5) {
+        if (time_interval >= GAME.time_bot){
             clearInterval(GAME.timer.timer_object);
             GAME.getBots();
         }
-        console.log(time_interval);
     }, 1000);
 }
 /*
