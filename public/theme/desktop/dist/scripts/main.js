@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 17;//17                                       // id игры
+GAME.game_id = 18;//18                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -209,14 +209,13 @@ function parseGameData(response) {
         }
         
         if (response.responseJSON.settings.stage2_tours_json) {
-            GAME.stage2_tours_json = response.responseJSON.settings.stage2_tours_json;
-            console.log('!!!!', GAME.stage2_tours_json)
-            //GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
             renderSteps();
         }
     }
     GAME.response = response.responseJSON;
 }
+
 
 /*
  Метод запрашивает состояние ответов на вопрос
@@ -379,6 +378,11 @@ $(window).load(function() {
 
 $('.areas .countur svg path').hover(function(){
   $(this).closest('.area').toggleClass('active');
+  if ($(this).closest('.area').data('info')) {
+    var _points = $(this).closest('.area').data('info').points || 0;
+    $('.infowindow-holder .infowindow-small').text(_points);
+    $('.infowindow-holder').toggle();
+  }
 });
 
 var _history = [];
@@ -442,6 +446,23 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
+function sexyAlert(text, timeOut, callback) {
+  timeOut = timeOut || 3;
+  callback = callback || function(){};
+  
+  if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    showPoppups();
+    $('#sexy-alert .note').html(text);
+    openFrame('sexy-alert');
+    
+    setTimeout(function(){
+      hidePoppups();
+      callback();
+    }, timeOut*1000);
+  }
+  
+}
+
 function hidePoppups() {
   $('.popup-wrapper').slideUp();
 }
@@ -450,20 +471,22 @@ function showPoppups() {
   $('.popup-wrapper').slideDown();
 }
 
-$('form').submit(function(e){
-  e.preventDefault();
-  
-  if ($(this).is('.noajax')) return false;
-  
-  var _href = $(this).attr('action');
-  var _method = $(this).attr('method');
-  var _popup = $(this).attr('data-result');
+sendForm = function(form) {
+  //alert('!!!')
+  //$(form).submit();
+  /*if ($(form).is('.noajax')) {
+    $(form).submit();
+  }*/
+
+  var _href = $(form).attr('action');
+  var _method = $(form).attr('method');
+  var _popup = $(form).attr('data-result');
   $.ajax({
     type: _method,
     url: _href,
-    data: $(this).serialize(),
+    data: $(form).serialize(),
     success: function (response) {
-      console.log(response)
+      console.log(response);
       if (response.status == true) {
       //open_popup = $(this).attr('data-result');
         if (response.redirect) {
@@ -471,7 +494,7 @@ $('form').submit(function(e){
         }
         openFrame(_popup);
       } else if (response.status == false) {
-        alert(response)
+        $(form).prepend('<label class="error">'+response.responseText+'</label>');
       }
     },
     error: function (xhr, textStatus, errorThrown) {
@@ -479,7 +502,47 @@ $('form').submit(function(e){
       console.log(textStatus)
     }
   });
+}
 
+
+$('#login form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    password: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    password: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('#register form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    name: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    name: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
 });
 var firstTime = new Date().getTime()/1000;
 var search_timeout = 90;
@@ -530,7 +593,7 @@ function startNormalTimer() {
 
 function normalExpire() {
   clearInterval(normal_interval);
-  if ($('#question-2 .a a.active').size()>0) {
+  if ($('#question-2 .a a.active').size()==0) {
     GAME.question.answer = 99999;
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     sendQuestionAnswer(function(){
@@ -563,6 +626,14 @@ function quizQuesionRender(players) {
   clearInterval(quiz_interval);
   clearInterval(normal_interval);
   renderPlayers();
+  
+  if (players.length>0) {
+    $('#question-1 .left .unit').hide();
+    $.each(players, function(index, value){
+      var _user = getUserById(value);
+      $('#question-1 .left .unit.'+_user.color).show();
+    });
+  }
   
   getQuizQuestion(players, function(){
     //alert(GAME.question.text);
@@ -615,14 +686,37 @@ function matchmaking() {
 }
 
 function renderSteps(){
-  console.log(GAME.stage2_tours_json);
   $('.infowindow.tour2').show();
+  $.each(GAME.stage2_tours_json, function(index, value){
+    var $tour = $('.infowindow.tour2 .tour.n'+(index+1));
+    if (GAME.response && GAME.response.settings && GAME.response.settings.current_tour == index) {
+      $tour.addClass('active');
+    } else {
+      $tour.removeClass('active');
+    }
+    
+    $.each(value, function(index2, value2){
+      var user_id = Object.keys(value2)[0];
+      var user_statuc = value2[user_id];
+      var user = getUserById(user_id);
+      var $flag = $tour.find('.flag').eq(index2);
+      
+      $flag.removeClass('red green blue').addClass(user.color);
+      if (GAME.next_turn == user_id) {
+        $flag.addClass('active');
+      } else {
+        $flag.removeClass('active');
+      }
+    });
+  })
 }
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  if (GAME.stage == 2 && GAME.question.type != 'quize') {
+  if (GAME.stage == 2 && GAME.question.type == 'normal') {
     setTimeout(hidePoppups, 1000);
+  } else {
+    //setTimeout(hidePoppups, 7000);
   }
   
   normalQuestionIsrender = false;
@@ -802,12 +896,17 @@ whoTurn = function() {
     //getUsersResultQuestions();
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
+        sexyAlert('Ваш ход!');
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           //hidePoppups();
         }
       } else {
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('Ходит игрок: '+ user_turn.name);
+        }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           var user_turn = getUserById(GAME.next_turn);
@@ -826,10 +925,14 @@ whoTurn = function() {
       console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
+        sexyAlert('Ваш ход!');
         //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
-        
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('Ходит игрок: '+ user_turn.name);
+        }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //var user_turn = getUserById(GAME.next_turn);
@@ -837,7 +940,8 @@ whoTurn = function() {
         
         if (!isEmpty(GAME.duel)) {
           if (GAME.duel.def == GAME.user.id) {
-            if (normalQuestionIsrender == false) {
+            if (!$('.popup-wrapper').is(":visible")) {
+            //if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
           }
@@ -877,8 +981,8 @@ showQuestionResult = function(response){
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit.'+value.color);
-      $unit.show();
       if (_answ) {
+        $unit.show();
         $unit.data('place', _answ.place);
         if (_answ.answer == 99999) {
           _answ.answer = '';

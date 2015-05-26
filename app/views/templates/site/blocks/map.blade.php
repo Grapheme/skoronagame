@@ -21,6 +21,11 @@
     <div class="points"></div>
   </div>
 </div>
+<div class="infowindow-holder">
+    <div class="infowindow-small">
+        
+    </div>
+</div>
 <div id="map">
     <div class="areas">
         @for ($i = 15; $i > 0; $i--)
