@@ -312,7 +312,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('question'=>'required','answer'=>'','time'=>'required'));
         if($validation->passes()):
             if ($this->initGame()):
-                if($userGameQuestion = GameUserQuestions::where('game_id',$this->game->id)->where('id',Input::get('question'))->where('user_id',Auth::user()->id)->with('question')->first()):
+                if($userGameQuestion = GameUserQuestions::where('game_id',$this->game->id)->where('id',Input::get('question'))->where('user_id',Auth::user()->id)->first()):
                     $userGameQuestion->status = 1;
                     $userGameQuestion->answer = (int)Input::get('answer');
                     $userGameQuestion->seconds = (int)Input::get('time');
@@ -355,7 +355,7 @@ class GameController extends BaseController {
                         endif;
                         if ($this->game_winners === 'standoff'):
                             $this->resetQuestions();
-                        else:
+                        elseif(!empty($this->game_winners) && is_object($this->game_winners)):
                             GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                             foreach ($this->game_winners as $user_id => $place):
                                 GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
@@ -367,6 +367,9 @@ class GameController extends BaseController {
                                 $this->createDuel();
                                 $this->nextStepInSecondStage();
                             endif;
+                        else:
+                            $this->game_winners = 'standoff';
+                            $this->resetQuestions();
                         endif;
                     else:
                         $this->game_winners = 'retry';
@@ -404,23 +407,26 @@ class GameController extends BaseController {
                         $answer_question = json_decode($answer_question,TRUE);
                         if (Input::get('type') == 'quiz'):
                             $current_answer = isset($answer_question[0]['title']) ? $answer_question[0]['title']: '';
+                            $current_answer_index = isset($answer_question[0]['title']) ? $answer_question[0]['title']: 0;
                             foreach($users_questions as $users_question):
                                 $correctly = ($users_question->answer == $current_answer) ? TRUE : FALSE;
                                 $users_answers[$users_question->user_id] = array('answer' => $users_question->answer,
+                                    'current_answer_index' => $current_answer_index, 'correctly' => $correctly,
                                     'seconds' => $users_question->seconds, 'place' => $users_question->place,
-                                    'status' => $users_question->status, 'correctly' => $correctly);
+                                    'status' => $users_question->status);
                             endforeach;
                         elseif (Input::get('type') == 'normal'):
-                            foreach($answer_question as $answer):
+                            foreach($answer_question as $index => $answer):
                                 if ($answer['current'] == 1):
-                                    $current_answer = $answer['title'];
+                                    $current_answer_index = $index;
                                 endif;
                             endforeach;
                             foreach($users_questions as $users_question):
                                 $answer = isset($answer_question[$users_question->answer]) ? $answer_question[$users_question->answer] : '';
                                 $users_answers[$users_question->user_id] = array('answer' => $answer['title'],
+                                    'current_answer_index' => $current_answer_index, 'correctly' => (int)$answer['current'],
                                     'seconds' => $users_question->seconds, 'place' => $users_question->place,
-                                    'status' => $users_question->status,'correctly' => (int) $answer['current']);
+                                    'status' => $users_question->status);
                             endforeach;
                         endif;
                     endif;
@@ -714,9 +720,13 @@ class GameController extends BaseController {
         if ($this->game):
             $users = $map = array();
             $activeUsers = Sessions::getUserIDsLastActivity();
-            foreach (GameUser::where('game_id', $this->game->id)->with('user')->get() as $user_game):
+            foreach (GameUser::where('game_id', $this->game->id)->with('user','user_social')->get() as $user_game):
+                $photo_link = '';
+                if(!empty($user_game->user_social) && isset($user_game->user_social->photo_big) &&!empty($user_game->user_social->photo_big)):
+                    $photo_link = $user_game->user_social->photo_big;
+                endif;
                 $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
-                    'email' => $user_game->user->email, 'photo' => $user_game->user->photo,
+                    'email' => $user_game->user->email, 'photo' => $photo_link,
                     'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
                     'status' => $user_game->status,
                     'available_steps' => $user_game->available_steps,'make_steps' => $user_game->make_steps,

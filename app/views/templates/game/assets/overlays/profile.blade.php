@@ -1,7 +1,9 @@
 <?php
 $badges = GameBadges::orderBy('name')->get();
-$profile = Accounts::where('id', Auth::user()->id)->with('games.game','badges')->first();
-$winners = $tours = $points = 0;
+$profile = Accounts::where('id', Auth::user()->id)->with('games.game','badges','social')->first();
+$winners = GameUser::where('user_id',Auth::user()->id)->where('place',1)->count();
+$tours = GameUser::where('user_id',Auth::user()->id)->count();
+$points = GameUserRating::where('user_id',Auth::user()->id)->sum('rating');
 $user_badges = array();
 if (count($profile->games)):
     foreach ($profile->games as $games):
@@ -26,7 +28,11 @@ endif;
         <div class="center">
             <div class="ava">
                 <div class="mask"></div>
+            @if(!empty($profile->social) && !empty($profile->social->photo_big))
+                <img src="{{ $profile->social->photo_big }}">
+            @else
                 <img src="http://dummyimage.com/86x98/">
+            @endif
             </div>
             <div class="info">
                 <div class="name">{{ $profile->name }}</div>

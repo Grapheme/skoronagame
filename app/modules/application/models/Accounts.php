@@ -22,4 +22,14 @@ class Accounts extends BaseModel {
 
         return $this->hasMany('GameUserRating','user_id','id');
     }
+
+    public function social(){
+
+        return $this->hasOne('Ulogin','user_id','id');
+    }
+
+    public function socials(){
+
+        return $this->hasMany('Ulogin','user_id','id');
+    }
 }

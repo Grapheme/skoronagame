@@ -11,6 +11,10 @@ class GameUser extends \BaseModel {
         return $this->hasOne('User', 'id', 'user_id');
     }
 
+    public function user_social(){
+        return $this->hasOne('Ulogin', 'user_id', 'user_id');
+    }
+
     public function game(){
         return $this->belongsTo('Game', 'game_id');
     }
