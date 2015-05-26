@@ -293,6 +293,7 @@ class GameController extends BaseController {
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         $this->createStepInSecondStage();
+                        $this->setStepInSecondStageJSON();
                         $randomQuestion = $this->randomQuestion('normal');
                         $this->createQuestion($randomQuestion->id,Input::get('users'));
                         $this->createDuel(Input::get('users'));
@@ -454,6 +455,7 @@ class GameController extends BaseController {
                             $this->nextStep();
                             $nextStep = $this->createTemplateStepInSecondStage();
                             $this->nextStep($nextStep);
+                            $this->setStepInSecondStageJSON();
                         endif;
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
@@ -632,6 +634,7 @@ class GameController extends BaseController {
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $json_settings['current_tour'] = 0;
         $json_settings['stage2_tours'] = array(array(),array(),array(),array());
+        $json_settings['stage2_tours_json'] = '[]';
         if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('user_id')):
             shuffle($users);
             $user_ids = array();
@@ -641,17 +644,17 @@ class GameController extends BaseController {
             endforeach;
             try {
                 // первый тур
-                $json_settings['stage2_tours'][0][0][$user_ids[1]] = FALSE;
-                $json_settings['stage2_tours'][0][1][$user_ids[2]] = FALSE;
-                $json_settings['stage2_tours'][0][2][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][0][$user_ids[3]] = FALSE;
                 // второй тур
-                $json_settings['stage2_tours'][1][0][$user_ids[2]] = FALSE;
-                $json_settings['stage2_tours'][1][1][$user_ids[3]] = FALSE;
-                $json_settings['stage2_tours'][1][2][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][1][$user_ids[1]] = FALSE;
                 // третий тур
-                $json_settings['stage2_tours'][2][0][$user_ids[3]] = FALSE;
-                $json_settings['stage2_tours'][2][1][$user_ids[1]] = FALSE;
-                $json_settings['stage2_tours'][2][2][$user_ids[2]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[3]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[1]] = FALSE;
+                $json_settings['stage2_tours'][2][$user_ids[2]] = FALSE;
             } catch(Exception $e){
 
             }
@@ -662,6 +665,23 @@ class GameController extends BaseController {
 
         reset($json_settings['stage2_tours'][0]);
         return array_keys($json_settings['stage2_tours'][0])[0];
+    }
+
+    private function setStepInSecondStageJSON(){
+
+        $json_settings = json_decode($this->game->json_settings, TRUE);
+        $stage2_tours_json = array();
+        foreach($json_settings['stage2_tours'] as $tour => $user_steps):
+            $stage2_tours_steps = array();
+            foreach($user_steps as $user_id => $step):
+                $stage2_tours_steps[] = '{'.$user_id.':'.(int)$step.'}';
+            endforeach;
+            $stage2_tours_json[] = '['.implode(',',$stage2_tours_steps).']';
+        endforeach;
+        $json_settings['stage2_tours_json'] = '['.implode(',',$stage2_tours_json).']';
+        $this->game->json_settings = json_encode($json_settings);
+        $this->game->save();
+        $this->game->touch();
     }
 
     private function createStepInSecondStage(){
