@@ -689,7 +689,7 @@ class GameController extends BaseController {
         foreach ($json_settings['stage2_tours'] as $tour => $user_steps):
             $stage2_tours_steps = array();
             foreach ($user_steps as $user_id => $step):
-                $stage2_tours_steps[] = '{' . $user_id . ':' . (int)$step . '}';
+                $stage2_tours_steps[] = '{"' . $user_id . '":' . (int)$step . '}';
             endforeach;
             $stage2_tours_json[] = '[' . implode(',', $stage2_tours_steps) . ']';
         endforeach;
