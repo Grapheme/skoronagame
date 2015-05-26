@@ -15,7 +15,7 @@ GAME.steps = 0;                                         // доступные ш
 GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.users = {};
-GAME.question;
+//GAME.question;
 GAME.mustConquer = null;
 
 var getGame = function(callback){
@@ -607,7 +607,7 @@ function matchmaking() {
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  setTimeout(hidePoppups, 7000);
+  setTimeout(hidePoppups, 1000);
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)

@@ -15,7 +15,7 @@ GAME.steps = 0;                                         // доступные ш
 GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.users = {};
-GAME.question;
+//GAME.question;
 GAME.mustConquer = null;
 
 var getGame = function(callback){
