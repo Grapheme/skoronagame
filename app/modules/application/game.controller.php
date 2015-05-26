@@ -49,6 +49,7 @@ class GameController extends BaseController {
             Route::post('profile/password-save', array('as'=>'profile-password-save','uses'=>$class.'@ProfilePasswordSave'));
 
             Route::post('get-game', array('as'=>'get-game','uses'=>$class.'@getGame'));
+            Route::post('add-bots', array('as'=>'add-bots','uses'=>$class.'@addBots'));
             Route::post('over-game', array('as'=>'over-game','uses'=>$class.'@overGame'));
             Route::post('question/get-quiz', array('as'=>'get-quiz-question','uses'=>$class.'@getQuizQuestion'));
             Route::post('question/get-normal', array('as'=>'get-normal-question','uses'=>$class.'@getNormalQuestion'));
@@ -237,6 +238,21 @@ class GameController extends BaseController {
         $this->setGameStatus();
         $this->createGameJSONResponse();
         return Response::json($this->json_request,200);
+    }
+
+    public function addBots(){
+
+        if (!Request::ajax()) return App::abort(404);
+        if ($this->initGame()):
+            $this->joinBotsInGame();
+            $this->startGame();
+            $this->createGameMap();
+            $this->randomDistributionCapital();
+            $this->randomStep();
+            $this->json_request['responseText'] = 'Виртуальные пользователи добавлены';
+            $this->json_request['status'] = TRUE;
+        endif;
+        return Response::json($this->json_request, 200);
     }
 
     public function overGame(){
@@ -539,7 +555,25 @@ class GameController extends BaseController {
 
         if (GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->exists() === FALSE):
             $this->game->users[] = GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
-                'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
+                'is_bot' => 0, 'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
+        endif;
+    }
+
+    private function joinBotsInGame(){
+
+        $user_games_count = GameUser::where('game_id', $this->game->id)->count();
+        $bots = array();
+        if ($user_games_count == 1):
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1, 'status' => 0, 'points' => 0,
+                'json_settings' => json_encode(array()));
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 4, 'is_bot' => 1, 'status' => 0, 'points' => 0,
+                'json_settings' => json_encode(array()));
+        elseif ($user_games_count == 2):
+            $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => 3, 'is_bot' => 1, 'status' => 0, 'points' => 0,
+                'json_settings' => json_encode(array()));
+        endif;
+        if (count($bots)):
+            GameUser::insert($bots);
         endif;
     }
 
@@ -809,7 +843,7 @@ class GameController extends BaseController {
 
     private function randomStep(){
 
-        if ($users = GameUser::where('game_id', $this->game->id)->with('user')->lists('id','user_id')):
+        if ($users = GameUser::where('game_id', $this->game->id)->where('is_bot',0)->with('user')->lists('id','user_id')):
             $user_id = array_rand($users);
             $this->nextStep($user_id);
         endif;

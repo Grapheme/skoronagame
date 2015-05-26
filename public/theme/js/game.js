@@ -4,7 +4,6 @@
 
 var GAME = GAME || {};
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
-
 GAME.reInitialize = function(){
 
     GAME.game_id = 0;                                       // id игры
@@ -22,7 +21,6 @@ GAME.reInitialize = function(){
     GAME.isCapital = 0;                                     // признак того что нападают на сталицу
     GAME.timer = {timer_object:{},time:10};
 }
-
 /*
 Метод получает информацию о текущей игре или инициирует новую
 Отправляет:
@@ -57,7 +55,6 @@ GAME.reInitialize = function(){
         settings.message - (string) сообщение для всех (необязательное)
 
 */
-
 GAME.getGame = function(){
     $.ajax({
         type: "POST",
@@ -80,12 +77,36 @@ GAME.getGame = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 };
-
 /*
  Метод завершает текущую игру
  Отправляет:
  game  - (int)ID игры
 
+ */
+GAME.getBots = function (){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/add-bots',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {}
+    });
+}
+/*
+ Метод завершает текущую игру
+ Отправляет:
+ game  - (int)ID игры
  */
 GAME.overGame = function(){
 
@@ -145,7 +166,6 @@ GAME.getQuizQuestion = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
-
 /*
  Метод получает нормальный-вопрос
  Отправляет:
@@ -196,7 +216,6 @@ GAME.getNormalQuestion = function(){
  status - (boolean) результат обработки
  responseText - (string) текст результата (не обязательно)
  */
-
 GAME.sendQuestionAnswer = function(){
     $.ajax({
         type: "POST",
@@ -218,7 +237,6 @@ GAME.sendQuestionAnswer = function(){
         }
     });
 }
-
 /*
  Метод запрашивает состояние ответов на вопрос
  Отправляет:
@@ -255,7 +273,6 @@ GAME.getResultQuestion = function(){
         }
     });
 }
-
 /*
  Метод запрашивает состояние ответов на вопрос
  Отправляет:
@@ -274,7 +291,6 @@ GAME.getResultQuestion = function(){
     status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
     correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
  */
-
 GAME.getUsersResultQuestions = function () {
 
     $.ajax({
@@ -296,7 +312,6 @@ GAME.getUsersResultQuestions = function () {
         }
     });
 }
-
 /*
  Метод отправляет запрос на захват пустой территории
  Отправляет:
@@ -332,7 +347,6 @@ GAME.sendConquestEmptyTerritory = function(territory){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
-
 /*
  Метод отправляет запрос на захват занятой территории
  Отправляет:
@@ -370,7 +384,6 @@ GAME.sendConquestTerritory = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
-
 /*
  Метод отправляет запрос на захват столицы
  Отправляет:
@@ -408,7 +421,6 @@ GAME.sendConquestCapital = function(){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
-
 /*
  Метод обрабатывает игровую информацию
  */
@@ -449,7 +461,6 @@ GAME.parseGameResponse = function(){
         location.reload();
     }
 }
-
 /*
  Метод обрабатывает ответ сервера на запрос - "дай вопрос"
  */
@@ -491,11 +502,9 @@ GAME.parseQuestionResponse = function(){
 
     }
 }
-
 /*
  Метод обрабатывает ответ сервера на запрос - "какой результат на ответ"
  */
-
 GAME.parseResultQuestionResponse = function(){
     if(GAME.stage == 1){
         if(GAME.response.result === 'standoff'){
@@ -539,11 +548,9 @@ GAME.parseResultQuestionResponse = function(){
         }
     }
 }
-
 /*
  Метод создания карты
  */
-
 GAME.createMap = function(){
     var block = $("#map-block-template");
     var block_class = '';
@@ -559,11 +566,9 @@ GAME.createMap = function(){
     $("#map-block-template").remove();
     $("#russia-map").show();
 }
-
 /*
  Метод обновления карты
  */
-
 GAME.updateMap = function(){
     if(GAME.isEmptyMap === false || $(".js-map-block").length == 0) GAME.createMap();
     var block_class = '';
@@ -577,13 +582,10 @@ GAME.updateMap = function(){
         $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-points', value.points).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives + '<br>Points: ' + value.points);
     });
 }
-
 /*
  Метод запуска таймера при ответе на вопрос
  */
-
 GAME.startTimer = function () {
-    var timer;
     var questionTime = GAME.timer.time;
     var questionTimer = $("#" + GAME.question.type + "-question-timer span");
     questionTimer.text(questionTime).parent('p');
@@ -603,11 +605,21 @@ GAME.startTimer = function () {
         }
     }, 1000);
 }
+GAME.startBotTimer = function(){
 
+    var time_interval = 0;
+    GAME.timer.timer_object = setInterval(function () {
+        time_interval++;
+        if (time_interval >= 5) {
+            clearInterval(GAME.timer.timer_object);
+            GAME.getBots();
+        }
+        console.log(time_interval);
+    }, 1000);
+}
 /*
  Метод проверяет "не пустая" ли карта
  */
-
 GAME.isEmptyMap = function() {
     return GAME.map.length === 0;
 }
@@ -618,6 +630,7 @@ $(document).ready(function () {
     $("#js-start-game").click(function(event){
         event.preventDefault();
         GAME.getGame();
+        GAME.startBotTimer();
         $(this).parent().hide();
         $("#js-update-game").parent().show();
         $("#js-over-game").parent().show();
