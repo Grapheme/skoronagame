@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 15;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -206,6 +206,13 @@ function parseGameData(response) {
             GAME.duel = response.responseJSON.settings.duel;
         } else {
             GAME.duel = {};
+        }
+        
+        if (response.responseJSON.settings.stage2_tours_json) {
+            GAME.stage2_tours_json = response.responseJSON.settings.stage2_tours_json;
+            console.log('!!!', GAME.stage2_tours_json);
+            //GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            renderSteps();
         }
     }
     GAME.response = response.responseJSON;
@@ -564,6 +571,8 @@ function quizQuesionRender(players) {
     $('#question-1 .right .answerlkhbdsfksdlhfg').slideUp();
     $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideDown();
     $('#question-1 .right .q').html(GAME.question.text);
+    $('#question-1 .right .answer-true .qa').text('');
+    $('#question-1 .right .answer-true').slideUp(100);
     openFrame('question-1');
     showPoppups();
     startQuizeTimer();
@@ -612,7 +621,10 @@ function renderSteps(){
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  setTimeout(hidePoppups, 1000);
+  if (GAME.stage == 2 && GAME.question.type != 'quize') {
+    setTimeout(hidePoppups, 1000);
+  }
+  
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
@@ -628,7 +640,13 @@ function tryToConquer() {
 
 function createPlayers() {
   $.each(GAME.users, function(index, value){
-    $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    if (GAME.user.id != value.id) {
+      $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    } else {
+      $('#question-1 .left .unit').eq(index).find('.name').text('Вы').addClass(value.color);      
+    }
+    //$('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    $('#question-1 .left .unit').eq(index).addClass(value.color);
   })
 }
 
@@ -854,6 +872,8 @@ showQuestionResult = function(response){
   getUsersResultQuestions(function(){
     //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
     $('#question-1 .left .unit').hide();
+    $('#question-1 .right .answer-true .qa').text(GAME.resultQuestion.current_answer);
+    $('#question-1 .right .answer-true').slideDown(100);
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit.'+value.color);
@@ -863,7 +883,7 @@ showQuestionResult = function(response){
         if (_answ.answer == 99999) {
           _answ.answer = '';
         }
-        $unit.find('.timer').text('Ответ: '+_answ.answer);
+        $unit.find('.timer').text(_answ.answer);
         //$unit.find('.timer').text('10 сек.');
         $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
         $unit.find('.answer').text(_answ.seconds+' сек.');
@@ -892,6 +912,8 @@ $(document).ready(function () {
     GAME.question.answer = $(this).find('input').val();
     if (parseInt(GAME.question.answer)!=99999) {
       $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
+    } else {
+      $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text('');
     }
     //GAME.question.answer
     $(this).find('input').val('');
