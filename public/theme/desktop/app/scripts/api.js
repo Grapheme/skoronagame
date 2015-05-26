@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;                                       // id игры
+GAME.game_id = 15;                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -209,7 +209,9 @@ function parseGameData(response) {
         }
         
         if (response.responseJSON.settings.stage2_tours_json) {
-            GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            GAME.stage2_tours_json = response.responseJSON.settings.stage2_tours_json;
+            console.log('!!!', GAME.stage2_tours_json);
+            //GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
             renderSteps();
         }
     }

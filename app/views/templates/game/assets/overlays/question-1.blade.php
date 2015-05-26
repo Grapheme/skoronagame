@@ -40,7 +40,6 @@
                     <div class="led black"></div>
                     <div class="timer">...</div>
                 </div>
-                <br>
                 <div class="row">
                     <div class="answer" style="font-size:12px;"></div>
                 </div>
@@ -53,6 +52,10 @@
         <div class="q">В каком году произошло сражение на льду Чудского озера?</div>
         <div class="answerlkhbdsfksdlhfg">
             <div class="title">Ваш ответ:</div>
+            <div class="qa"></div>
+        </div>
+        <div class="answer-true" style="display:none;">
+            <div class="title">Правильный ответ:</div>
             <div class="qa"></div>
         </div>
         <form class="noajax a">
