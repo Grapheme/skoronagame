@@ -319,9 +319,12 @@ sendQuestionAnswer = function(callback){
       if (response.status) {
         //console.log(response);
         callback();
+      } else {
+        sendQuestionAnswer(callback);
       }
     },
     error: function (xhr, textStatus, errorThrown) {
+        sendQuestionAnswer(callback);
     }
   });
 }

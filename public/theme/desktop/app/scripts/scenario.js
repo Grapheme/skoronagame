@@ -19,6 +19,11 @@ function startQuizeTimer() {
   }, 1000)
 }
 
+/*stage2_tours = [
+[{4:false},{5:true},{6:true}],
+[{6:true},{4:false},{5:true}]
+]*/
+
 function quizeExpire() {
   clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
@@ -130,7 +135,7 @@ function tryToConquer() {
   normalQuestionIsrender = false;
   getGame(function(){
     console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
-    if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || GAME.question.result[GAME.user.id]==1 )) {
+    if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || (GAME.question.result && GAME.question.result[GAME.user.id]==1) )) {
       sendConquestEmptyTerritory(GAME.mustConquer, function(){
         //normalQuestionIsrender=false;
         //GAalert('ЗАХВАт')
@@ -192,6 +197,7 @@ function renderPlayers() {
 $('body').on('click', '#question-2 .a a', function(e){
   e.preventDefault();
   if ($('#question-2 .a a.active').size()==0) {
+    clearInterval(normal_interval);
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass('active');
