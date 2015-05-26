@@ -17,4 +17,5 @@ return array(
         13 => array(11, 12, 14), 14 => array(11, 13, 15), 15 => array(10, 11, 14),
     ),
     'colors' => array('red','green','blue'),
+    'bots_ids' => array(3,4),
 );
