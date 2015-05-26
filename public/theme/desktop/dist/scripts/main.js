@@ -207,6 +207,11 @@ function parseGameData(response) {
         } else {
             GAME.duel = {};
         }
+        
+        if (response.responseJSON.settings.stage2_tours_json) {
+            GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            renderSteps();
+        }
     }
     GAME.response = response.responseJSON;
 }
@@ -605,6 +610,11 @@ function matchmaking() {
   });
 }
 
+function renderSteps(){
+  console.log(GAME.stage2_tours_json);
+  $('.infowindow.tour2').show();
+}
+
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
   setTimeout(hidePoppups, 1000);
@@ -840,21 +850,28 @@ function orderPlayers() {
 showQuestionResult = function(response){
   GAME.question.result = response.responseJSON.result;
   var _s = '';
-  $.each(GAME.users, function(index, value){
+  
+  /*$.each(GAME.users, function(index, value){
     value.place = GAME.question.result[value.id]
     _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
-  });
+  });*/
+  
   getUsersResultQuestions(function(){
     //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
+    $('#question-1 .left .unit').hide();
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
-      var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
+      var $unit = $('#question-1 .left .unit.'+value.color);
+      $unit.show();
       if (_answ) {
         $unit.data('place', _answ.place);
-        $unit.find('.timer').text(_answ.seconds+' сек.');
+        if (_answ.answer == 99999) {
+          _answ.answer = '';
+        }
+        $unit.find('.timer').text('Ответ: '+_answ.answer);
         //$unit.find('.timer').text('10 сек.');
         $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
-        $unit.find('.answer').text('Ответ: '+_answ.answer);
+        $unit.find('.answer').text(_answ.seconds+' сек.');
         }
       })
     if (whoTurn_is_run == false) {
@@ -878,8 +895,10 @@ $(document).ready(function () {
 
   $('#question-1 form.a').submit(function(){
     GAME.question.answer = $(this).find('input').val();
-    $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
-    GAME.question.answer
+    if (parseInt(GAME.question.answer)!=99999) {
+      $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
+    }
+    //GAME.question.answer
     $(this).find('input').val('');
     GAME.question.time = quiz_timer_default - $('#question-1 .right .timer').text();
     afterAnswer();
