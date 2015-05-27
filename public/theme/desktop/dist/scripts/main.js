@@ -485,7 +485,7 @@ sendForm = function(form) {
   var _href = $(form).attr('action');
   var _method = $(form).attr('method');
   var _popup = $(form).attr('data-result');
-  /*$.ajax({
+  $.ajax({
     type: _method,
     url: _href,
     data: $(form).serialize(),
@@ -505,7 +505,7 @@ sendForm = function(form) {
       console.log(xhr)
       console.log(textStatus)
     }
-  });*/
+  });
 }
 
 
@@ -551,7 +551,8 @@ $('#register form').validate({
 
 $('form').submit(function(e){
   if ($(this).is('.noajax')) {
-    e.preventDefault();
+    return false
+    //e.preventDefault();
   }
 });
 
