@@ -336,7 +336,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         },
         success: function (response) {
             if (response.status) {
-                $(territory).css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives'));
+                $(territory).css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives') + '<br>Points: ' + $(territory).data('points'));
                 GAME.response = response.responseJSON;
                 GAME.steps--;
                 if (GAME.steps == 0) {
@@ -438,6 +438,7 @@ GAME.parseGameResponse = function(){
             $("#js-user-response").html(JSON.stringify(GAME.user));
         }
     });
+    GAME.steps = GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
     if(GAME.status == GAME.statuses[1]){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
