@@ -549,6 +549,16 @@ $('#register form').validate({
   }
 });
 
+$('#new-password form').validate({
+  rules: {
+  },
+  messages: {
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
 $('form').submit(function(e){
   if ($(this).is('.noajax')) {
     return false
