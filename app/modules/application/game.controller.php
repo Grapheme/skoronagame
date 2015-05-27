@@ -179,6 +179,7 @@ class GameController extends BaseController {
             $user = Auth::user();
             $user->password = Hash::make(Input::get('password'));
             $user->save();
+            $json_request['responseText'] = 'Пароль изменен.';
             $json_request['status'] = TRUE;
         else:
             $json_request['responseText'] = 'Неверно указанный старый пароль';
