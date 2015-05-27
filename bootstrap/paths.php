@@ -1,5 +1,5 @@
 <?php
-define("PICHESKY", (bool)(@substr($_SERVER['HTTP_HOST'], -3) == ".ru"));
+define("PICHESKY", (bool)(@substr($_SERVER['HTTP_HOST'], -11) == "pichesky.ru"));
 $paths = array(
 	'app' => __DIR__.'/../app',
 	'public' => __DIR__.'/../htdocs/',
