@@ -5,7 +5,7 @@
         {{ Form::password('password',array('placeholder'=>'Введите пароль')) }}
         {{ Form::button('Отправить',array('type'=>'submit')) }}
     {{ Form::close() }}
-    <a href="#register" class="left caps">Зарегестрироваться</a>
+    <a href="#register" class="left caps">Зарегистрироваться</a>
     <a href="#password-forgot" class="right caps">Забыли пароль?</a>
     <div class="cf"></div>
     <br>
