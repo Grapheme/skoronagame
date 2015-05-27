@@ -4,13 +4,15 @@
         <div class="timer">00:43</div>
         <div class="left">
             <div class="ava">
-                <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
+                <div class="mask"></div>
+                <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:86px; height:98px;"></div>
             </div>
             <div class="score">10 546</div>
         </div>
         <div class="right">
             <div class="ava">
-                <div class="mask"></div><img src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
+                <div class="mask"></div>
+                <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:86px; height:98px;"></div>
             </div>
             <div class="score">12 065</div>
         </div>

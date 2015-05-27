@@ -1,21 +1,24 @@
 <div id="user-list">
   <div class="user red">
     <div class="ava">
-      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
+        <div class="mask"></div>
+        <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:70px; height:80px;"></div>
     </div>
     <div class="name"></div>
     <div class="points"></div>
   </div>
   <div class="user blue">
     <div class="ava">
-      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
+        <div class="mask"></div>
+        <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:70px; height:80px;"></div>
     </div>
     <div class="name"></div>
     <div class="points"></div>
   </div>
   <div class="user green">
     <div class="ava">
-      <div class="mask"></div><img width="70" height="80" src="{{ asset(Config::get('site.theme_path').'/images/ava.png') }}">
+        <div class="mask"></div>
+        <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:70px; height:80px;"></div>
     </div>
     <div class="name"></div>
     <div class="points"></div>
