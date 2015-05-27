@@ -1,11 +1,8 @@
 AddDefaultCharset utf-8
 Options +FollowSymLinks
 Options -Indexes
-
 <IfModule mod_rewrite.c>
-
     RewriteEngine on
 	RewriteRule (.*) /htdocs/$1 [L]
-
 </IfModule>
 php_value upload_max_filesize 10M

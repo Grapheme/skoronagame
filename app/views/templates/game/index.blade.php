@@ -20,6 +20,7 @@
     @include(Helper::acclayout('assets.overlays.mathmaking'))
     @include(Helper::acclayout('assets.overlays.new-password'))
     @include(Helper::acclayout('assets.overlays.password-is-new'))
+    @include(Helper::acclayout('assets.overlays.alert'))
 @stop
 @section('scripts')
     <script>
