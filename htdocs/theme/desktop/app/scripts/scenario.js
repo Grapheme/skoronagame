@@ -47,7 +47,7 @@ function startNormalTimer() {
 
 function normalExpire() {
   clearInterval(normal_interval);
-  if ($('#question-2 .a a.active').size()>0) {
+  if ($('#question-2 .a a.active').size()==0) {
     GAME.question.answer = 99999;
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     sendQuestionAnswer(function(){
@@ -80,6 +80,14 @@ function quizQuesionRender(players) {
   clearInterval(quiz_interval);
   clearInterval(normal_interval);
   renderPlayers();
+  
+  if (players.length>0) {
+    $('#question-1 .left .unit').hide();
+    $.each(players, function(index, value){
+      var _user = getUserById(value);
+      $('#question-1 .left .unit.'+_user.color).show();
+    });
+  }
   
   getQuizQuestion(players, function(){
     //alert(GAME.question.text);
@@ -132,14 +140,38 @@ function matchmaking() {
 }
 
 function renderSteps(){
-  console.log(GAME.stage2_tours_json);
+  $('.infowindow.tour1').hide();
   $('.infowindow.tour2').show();
+  $.each(GAME.stage2_tours_json, function(index, value){
+    var $tour = $('.infowindow.tour2 .tour.n'+(index+1));
+    if (GAME.response && GAME.response.settings && GAME.response.settings.current_tour == index) {
+      $tour.addClass('active');
+    } else {
+      $tour.removeClass('active');
+    }
+    
+    $.each(value, function(index2, value2){
+      var user_id = Object.keys(value2)[0];
+      var user_statuc = value2[user_id];
+      var user = getUserById(user_id);
+      var $flag = $tour.find('.flag').eq(index2);
+      
+      $flag.removeClass('red green blue').addClass(user.color);
+      if (GAME.next_turn == user_id) {
+        $flag.addClass('active');
+      } else {
+        $flag.removeClass('active');
+      }
+    });
+  })
 }
 
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
-  if (GAME.stage == 2 && GAME.question.type != 'quize') {
+  if (GAME.stage == 2 && GAME.question.type == 'normal') {
     setTimeout(hidePoppups, 1000);
+  } else {
+    //setTimeout(hidePoppups, 7000);
   }
   
   normalQuestionIsrender = false;
@@ -319,12 +351,17 @@ whoTurn = function() {
     //getUsersResultQuestions();
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
+        sexyAlert('Ваш ход!');
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           //hidePoppups();
         }
       } else {
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('Ходит игрок: '+ user_turn.name);
+        }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           var user_turn = getUserById(GAME.next_turn);
@@ -343,10 +380,14 @@ whoTurn = function() {
       console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
+        sexyAlert('Ваш ход!');
         //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
-        
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('Ходит игрок: '+ user_turn.name);
+        }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //var user_turn = getUserById(GAME.next_turn);
@@ -354,7 +395,8 @@ whoTurn = function() {
         
         if (!isEmpty(GAME.duel)) {
           if (GAME.duel.def == GAME.user.id) {
-            if (normalQuestionIsrender == false) {
+            if (!$('.popup-wrapper').is(":visible")) {
+            //if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
           }
@@ -394,8 +436,8 @@ showQuestionResult = function(response){
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit.'+value.color);
-      $unit.show();
       if (_answ) {
+        $unit.show();
         $unit.data('place', _answ.place);
         if (_answ.answer == 99999) {
           _answ.answer = '';

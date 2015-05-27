@@ -42,6 +42,11 @@ $(window).load(function() {
 
 $('.areas .countur svg path').hover(function(){
   $(this).closest('.area').toggleClass('active');
+  if ($(this).closest('.area').data('info')) {
+    var _points = $(this).closest('.area').data('info').points || 0;
+    $('.infowindow-holder .infowindow-small').text(_points);
+    $('.infowindow-holder').toggle();
+  }
 });
 
 var _history = [];
@@ -105,6 +110,23 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
+function sexyAlert(text, timeOut, callback) {
+  timeOut = timeOut || 3;
+  callback = callback || function(){};
+  
+  if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    showPoppups();
+    $('#sexy-alert .note').html(text);
+    openFrame('sexy-alert');
+    
+    setTimeout(function(){
+      hidePoppups();
+      callback();
+    }, timeOut*1000);
+  }
+  
+}
+
 function hidePoppups() {
   $('.popup-wrapper').slideUp();
 }
@@ -113,20 +135,26 @@ function showPoppups() {
   $('.popup-wrapper').slideDown();
 }
 
-$('form').submit(function(e){
-  e.preventDefault();
+sendForm = function(form) {
+  //alert('!!!')
+  //$(form).submit();
+  if ($(form).is('.noajax')) {
+    alert('!!!')
+    return false;
+  }
   
-  if ($(this).is('.noajax')) return false;
+  console.log(form)
+  console.log($(form))
   
-  var _href = $(this).attr('action');
-  var _method = $(this).attr('method');
-  var _popup = $(this).attr('data-result');
+  var _href = $(form).attr('action');
+  var _method = $(form).attr('method');
+  var _popup = $(form).attr('data-result');
   $.ajax({
     type: _method,
     url: _href,
-    data: $(this).serialize(),
+    data: $(form).serialize(),
     success: function (response) {
-      console.log(response)
+      console.log(response);
       if (response.status == true) {
       //open_popup = $(this).attr('data-result');
         if (response.redirect) {
@@ -134,7 +162,7 @@ $('form').submit(function(e){
         }
         openFrame(_popup);
       } else if (response.status == false) {
-        alert(response)
+        $(form).prepend('<label class="error">'+response.responseText+'</label>');
       }
     },
     error: function (xhr, textStatus, errorThrown) {
@@ -142,5 +170,52 @@ $('form').submit(function(e){
       console.log(textStatus)
     }
   });
+}
 
+
+$('#login form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    password: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    password: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('#register form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    name: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    name: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('form').submit(function(e){
+  if ($(this).is('.noajax')) {
+    return false
+    //e.preventDefault();
+  }
 });

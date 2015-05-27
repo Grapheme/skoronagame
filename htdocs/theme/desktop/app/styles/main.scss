@@ -21,13 +21,33 @@
 body {
   background: #5b6d7a;
 }
-
+.infowindow-holder {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  z-index: 1;
+  top: 30px;
+  position: fixed;
+  display: none;
+  user-event: none;
+  .infowindow-small {
+    display: inline-block;
+    padding: 20px 30px;
+    border-radius: 20px;
+    background: rgba(0,52,31,.5);
+    color: white;
+  }
+}
 .infowindow {
   position: absolute;
   color: #eee;
   font-family: "Verdana";
   bottom: 30px;
   left: 30px;
+  display: none;
+  &.tour1 {
+    display: block;
+  }
   .top {
     font-size: 14px;
     font-weight: bold;
@@ -35,6 +55,7 @@ body {
     background: rgba(#00341f, 0.5);
     padding: 6px 0;
     padding-left: 18px;
+    padding-right: 20px;
   }
   .bottom {
     background: rgba(#00341f, 0.5);
@@ -83,19 +104,17 @@ body {
           }
           &.blue {
             svg {
-              fill: #ad062e;
+              fill: #0000ff;
             }
-            fill: #0000ff;
           }
           &.green {
             svg {
-              fill: #ad062e;
+              fill: #d39500;
             }
-            fill: #d39500;
           }
           &.active {
-            -webkit-animation-name: bounce; 
-            animation-name: bounce; 
+            /*-webkit-animation-name: bounce; 
+            animation-name: bounce; */
           }
         }
       }
@@ -106,6 +125,12 @@ body {
         margin-top: 10px;
         position: absolute;
         width: 100%;
+      }
+      &.active {
+        .flag.active {
+          -webkit-animation-name: bounce; 
+          animation-name: bounce; 
+        }
       }
     }
   }
@@ -692,6 +717,18 @@ body {
         width: 280px;
       }
       form {
+        label {
+          &.error {
+            display: block;
+            //margin-top: -22px;
+            //margin-bottom: -10px;
+            color: red;
+            font-size: 13px;
+            text-align: left;
+            margin-top: -24px;
+            margin-bottom: 18px;
+          }
+        }
         input {
           display: block;
           font-size: 14px;
@@ -703,6 +740,7 @@ body {
           height: 38px;
           width: 280px;
           margin: 30px 0;
+          margin-top: 10px;
           box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.55) inset;
         }
         .i {
