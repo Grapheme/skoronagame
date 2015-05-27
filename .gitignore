@@ -1,5 +1,6 @@
 .idea
 Thumbs.db
+/app/config/digitalocean/*
 skoronagame.komodoproject
 _ide_helper.php
 composer.lock
