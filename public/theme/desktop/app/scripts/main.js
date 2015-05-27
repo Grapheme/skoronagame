@@ -138,14 +138,18 @@ function showPoppups() {
 sendForm = function(form) {
   //alert('!!!')
   //$(form).submit();
-  /*if ($(form).is('.noajax')) {
-    $(form).submit();
-  }*/
-
+  if ($(form).is('.noajax')) {
+    alert('!!!')
+    return false;
+  }
+  
+  console.log(form)
+  console.log($(form))
+  
   var _href = $(form).attr('action');
   var _method = $(form).attr('method');
   var _popup = $(form).attr('data-result');
-  $.ajax({
+  /*$.ajax({
     type: _method,
     url: _href,
     data: $(form).serialize(),
@@ -165,7 +169,7 @@ sendForm = function(form) {
       console.log(xhr)
       console.log(textStatus)
     }
-  });
+  });*/
 }
 
 
@@ -206,5 +210,11 @@ $('#register form').validate({
   },
   submitHandler: function(form) {
     sendForm(form);
+  }
+});
+
+$('form').submit(function(e){
+  if ($(this).is('.noajax')) {
+    e.preventDefault();
   }
 });

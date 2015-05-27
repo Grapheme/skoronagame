@@ -140,6 +140,7 @@ function matchmaking() {
 }
 
 function renderSteps(){
+  $('.infowindow.tour1').hide();
   $('.infowindow.tour2').show();
   $.each(GAME.stage2_tours_json, function(index, value){
     var $tour = $('.infowindow.tour2 .tour.n'+(index+1));

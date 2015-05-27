@@ -43,6 +43,9 @@
         @endfor
     </div>
     <img src="{{ asset(Config::get('site.theme_path').'/images/bg.jpg') }}" class="bg">
+    <div class="infowindow tour1">
+        <div class="top">Этап 1: Распределение земель</div>
+    </div>
     <div class="infowindow tour2">
         <div class="top">Этап 2: Захват земель</div>
         <div class="middle">

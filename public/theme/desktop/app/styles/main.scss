@@ -45,6 +45,9 @@ body {
   bottom: 30px;
   left: 30px;
   display: none;
+  &.tour1 {
+    display: block;
+  }
   .top {
     font-size: 14px;
     font-weight: bold;
@@ -52,6 +55,7 @@ body {
     background: rgba(#00341f, 0.5);
     padding: 6px 0;
     padding-left: 18px;
+    padding-right: 20px;
   }
   .bottom {
     background: rgba(#00341f, 0.5);
