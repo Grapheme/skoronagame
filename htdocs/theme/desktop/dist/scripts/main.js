@@ -635,9 +635,25 @@ function renderGameOver() {
   
   $('#winer .places .first .name').text(GAME.users[0].name)
   
+  if (GAME.users[0].photo != '') {
+    $('#winer .places .first .ava .img').css({
+      'background-image': 'url('+GAME.users[0].photo+')'
+    });
+  }
+  
   $('#winer .places .second .name').text(GAME.users[1].name)
+  if (GAME.users[1].photo != '') {
+    $('#winer .places .second .ava .img').css({
+      'background-image': 'url('+GAME.users[1].photo+')'
+    });
+  }
   
   $('#winer .places .third .name').text(GAME.users[2].name)
+  if (GAME.users[2].photo != '') {
+    $('#winer .places .third .ava .img').css({
+      'background-image': 'url('+GAME.users[2].photo+')'
+    });
+  }
   
   openFrame('winer');
   showPoppups();
@@ -764,6 +780,12 @@ function createPlayers() {
     }
     //$('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
     $('#question-1 .left .unit').eq(index).addClass(value.color);
+    if (value.photo != '') {
+      $('#question-1 .left .unit').eq(index).find('.ava .img').css({
+        'background-image': 'url('+value.photo+')'
+      });
+    }
+    $('#question-1 .left .unit').eq(index).addClass(value.color);
   })
 }
 
@@ -784,10 +806,16 @@ function renderPlayers() {
     }
     
     //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
-      $('#user-list').show();
+    $('#user-list').show();
     //}
     var $user = $('#user-list .user.'+value.color);
     $user.find('.name').text(value.name);
+    if (value.photo != '') {
+      $user.find('.ava .img').css({
+        'background-image': 'url('+value.photo+')'
+      });
+    }
+    
     $user.find('.points').text(value.points);
     if (value.id == GAME.user.id) {
       $('#user-list .user.'+value.color).find('.name').text('Вы');
@@ -802,11 +830,27 @@ function renderPlayers() {
   $.each(GAME.enemies, function(index, value){
     if (index==0) {
       $('#mathcmaking .ava').first().find('.name').text(value.name);
+      if (value.photo != '') {
+        $('#mathcmaking .ava').first().find('.img').css({
+          'background-image': 'url('+value.photo+')'
+        });
+      }
     }
     if (index==1) {
       $('#mathcmaking .ava').last().find('.name').text(value.name);
+      if (value.photo != '') {
+        $('#mathcmaking .ava').last().find('.img').css({
+          'background-image': 'url('+value.photo+')'
+        });
+      }
     }
   });
+  
+  if (GAME.user.photo != '') {
+    $('#mathcmaking .ava').eq(1).find('.img').css({
+      'background-image': 'url('+GAME.user.photo+')'
+    });
+  }
 }
 
 

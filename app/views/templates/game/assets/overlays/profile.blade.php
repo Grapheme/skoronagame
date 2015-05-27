@@ -29,9 +29,9 @@ endif;
             <div class="ava">
                 <div class="mask"></div>
             @if(!empty($profile->social) && !empty($profile->social->photo_big))
-                <img src="{{ $profile->social->photo_big }}">
+                <div class="img" style="background-image: url({{ $profile->social->photo_big }}); width:86px; height:98px;"></div>
             @else
-                <img src="http://dummyimage.com/86x98/">
+                <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:86px; height:98px;"></div>
             @endif
             </div>
             <div class="info">

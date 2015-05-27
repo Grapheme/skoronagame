@@ -850,6 +850,12 @@ body {
     font-weight: bold;
     margin-top: 18px;
   }
+  .img {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    display: inline-block;
+  }
 }
 
 #user-list {
