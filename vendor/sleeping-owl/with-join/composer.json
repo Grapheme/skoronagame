@@ -1,0 +1,32 @@
+{
+	"name": "sleeping-owl/with-join",
+	"description": "Package to convert Eloquent BelongsTo subqueries into one query with left join.",
+	"keywords": [
+		"laravel",
+		"activerecord",
+		"eloquent",
+		"with",
+		"join"
+	],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Sleeping Owl",
+			"email": "owl.sleeping@yahoo.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"illuminate/support": ">=4.1",
+		"laravel/framework": "<5.0.6"
+	},
+	"require-dev": {
+		"illuminate/database": ">=4.1"
+	},
+	"autoload": {
+		"psr-0": {
+			"SleepingOwl\\WithJoin": "src/"
+		}
+	},
+	"minimum-stability": "stable"
+}

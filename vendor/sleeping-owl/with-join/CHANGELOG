@@ -1,0 +1,38 @@
+CHANGELOG
+=========
+
+2014-11-30, v1.0.5
+------------------
+
+* Laravel 4.1 support
+
+2014-11-14, v1.0.4
+------------------
+
+* isRelationSupported method moved to public
+
+2014-11-13, v1.0.3
+------------------
+
+* Bugfix: updated inner delimiter from "." to "---" for sqlite support
+
+2014-11-13, v1.0.2
+------------------
+
+* Bugfix: related model was loaded into current model attributes array. Now it loads into current model relations array.
+* PHPUnit tests added.
+
+2014-11-13, v1.0.1
+------------------
+
+* Foreign table joins by relation name alias:
+	```
+		Model::include('street')->where('street.id', '=', $id);
+		Model::include('street.type')->orderBy('type.id', 'asc');
+	```
+
+
+2014-11-12, v1.0.0
+------------------
+
+* Initial Version
