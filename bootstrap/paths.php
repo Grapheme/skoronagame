@@ -6,4 +6,5 @@ $paths = array(
 	'base' => __DIR__.'/..',
 );
 $paths['storage'] = @PICHESKY ? '/srv/www/skoronagame/data/storage' : __DIR__.'/../app/storage';
+Helper::tad($paths);
 return $paths;
