@@ -1,4 +1,3 @@
 .idea
 Thumbs.db
 composer.lock
-/app/storage/*
