@@ -286,8 +286,10 @@ body {
             border: 1px solid rgba(#c9aa49, 0.5);
             width: 208px;
             text-align: center;
-            display: block;
-            float: left;
+            //display: block;
+            //float: left;
+            display: inline-block;
+            vertical-align: middle;
             text-decoration: none;
             line-height: 100%;
             padding: 10px 0px;
