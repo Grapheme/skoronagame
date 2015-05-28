@@ -238,6 +238,7 @@ class GameController extends BaseController {
             endif;
         endif;
         $this->setGameStatus();
+        $this->stage2FourTour();
         $this->createGameJSONResponse();
         return Response::json($this->json_request,200);
     }
@@ -1337,11 +1338,6 @@ class GameController extends BaseController {
                     endforeach;
                 endif;
             endif;
-        elseif($current_tour > 3):
-            if($this->validAvailableSteps() === FALSE):
-                $this->nextStep();
-                $this->finishGame(1);
-            endif;
         endif;
     }
 
@@ -1573,5 +1569,27 @@ class GameController extends BaseController {
             return $territories;
         endif;
         return FALSE;
+    }
+
+    private function stage2FourTour(){
+
+        if($this->validGameStage(2)):
+            $json_settings = json_decode($this->game->json_settings, TRUE);
+            $current_tour = $json_settings['current_tour'];
+            $stage2_tours = $json_settings['stage2_tours'];
+            if($current_tour == 3):
+                $all_steps = TRUE;
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == FALSE):
+                        $all_steps = FALSE;
+                        break;
+                    endif;
+                endforeach;
+                if($all_steps && !$this->validAvailableSteps()):
+                    $this->nextStep();
+                    $this->finishGame(1);
+                endif;
+            endif;
+        endif;
     }
 }
