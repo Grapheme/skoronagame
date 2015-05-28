@@ -489,8 +489,6 @@ class GameController extends BaseController {
                         $points = $this->getTerritoryPoints(Input::get('zone'));
                         $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                         $this->changeTerritoryPoints(Input::get('zone'), 200);
-                        $users = GameUser::where('game_id', $this->game->id)->get();
-                        $this->changeGameUsersStatus(2, $users);
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
@@ -512,12 +510,8 @@ class GameController extends BaseController {
                             $points = $this->getTerritoryPoints(Input::get('zone'));
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             $this->nextStepInSecondStage();
-                            $users = GameUser::where('game_id', $this->game->id)->get();
-                            $this->changeGameUsersStatus(2, $users);
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             if($this->isConqueredCapitals()):
-                                $users = GameUser::where('game_id', $this->game->id)->get();
-                                $this->changeGameUsersStatus(2, $users);
                                 $this->finishGame(1);
                             endif;
                         else:
@@ -991,6 +985,15 @@ class GameController extends BaseController {
             return FALSE;
         endif;
     }
+
+    private function validAvailableSteps(){
+
+        if(GameUser::where('game_id',$this->game->id)->whereRaw('(available_steps - make_steps) > 0')->exists()):
+            return TRUE;
+        else:
+            return FALSE;
+        endif;
+    }
     /********************************** BOTS *************************************/
     public function addBots(){
 
@@ -1310,6 +1313,7 @@ class GameController extends BaseController {
                     endif;
                 endforeach;
             elseif($current_tour == 3):
+                $this->nextStep();
                 $firstStep = TRUE;
                 foreach($stage2_tours[$current_tour] as $user_id => $status):
                     if ($status == TRUE):
@@ -1333,7 +1337,9 @@ class GameController extends BaseController {
                 endif;
             endif;
         elseif($current_tour > 3):
-            $this->finishGame(1);
+            if($this->validAvailableSteps()):
+                $this->finishGame(1);
+            endif;
         endif;
     }
 
@@ -1464,11 +1470,6 @@ class GameController extends BaseController {
                     $lives = GameMap::where('game_id',$this->game->id)->where('zone',Input::get('zone'))->pluck('lives');
                 endif;
                 $this->changeUserPoints($duel['def'],100*$lives);
-                $json_settings = json_decode($this->game->json_settings, TRUE);
-                if($json_settings['current_tour'] > 3):
-                    $users = GameUser::where('game_id', $this->game->id)->get();
-                    $this->changeGameUsersStatus(2, $users);
-                endif;
             endif;
         endif;
         return $available_steps;
