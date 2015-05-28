@@ -957,8 +957,6 @@ body {
   }
   .areas {
     position: relative;
-    * {
-    }
     &>* {
       position: absolute;
       pointer-events: none;
@@ -1054,7 +1052,10 @@ body {
         background-repeat: no-repeat;
         pointer-events: none;
       }
-      &.active.empty {
+    }
+    
+    &.active {
+      .active.empty {
         z-index: 900000;
         .ground {
           transform: translate(0, -15px);

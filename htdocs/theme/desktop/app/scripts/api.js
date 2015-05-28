@@ -37,16 +37,17 @@ var getGame = function(callback){
                 //GAME.map = GAME.response.map;
                 
 
-                if ((GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) || GAME.status == "over") {
-                    var _status = true;
+                if (GAME.next_turn == 0 && GAME.status == "over") {
+                    /*var _status = true;
                     $.each(GAME.users, function(index, value){
                         if (value.status != 2) {
                             _status = false;
                         }
                     })
-                    if (_status == true) {
+                    if (_status == true) {*/
+                    
                         overGame();
-                    }
+                    //}
                 }
                 
             }
