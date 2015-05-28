@@ -18,22 +18,19 @@
     @yield('style')
 </head>
 <body>
-@if(Session::has('message'))
-    <p>{{ Session::get('message') }}<p>
-        @endif
-        @section('content')
-            {{ @$content }}
-        @show
-        @section('game')
-        @show
-        @section('json_response')
-        @show
-        @section('overlays')
-        @show
-        @section('footer')
-        @show
-        @section('scripts')
-        @show
-    @show
+@section('content')
+{{ @$content }}
+@show
+@section('game')
+@show
+@section('json_response')
+@show
+@section('overlays')
+@show
+@section('footer')
+@show
+@section('scripts')
+@show
+@show
 </body>
 </html>
