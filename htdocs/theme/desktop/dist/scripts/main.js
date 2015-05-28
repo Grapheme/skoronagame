@@ -37,16 +37,17 @@ var getGame = function(callback){
                 //GAME.map = GAME.response.map;
                 
 
-                if ((GAME.response.settings.current_tour == 4 && GAME.next_turn == 0) || GAME.status == "over") {
-                    var _status = true;
+                if (GAME.next_turn == 0 && GAME.status == "over") {
+                    /*var _status = true;
                     $.each(GAME.users, function(index, value){
                         if (value.status != 2) {
                             _status = false;
                         }
                     })
-                    if (_status == true) {
+                    if (_status == true) {*/
+                    
                         overGame();
-                    }
+                    //}
                 }
                 
             }
@@ -964,12 +965,14 @@ whoTurn = function() {
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');
+        $('#map .areas').addClass('active');
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
           //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
           //hidePoppups();
         }
       } else {
+        $('#map .areas').removeClass('active');
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
           sexyAlert('Ходит игрок: '+ user_turn.name);
