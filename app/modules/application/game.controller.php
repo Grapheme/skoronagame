@@ -741,7 +741,7 @@ class GameController extends BaseController {
                     break;
                 endif;
             endforeach;
-            if ($nextTour):
+            if ($nextTour && $current_tour < 3):
                 $current_tour++;
             endif;
             $json_settings['current_tour'] = $current_tour;
