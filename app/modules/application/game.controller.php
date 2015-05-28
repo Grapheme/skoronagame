@@ -512,6 +512,7 @@ class GameController extends BaseController {
                             $this->nextStepInSecondStage();
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             if($this->isConqueredCapitals()):
+                                $this->nextStep();
                                 $this->finishGame(1);
                             endif;
                         else:
@@ -1338,6 +1339,7 @@ class GameController extends BaseController {
             endif;
         elseif($current_tour > 3):
             if($this->validAvailableSteps()):
+                $this->nextStep();
                 $this->finishGame(1);
             endif;
         endif;
