@@ -1338,7 +1338,7 @@ class GameController extends BaseController {
                 endif;
             endif;
         elseif($current_tour > 3):
-            if($this->validAvailableSteps()):
+            if($this->validAvailableSteps() === FALSE):
                 $this->nextStep();
                 $this->finishGame(1);
             endif;
