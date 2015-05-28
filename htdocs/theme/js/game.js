@@ -7,6 +7,7 @@ GAME.statuses = ['wait','start','ready','over'];        // возможные с
 GAME.reInitialize = function(){
 
     GAME.game_id = 0;                                       // id игры
+    GAME.game_owner = 0;                                    // ID пользователя создавшего игру
     GAME.user = {};                                         // пользователь
     GAME.status = 0;                                        // статус игры
     GAME.stage = 0;                                         // этап игры
@@ -19,8 +20,10 @@ GAME.reInitialize = function(){
     GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
     GAME.conquerorZone = 0                                  // номер зоны для завоевания
     GAME.isCapital = 0;                                     // признак того что нападают на сталицу
-    GAME.timer = {timer_object:{},time:10};
-    GAME.time_bot = 5;                                      // время в секундах до инициалицации ботов
+    GAME.timer = {timer_object: 0, time: 10};
+    GAME.game_timer = 0;                                    // таймер игры
+    GAME.bots_timer = 0                                     // таймер ботов
+    GAME.time_bot = 20;                                     // время в секундах до инициалицации ботов
 }
 /*
  Метод получает информацию о текущей игре или инициирует новую
@@ -75,7 +78,9 @@ GAME.getGame = function(){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 };
 /*
@@ -85,7 +90,6 @@ GAME.getGame = function(){
 
  */
 GAME.getBots = function (){
-
     $.ajax({
         type: "POST",
         url: '/game/add-bots',
@@ -97,12 +101,13 @@ GAME.getBots = function (){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
-                GAME.getGame();
                 $("#js-server-response").html(JSON.stringify(GAME.response));
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -123,12 +128,47 @@ GAME.overGame = function(){
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
-                $("#game-id").html(GAME.game_id);
+                clearInterval(GAME.game_timer);
                 $("#js-server-response").html(JSON.stringify(GAME.response));
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
+    });
+}
+/*
+ Метод получает смежные территории для текущего игрока
+ Отправляет:
+ game  - (int)ID игры.
+ Результат:
+ ...
+ result - (array) номера зон
+*/
+GAME.getAdjacentZones = function(){
+    $.ajax({
+        type: "POST",
+        url: '/game/get-adjacent-zones',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {
+            $(".js-map-empty-block").removeClass('js-map-empty-block');
+            $("#js-server-response").html('');
+        },
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $.each(GAME.response.zones, function (index, value) {
+                    $(".territory-block[data-zone='" + value + "']").css('background-color', '#FFFF00').addClass('js-map-empty-block');
+                });
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -165,7 +205,9 @@ GAME.getQuizQuestion = function(){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -203,7 +245,9 @@ GAME.getNormalQuestion = function(){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -231,11 +275,13 @@ GAME.sendQuestionAnswer = function(){
             if (response.status) {
                 GAME.response = response.responseJSON;
                 $("#js-server-response").html(JSON.stringify(GAME.response));
+                GAME.getResultQuestion();
             }
             $("#js-question-result").parent().show();
             $("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
         }
     });
 }
@@ -272,6 +318,7 @@ GAME.getResultQuestion = function(){
             $("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
         }
     });
 }
@@ -311,6 +358,7 @@ GAME.getUsersResultQuestions = function () {
             $("#js-server-notification").html(response.responseText);
         },
         error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
         }
     });
 }
@@ -332,6 +380,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
+            $(".js-map-empty-block").removeClass('js-map-empty-block');
             $("#js-server-response").html('');
         },
         success: function (response) {
@@ -346,7 +395,9 @@ GAME.sendConquestEmptyTerritory = function(territory){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -368,6 +419,7 @@ GAME.sendConquestTerritory = function(){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
+            $(".js-map-empty-block").removeClass('js-map-empty-block');
             $("#js-server-response").html('');
         },
         success: function (response) {
@@ -383,7 +435,9 @@ GAME.sendConquestTerritory = function(){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -420,7 +474,9 @@ GAME.sendConquestCapital = function(){
             }
             $("#js-server-notification").html(response.responseText);
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
     });
 }
 /*
@@ -432,6 +488,7 @@ GAME.parseGameResponse = function(){
     GAME.stage = GAME.response.game_stage;
     GAME.user_step = GAME.response.settings.next_step;
     GAME.settings = GAME.response.settings;
+    GAME.game_owner = GAME.response.game_owner;
     $.each(GAME.response.users,function(index, value){
         if(value.id == GAME.response.current_user) {
             GAME.user = value;
@@ -439,6 +496,12 @@ GAME.parseGameResponse = function(){
         }
     });
     GAME.steps = GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
+    if(GAME.bots_timer == 0 && GAME.user.id == GAME.game_owner)
+        GAME.startBotTimer();
+    if(GAME.response.users.length == 3)
+        clearInterval(GAME.bots_timer);
+    if(GAME.steps > 0)
+        GAME.getAdjacentZones();
     if(GAME.status == GAME.statuses[1]){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
@@ -555,13 +618,16 @@ GAME.parseResultQuestionResponse = function(){
  Метод создания карты
  */
 GAME.createMap = function(){
+
+    if($(".territory-block").length > 1)
+        return false;
+
     var block = $("#map-block-template");
-    var block_class = '';
+    var block_class;
     $.each(GAME.map, function (index, value) {
+        block_class = '';
         if (value.user_id > 0)
             block_class = 'js-map-block';
-        else
-            block_class = 'js-map-empty-block';
         if (value.lives > 1)
             block_class = 'js-map-capital-block';
         $(block).clone(true).appendTo($("#russia-map-blocks")).removeAttr('id').addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-points', value.points).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives + '<br>Points: ' + value.points);
@@ -574,12 +640,11 @@ GAME.createMap = function(){
  */
 GAME.updateMap = function(){
     if(GAME.isEmptyMap === false || $(".js-map-block").length == 0) GAME.createMap();
-    var block_class = '';
+    var block_class;
     $.each(GAME.map, function (index, value) {
+        block_class = '';
         if (value.user_id > 0)
             block_class = 'js-map-block';
-        else
-            block_class = 'js-map-empty-block';
         if (value.lives > 1)
             block_class = 'js-map-capital-block';
         $(".territory-block[data-zone='"+value.zone+"']").addClass(block_class).attr('data-zone', value.zone).attr('data-lives', value.lives).attr('data-points', value.points).attr('data-user', value.user_id).attr('data-zone_id', value.id).css('background-color', value.settings.color).html('Zona: ' + value.zone + '<br>ID: ' + value.id + '<br>User: ' + value.user_id + '<br>Lives: ' + value.lives + '<br>Points: ' + value.points);
@@ -611,13 +676,20 @@ GAME.startTimer = function () {
 GAME.startBotTimer = function(){
 
     var time_interval = 0;
-    GAME.timer.timer_object = setInterval(function () {
+    GAME.bots_timer = setInterval(function () {
         time_interval++;
+        $("#js-bot").html('До игры с ботами осталось: ' + (GAME.time_bot - time_interval) + ' сек.');
         if (time_interval >= GAME.time_bot){
-            clearInterval(GAME.timer.timer_object);
+            clearInterval(GAME.bots_timer);
             GAME.getBots();
+            $("#js-bot").html('');
         }
     }, 1000);
+}
+GAME.startGameTimer = function(){
+    GAME.game_timer = setInterval(function(){
+        GAME.getGame();
+    },3000);
 }
 /*
  Метод проверяет "не пустая" ли карта
@@ -628,11 +700,11 @@ GAME.isEmptyMap = function() {
 $(document).ready(function () {
     GAME.reInitialize();
     GAME.game_id = $("#game-id").html();
-    if(isNaN(GAME.game_id) === false) GAME.getGame(this);
+    if(isNaN(GAME.game_id) === false)
+        GAME.startGameTimer();
     $("#js-start-game").click(function(event){
         event.preventDefault();
-        GAME.getGame();
-        GAME.startBotTimer();
+        GAME.startGameTimer();
         $(this).parent().hide();
         $("#js-update-game").parent().show();
         $("#js-over-game").parent().show();

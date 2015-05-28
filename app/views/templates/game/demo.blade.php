@@ -10,6 +10,7 @@ $game_id = is_object($game) ? $game->id : 'null';
 @stop
 @section('content')
     <p xmlns="http://www.w3.org/1999/html">{{ Auth::user()->name }}, добро пожаловать в игру.</p>
+    <p id="js-bot"></p>
     <ul>
         @if(!is_numeric($game_id))
             <li><a id="js-start-game" href="javascript:void(0);">Начать игру</a></li>

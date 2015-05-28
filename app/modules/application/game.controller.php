@@ -51,6 +51,7 @@ class GameController extends BaseController {
             Route::post('get-game', array('as'=>'get-game','uses'=>$class.'@getGame'));
             Route::post('add-bots', array('as'=>'add-bots','uses'=>$class.'@addBots'));
             Route::post('over-game', array('as'=>'over-game','uses'=>$class.'@overGame'));
+            Route::post('get-adjacent-zones', array('as'=>'get-adjacent-zones','uses'=>$class.'@getAdjacentZones'));
             Route::post('question/get-quiz', array('as'=>'get-quiz-question','uses'=>$class.'@getQuizQuestion'));
             Route::post('question/get-normal', array('as'=>'get-normal-question','uses'=>$class.'@getNormalQuestion'));
             Route::post('question/send-answer', array('as'=>'send-answer-question','uses'=>$class.'@sendAnswerQuestion'));
@@ -524,6 +525,30 @@ class GameController extends BaseController {
         endif;
         return Response::json($this->json_request, 200);
     }
+
+    public function getAdjacentZones(){
+
+        if ($this->initGame()):
+            $adjacentZones = array();
+            if($adjacentZonesList = $this->getAdjacentPlaces()):
+                if ($this->validGameStage(1)):
+                    foreach($adjacentZonesList as $adjacentZone):
+                        if($adjacentZone['user_id'] == 0 && $adjacentZone['capital'] == 0):
+                            $adjacentZones[] = $adjacentZone['id'];
+                        endif;
+                    endforeach;
+                elseif ($this->validGameStage(2)):
+                    // этап 2
+                endif;
+            endif;
+            if(empty($adjacentZones) && !$this->isConqueredTerritories()):
+                $adjacentZones = GameMap::where('game_id', $this->game->id)->where('user_id', 0)->where('capital', 0)->lists('zone');
+            endif;
+            $this->json_request['responseJSON'] = array('game_id' => $this->game->id, 'zones' => $adjacentZones);
+            $this->json_request['status'] = TRUE;
+        endif;
+        return Response::json($this->json_request, 200);
+    }
     /****************************************************************************/
     /****************************************************************************/
     private function hasInitGame(){
@@ -749,8 +774,10 @@ class GameController extends BaseController {
                     'capital' => $map_place->capital, 'lives' => $map_place->lives, 'points' => $map_place->points,
                     'settings' => json_decode($map_place->json_settings, TRUE));
             endforeach;
-            $this->json_request['responseJSON'] = array('game_id' => $this->game->id, 'game_stage' => $this->game->stage,
-                'game_status' => $this->game->status, 'current_user' => Auth::user()->id, 'users' => $users,
+            $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
+                'game_stage' => $this->game->stage,
+                'game_status' => $this->game->status, 'game_owner' => $this->game->started_id,
+                'current_user' => Auth::user()->id, 'users' => $users,
                 'map' => $map, 'settings' => json_decode($this->game->json_settings, TRUE));
             $this->json_request['status'] = TRUE;
             return TRUE;
