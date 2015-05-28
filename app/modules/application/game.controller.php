@@ -295,6 +295,8 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
+                        GameUser::where('game_id', $this->game->id)->where('status', 2)->update(array('status' => 0,
+                            'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                         $this->createStepInSecondStage();
                         $this->setStepInSecondStageJSON();
                         $randomQuestion = $this->randomQuestion('normal');
@@ -361,7 +363,7 @@ class GameController extends BaseController {
                         if ($this->game_winners === 'standoff'):
                             $this->resetQuestions();
                         elseif(!empty($this->game_winners) && is_array($this->game_winners)):
-                            GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+//                            GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                             foreach ($this->game_winners as $user_id => $place):
                                 GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
                                     ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
