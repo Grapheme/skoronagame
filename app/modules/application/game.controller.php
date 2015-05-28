@@ -490,6 +490,8 @@ class GameController extends BaseController {
                         $points = $this->getTerritoryPoints(Input::get('zone'));
                         $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                         $this->changeTerritoryPoints(Input::get('zone'), 200);
+                        $users = GameUser::where('game_id', $this->game->id)->get();
+                        $this->changeGameUsersStatus(2, $users);
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
                     endif;
@@ -511,6 +513,8 @@ class GameController extends BaseController {
                             $points = $this->getTerritoryPoints(Input::get('zone'));
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             $this->nextStepInSecondStage();
+                            $users = GameUser::where('game_id', $this->game->id)->get();
+                            $this->changeGameUsersStatus(2, $users);
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             if($this->isConqueredCapitals()):
                                 $this->nextStep();
@@ -996,6 +1000,15 @@ class GameController extends BaseController {
             return FALSE;
         endif;
     }
+
+    private function validUsersStatus($status){
+
+        if (GameUser::where('game_id', $this->game->id)->where('status', $status)->exists()):
+            return TRUE;
+        else:
+            return FALSE;
+        endif;
+    }
     /********************************** BOTS *************************************/
     public function addBots(){
 
@@ -1468,6 +1481,8 @@ class GameController extends BaseController {
                     $lives = GameMap::where('game_id',$this->game->id)->where('zone',Input::get('zone'))->pluck('lives');
                 endif;
                 $this->changeUserPoints($duel['def'],100*$lives);
+                $users = GameUser::where('game_id', $this->game->id)->get();
+                $this->changeGameUsersStatus(2, $users);
             endif;
         endif;
         return $available_steps;
@@ -1585,7 +1600,7 @@ class GameController extends BaseController {
                         break;
                     endif;
                 endforeach;
-                if($all_steps && !$this->validAvailableSteps()):
+                if($all_steps && !$this->validAvailableSteps() && $this->validUsersStatus(2)):
                     $this->nextStep();
                     $this->finishGame(1);
                 endif;
