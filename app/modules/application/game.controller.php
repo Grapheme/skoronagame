@@ -901,15 +901,14 @@ class GameController extends BaseController {
         $status = FALSE;
         if ($this->validGameStatus($this->game_statuses[2])):
             if ($user->status == 0 && $user->available_steps > 0):
-                $diff_steps = (int)$user->available_steps - $user->make_steps;
-                if ($diff_steps > 0):
+                if ($user->make_steps > $user->available_steps):
                     $user->make_steps = $user->make_steps + 1;
                     $user->save();
                     $user->touch();
                     $status = TRUE;
-                endif;
-                if ($user->available_steps == $user->make_steps):
-                    $this->changeGameUsersStatus(1, $user);
+                    if ($user->available_steps == $user->make_steps):
+                        $this->changeGameUsersStatus(1, $user);
+                    endif;
                 endif;
             endif;
         endif;
