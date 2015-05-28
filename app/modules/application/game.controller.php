@@ -238,6 +238,9 @@ class GameController extends BaseController {
             endif;
         endif;
         $this->setGameStatus();
+        if($this->validGameStage(2)):
+            $this->stage2FourTour();
+        endif;
         $this->createGameJSONResponse();
         return Response::json($this->json_request,200);
     }
@@ -1305,43 +1308,13 @@ class GameController extends BaseController {
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $current_tour = $json_settings['current_tour'];
         $stage2_tours = $json_settings['stage2_tours'];
-        if (isset($stage2_tours[$current_tour])):
-            if($current_tour < 3):
-                foreach($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == FALSE):
-                        $this->nextStep($user_id);
-                        break;
-                    endif;
-                endforeach;
-            elseif($current_tour == 3):
-                $this->nextStep();
-                $firstStep = TRUE;
-                foreach($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == TRUE):
-                        $firstStep = FALSE;
-                        break;
-                    endif;
-                endforeach;
-                if($firstStep):
-                    if ($winner = $this->getWinnerByPoints()):
-                        $this->nextStep($winner);
-                    else:
-                        $this->randomStep();
-                    endif;
-                else:
-                    foreach($stage2_tours[$current_tour] as $user_id => $status):
-                        if ($status == FALSE):
-                            $this->nextStep($user_id);
-                            break;
-                        endif;
-                    endforeach;
+        if (isset($stage2_tours[$current_tour]) && $current_tour < 3):
+            foreach($stage2_tours[$current_tour] as $user_id => $status):
+                if ($status == FALSE):
+                    $this->nextStep($user_id);
+                    break;
                 endif;
-            endif;
-        elseif($current_tour > 3):
-            if($this->validAvailableSteps() === FALSE):
-                $this->nextStep();
-                $this->finishGame(1);
-            endif;
+            endforeach;
         endif;
     }
 
@@ -1573,5 +1546,41 @@ class GameController extends BaseController {
             return $territories;
         endif;
         return FALSE;
+    }
+
+    private function stage2FourTour(){
+
+        $json_settings = json_decode($this->game->json_settings, TRUE);
+        $current_tour = $json_settings['current_tour'];
+        $stage2_tours = $json_settings['stage2_tours'];
+        if ($current_tour == 3):
+            $this->nextStep();
+            $firstStep = TRUE;
+            foreach($stage2_tours[$current_tour] as $user_id => $status):
+                if ($status == TRUE):
+                    $firstStep = FALSE;
+                    break;
+                endif;
+            endforeach;
+            if($firstStep):
+                if ($winner = $this->getWinnerByPoints()):
+                    $this->nextStep($winner);
+                else:
+                    $this->randomStep();
+                endif;
+            else:
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == FALSE):
+                        $this->nextStep($user_id);
+                        break;
+                    endif;
+                endforeach;
+            endif;
+        elseif($current_tour > 3):
+            if($this->validAvailableSteps() === FALSE):
+                $this->nextStep();
+                $this->finishGame(1);
+            endif;
+        endif;
     }
 }
