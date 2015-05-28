@@ -393,6 +393,7 @@ whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
     //getUsersResultQuestions();
+    console.log(GAME.next_turn);
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');

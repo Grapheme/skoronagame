@@ -36,7 +36,6 @@ var getGame = function(callback){
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
                 
-
                 if (GAME.next_turn == 0 && GAME.status == "over") {
                     /*var _status = true;
                     $.each(GAME.users, function(index, value){

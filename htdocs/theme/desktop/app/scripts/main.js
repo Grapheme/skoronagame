@@ -128,11 +128,11 @@ function sexyAlert(text, timeOut, callback) {
 }
 
 function hidePoppups() {
-  $('.popup-wrapper').slideUp();
+  $('.popup-wrapper').fadeOut(100);
 }
 
 function showPoppups() {
-  $('.popup-wrapper').slideDown();
+  $('.popup-wrapper').fadeIn(100);
 }
 
 sendForm = function(form) {
