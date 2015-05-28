@@ -365,12 +365,13 @@ class GameController extends BaseController {
                         if ($this->game_winners === 'standoff'):
                             $this->resetQuestions();
                         elseif(!empty($this->game_winners) && is_array($this->game_winners) && count($this->game_winners) == $number_participants):
-//                            GameUser::where('game_id', $this->game->id)->update(array('status' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                             foreach ($this->game_winners as $user_id => $place):
                                 GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
                                     ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
                                 $available_steps = $this->getAvailableSteps($user_id, $place);
-                                GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('available_steps' => $available_steps));
+                                GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('status' => 0,
+                                    'available_steps' => $available_steps, 'make_steps' => 0,
+                                    'updated_at' => date('Y-m-d H:i:s')));
                             endforeach;
                             if ($this->validGameBots()):
                                 $this->isBotsWinners();
