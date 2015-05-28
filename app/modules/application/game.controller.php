@@ -277,6 +277,8 @@ class GameController extends BaseController {
                 endif;
                 $this->nextStep();
                 if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
+                    GameUser::where('game_id', $this->game->id)->where('status', 2)->update(array('status' => 0,
+                        'available_steps' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                     $randomQuestion = $this->randomQuestion('quiz');
                     $this->createQuestion($randomQuestion->id,Input::get('users'));
                 endif;
@@ -296,7 +298,7 @@ class GameController extends BaseController {
                 if ($this->validGameStage(2)):
                     if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                         GameUser::where('game_id', $this->game->id)->where('status', 2)->update(array('status' => 0,
-                            'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+                            'available_steps' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
                         $this->createStepInSecondStage();
                         $this->setStepInSecondStageJSON();
                         $randomQuestion = $this->randomQuestion('normal');
