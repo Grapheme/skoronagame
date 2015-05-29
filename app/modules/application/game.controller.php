@@ -21,7 +21,7 @@ class GameController extends BaseController {
         if(!is_null($this->game) && is_object($this->game)):
             return TRUE;
         elseif (Input::has('game') && Input::get('game') > 0 ):
-            $this->game = Game::where('id',Input::get('game'))->with('users')->first();
+            $this->game = Game::where('id',Input::get('game'))->with('users','users.user_social','map_places')->first();
             $this->user = GameUser::where('game_id',Input::get('game'))->where('user_id',Auth::user()->id)->first();
             return TRUE;
         else:
@@ -339,7 +339,7 @@ class GameController extends BaseController {
     public function getResultQuestion(){
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required', 'zone_type'=> ''));
+        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required', 'zone'=> ''));
         if ($validation->passes()):
             if ($this->initGame()):
                 $number_participants = Config::get('game.number_participants');
@@ -374,10 +374,12 @@ class GameController extends BaseController {
                                 $this->isBotsWinners();
                             endif;
                             if ($this->validGameStage(2)):
-                                if (Input::has('zone_type') && Input::get('zone_type') == 'capital'):
-                                    if ($duel = $this->getDuel()):
-                                        if (GameUser::where('game_id', $this->game->id)->where('user_id', $duel['def'])->where('place', 1)->exists()):
-                                            $this->nextStepInSecondStage();
+                                if (Input::has('zone_type') && Input::get('zone') > 0):
+                                    if($this->validCapitalZone(Input::get('zone'))):
+                                        if ($duel = $this->getDuel()):
+                                            if (GameUser::where('game_id', $this->game->id)->where('user_id', $duel['def'])->where('place', 1)->exists()):
+                                                $this->nextStepInSecondStage();
+                                            endif;
                                         endif;
                                     endif;
                                 else:
@@ -770,24 +772,28 @@ class GameController extends BaseController {
         if ($this->game):
             $users = $map = array();
             $activeUsers = Sessions::getUserIDsLastActivity();
-            foreach (GameUser::where('game_id', $this->game->id)->with('user','user_social')->get() as $user_game):
-                $photo_link = '';
-                if(!empty($user_game->user_social) && isset($user_game->user_social->photo_big) &&!empty($user_game->user_social->photo_big)):
-                    $photo_link = $user_game->user_social->photo_big;
-                endif;
-                $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
-                    'email' => $user_game->user->email, 'photo' => $photo_link,
-                    'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
-                    'status' => $user_game->status,
-                    'available_steps' => $user_game->available_steps,'make_steps' => $user_game->make_steps,
-                    'active' => in_array($user_game->user->id,$activeUsers),
-                    'settings' => json_decode($user_game->json_settings, TRUE));
-            endforeach;
-            foreach (GameMap::where('game_id', $this->game->id)->orderBy('id')->get() as $map_place):
-                $map[] = array('id' => $map_place->id, 'zone' => $map_place->zone, 'user_id' => $map_place->user_id,
-                    'capital' => $map_place->capital, 'lives' => $map_place->lives, 'points' => $map_place->points,
-                    'settings' => json_decode($map_place->json_settings, TRUE));
-            endforeach;
+            if(count($this->game->users)):
+                foreach ($this->game->users as $user_game):
+                    $photo_link = '';
+                    if(!empty($user_game->user_social) && isset($user_game->user_social->photo_big) &&!empty($user_game->user_social->photo_big)):
+                        $photo_link = $user_game->user_social->photo_big;
+                    endif;
+                    $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
+                        'email' => $user_game->user->email, 'photo' => $photo_link,
+                        'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
+                        'status' => $user_game->status,
+                        'available_steps' => $user_game->available_steps,'make_steps' => $user_game->make_steps,
+                        'active' => in_array($user_game->user->id,$activeUsers),
+                        'settings' => json_decode($user_game->json_settings, TRUE));
+                endforeach;
+            endif;
+            if(count($this->game->map_places)):
+                foreach ($this->game->map_places as $map_place):
+                    $map[] = array('id' => $map_place->id, 'zone' => $map_place->zone, 'user_id' => $map_place->user_id,
+                        'capital' => $map_place->capital, 'lives' => $map_place->lives, 'points' => $map_place->points,
+                        'settings' => json_decode($map_place->json_settings, TRUE));
+                endforeach;
+            endif;
             $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
                 'game_stage' => $this->game->stage,
                 'game_status' => $this->game->status, 'game_owner' => $this->game->started_id,
@@ -1017,6 +1023,18 @@ class GameController extends BaseController {
         else:
             return FALSE;
         endif;
+    }
+
+    private function validCapitalZone($zone){
+
+        if (count($this->game->map_places)):
+            foreach ($this->game->map_places as $map_place):
+                if ($map_place->zone == $zone && $map_place->capital == 1):
+                    return TRUE;
+                endif;
+            endforeach;
+        endif;
+        return FALSE;
     }
     /********************************** BOTS *************************************/
     public function addBots(){
