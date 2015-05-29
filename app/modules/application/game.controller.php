@@ -203,7 +203,10 @@ class GameController extends BaseController {
                 endif;
             endforeach;
         endif;
-        return View::make(Helper::acclayout('index'),array('game'=>$this->game));
+        $fistDayMonth = Carbon::now()->startOfMonth();
+        $month_rating = $this->getRating($fistDayMonth);
+        $total_rating = $this->getRating();
+        return View::make(Helper::acclayout('index'),array('game'=>$this->game,'month_rating'=>$month_rating,'total_rating'=>$total_rating));
     }
 
     public function demoGame(){
@@ -1606,5 +1609,48 @@ class GameController extends BaseController {
                 endif;
             endif;
         endif;
+    }
+
+    private function getRating($dateBegin = FALSE){
+
+        if ($dateBegin):
+            $rating_list = GameUserRating::where('rating', '>', 0)->where('created_at', '>=', $dateBegin)->with('game.users', 'user')->orderBy('rating', 'DESC')->orderBy('updated_at', 'DESC')->get();
+        else:
+            $rating_list = GameUserRating::where('rating', '>', 0)->with('game.users', 'user')->orderBy('rating', 'DESC')->orderBy('updated_at', 'DESC')->get();
+        endif;
+        $rating = array();
+        foreach($rating_list as $user_rating):
+            $rating[$user_rating->user_id]['user_id'] = $user_rating->user_id;
+            $rating[$user_rating->user_id]['user_name'] = $user_rating->user->name;
+            $rating[$user_rating->user_id]['wins'] = 0;
+            $rating[$user_rating->user_id]['rating'] = 0;
+        endforeach;
+        foreach($rating_list as $user_rating):
+            $rating[$user_rating->user_id]['rating'] += $user_rating->rating;
+            if(isset($user_rating->game->users) && !empty($user_rating->game->users)):
+                foreach($user_rating->game->users as $game_user):
+                    if($game_user->user_id == $user_rating->user_id && $game_user->place == 1):
+                        $rating[$user_rating->user_id]['wins']++;
+                    endif;
+                endforeach;
+            endif;
+        endforeach;
+        $sort_array = array();
+        $sort_rating = array();
+        foreach($rating as $user_id => $user_rating):
+            $sort_array[$user_id] = $user_rating['rating'];
+        endforeach;
+        arsort($sort_array);
+        foreach($sort_array as $user_id => $rating_value):
+            $sort_rating[$user_id] = $rating[$user_id];
+        endforeach;
+        usort($sort_rating, function ($one, $two) {
+            if ($one['rating'] == $two['rating']) return 0;
+            return ($one['rating'] < $two['rating']) ? 1 : -1;
+            if (strtotime($one['wins']) == strtotime($two['wins'])) return 0;
+            return (strtotime($one['wins']) < strtotime($two['wins'])) ? 1 : -1;
+        });
+        $rating = $sort_rating;
+        return $rating;
     }
 }

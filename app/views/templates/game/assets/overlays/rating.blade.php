@@ -13,48 +13,14 @@
                     <td class="wind">Побед</td>
                     <td class="score">Баллов</td>
                 </tr>
+            @foreach($month_rating as $index => $rating)
                 <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
+                    <td class="n">{{ $index+1 }}</td>
+                    <td class="name">{{ $rating['user_name'] }}</td>
+                    <td class="wind">{{ $rating['wins'] }}</td>
+                    <td class="score">{{ $rating['rating'] }}</td>
                 </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr class="you">
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
+            @endforeach
             </table>
         </div>
         <div class="tab">
@@ -65,48 +31,14 @@
                     <td class="wind">Побед</td>
                     <td class="score">Баллов</td>
                 </tr>
+            @foreach($total_rating as $index => $rating)
                 <tr>
-                    <td class="n">2</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
+                    <td class="n">{{ $index+1 }}</td>
+                    <td class="name">{{ $rating['user_name'] }}</td>
+                    <td class="wind">{{ $rating['wins'] }}</td>
+                    <td class="score">{{ $rating['rating'] }}</td>
                 </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr>
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
-                <tr class="you">
-                    <td class="n">1</td>
-                    <td class="name">Владислав</td>
-                    <td class="wind">43</td>
-                    <td class="score">98 300</td>
-                </tr>
+            @endforeach
             </table>
         </div>
     </div>

@@ -10,9 +10,6 @@ class Game extends \BaseModel {
     public function started_user(){
         return $this->hasOne('User', 'id', 'user_id');
     }
-    public function winner_user(){
-        return $this->hasOne('User', 'id', 'user_id');
-    }
 
     public function users(){
         return $this->hasMany('GameUser', 'game_id', 'id');
