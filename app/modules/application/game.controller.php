@@ -34,17 +34,14 @@ class GameController extends BaseController {
 
         $class = __CLASS__;
         Route::controller('password', 'RemindersController');
-
         Route::group(array('before'=>'login','prefix'=>''), function() use ($class) {
             Route::post('login/user', array('before'=>'csrf','as'=>'quick-auth','uses'=>$class.'@QuickAuth'));
             Route::post('register/user', array('before'=>'csrf','as'=>'quick-register','uses'=>$class.'@QuickRegister'));
         });
-
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
             Route::get('', array('as'=>'game','uses'=>$class.'@indexGame'));
             Route::get('demo', array('as'=>'game-demo','uses'=>$class.'@demoGame'));
         });
-
         Route::group(array('before'=>'user.auth','prefix' => $class::$name), function() use ($class) {
             Route::post('profile/password-save', array('as'=>'profile-password-save','uses'=>$class.'@ProfilePasswordSave'));
 
@@ -176,15 +173,11 @@ class GameController extends BaseController {
 
         if (!Request::ajax()) return App::abort(404);
         $json_request = array('status'=>FALSE,'responseText'=>'','redirect'=> FALSE);
-        if (Hash::check(Input::get('old_password'), Auth::user()->password)):
-            $user = Auth::user();
-            $user->password = Hash::make(Input::get('password'));
-            $user->save();
-            $json_request['responseText'] = 'Пароль изменен.';
-            $json_request['status'] = TRUE;
-        else:
-            $json_request['responseText'] = 'Неверно указанный старый пароль';
-        endif;
+        $user = Auth::user();
+        $user->password = Hash::make(Input::get('password'));
+        $user->save();
+        $json_request['responseText'] = 'Пароль изменен.';
+        $json_request['status'] = TRUE;
         return Response::json($json_request,200);
     }
     /****************************************************************************/
@@ -518,12 +511,14 @@ class GameController extends BaseController {
                             $this->nextStepInSecondStage();
                             $users = GameUser::where('game_id', $this->game->id)->get();
                             $this->changeGameUsersStatus(2, $users);
+                            $this->json_request['conquest_result'] = 'success';
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             if($this->isConqueredCapitals()):
                                 $this->nextStep();
                                 $this->finishGame(1);
                             endif;
                         else:
+                            $this->json_request['conquest_result'] = 'retry';
                             $this->json_request['responseText'] = 'Продолжайте захват столицы';
                         endif;
                         $this->json_request['status'] = TRUE;
@@ -1153,20 +1148,7 @@ class GameController extends BaseController {
             endif;
         endif;
     }
-    /********************************* OTHER *************************************/
-    private function exclude_indexes($capital,$map_places, $map_places_ids){
-
-        $adjacent_places = Config::get('game.adjacent_places');
-        $temp_map_places_ids = $map_places_ids;
-        $map_places_ids = array();
-        foreach ($temp_map_places_ids as $map_place_id):
-            if ($map_place_id != $capital && !in_array($map_places[$map_place_id]->zone,$adjacent_places[$map_places[$capital]->zone])):
-                $map_places_ids[$map_place_id] = $map_place_id;
-            endif;
-        endforeach;
-        return $map_places_ids;
-    }
-
+    /******************************** CONQUEST ***********************************/
     private function conquestTerritory($zone, $user_id = NULL){
 
         if (is_null($user_id)):
@@ -1176,8 +1158,7 @@ class GameController extends BaseController {
             $user = GameUser::where('game_id',Input::get('game'))->where('user_id',$user_id)->first();
         endif;
         if ($this->validGameStatus($this->game_statuses[2])):
-            #if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', $user_id)->where('zone', $zone)->where('capital', 0)->first()):
-            if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', $user_id)->where('zone', $zone)->first()):
+            if ($conquest = GameMap::where('game_id', $this->game->id)->where('user_id', '!=', $user_id)->where('zone', $zone)->where('capital', 0)->first()):
                 $settings = json_decode($conquest->json_settings);
                 $settings->color = $user['color'];
                 $conquest->json_settings = json_encode($settings);
@@ -1194,6 +1175,9 @@ class GameController extends BaseController {
                 if ($conquest->lives == 1):
                     $this->removeUserInGame($conquest->user_id);
                     foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
+                        if($territory->capital == 1):
+                            $territory->points = 200;
+                        endif;
                         $settings = json_decode($territory->json_settings);
                         $settings->color = $this->user['color'];
                         $territory->json_settings = json_encode($settings);
@@ -1236,21 +1220,16 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function getCurrentAnswer($userGameQuestion){
+    private function getDuel(){
 
-        $currentAnswer = FALSE;
-        if (!empty($userGameQuestion->question) && !empty($userGameQuestion->question->answers)):
-            $answers = json_decode($userGameQuestion->question->answers);
-            foreach($answers as $index => $answer):
-                if ($answer->current == 1):
-                    $currentAnswer = $userGameQuestion->question->type == 'quiz' ? $answer->title : $index;
-                    break;
-                endif;
-            endforeach;
+        $json_settings = json_decode($this->game->json_settings,TRUE);
+        if (isset($json_settings['duel'])):
+            return $json_settings['duel'];
+        else:
+            return FALSE;
         endif;
-        return $currentAnswer;
     }
-
+    /******************************** WINNERS ************************************/
     private function setQuizQuestionWinner(){
 
         if ($this->game_answers['current_answer'] !== FALSE):
@@ -1304,55 +1283,6 @@ class GameController extends BaseController {
                 $this->game_winners[$users_ids[0]] = 1;
             else:
                 $this->game_winners = 'standoff';
-            endif;
-        endif;
-    }
-
-    private function nextStep($user_id = 0){
-
-        $json_settings = json_decode($this->game->json_settings,TRUE);
-        $json_settings['next_step'] = $user_id;
-        $this->game->json_settings = json_encode($json_settings);
-        $this->game->save();
-        $this->game->touch();
-    }
-
-    private function nextStepInSecondStage(){
-
-        $json_settings = json_decode($this->game->json_settings, TRUE);
-        $current_tour = $json_settings['current_tour'];
-        $stage2_tours = $json_settings['stage2_tours'];
-        if (isset($stage2_tours[$current_tour])):
-            if($current_tour < 3):
-                foreach($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == FALSE):
-                        $this->nextStep($user_id);
-                        break;
-                    endif;
-                endforeach;
-            elseif($current_tour == 3):
-                $this->nextStep();
-                $firstStep = TRUE;
-                foreach($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == TRUE):
-                        $firstStep = FALSE;
-                        break;
-                    endif;
-                endforeach;
-                if($firstStep):
-                    if ($winner = $this->getWinnerByPoints()):
-                        $this->nextStep($winner);
-                    else:
-                        $this->randomStep();
-                    endif;
-                else:
-                    foreach($stage2_tours[$current_tour] as $user_id => $status):
-                        if ($status == FALSE):
-                            $this->nextStep($user_id);
-                            break;
-                        endif;
-                    endforeach;
-                endif;
             endif;
         endif;
     }
@@ -1459,13 +1389,116 @@ class GameController extends BaseController {
         return FALSE;
     }
 
-    private function getDuel(){
+    private function setGameWinners(){
+
+        if ($users_points = GameUser::where('game_id', $this->game->id)->lists('points','user_id')):
+            arsort($users_points);
+            $users = array_keys($users_points);
+            $points = array_values($users_points);
+            GameUser::where('game_id',$this->game->id)->update(array('place'=>0));
+            $rating = array(0,0,0);
+            if($points[0] == $points[1] && $points[1] == $points[2]):
+                // набрано одинаково очков
+                GameUser::where('game_id',$this->game->id)->update(array('place'=>1));
+                $rating = array(100,100,100);
+            elseif($points[0] == $points[1] && $points[1] > $points[2]):
+                // 1 и 2 набрали одинаково
+                GameUser::where('game_id',$this->game->id)->whereIn('user_id',array($users[0],$users[1]))->update(array('place'=>1));
+                GameUser::where('game_id',$this->game->id)->where('user_id',$users[2])->update(array('place'=>2));
+                $rating = array(100,100,50);
+            elseif($points[0] > $points[1] && $points[1] == $points[2]):
+                // 1 набрал больше, 2 и 3 - одинаково
+                GameUser::where('game_id',$this->game->id)->where('user_id',$users[0])->update(array('place'=>1));
+                GameUser::where('game_id',$this->game->id)->whereIn('user_id',array($users[1],$users[2]))->update(array('place'=>2));
+                $rating = array(100,50,50);
+            elseif($points[0] > $points[1] && $points[1] > $points[2]):
+                // 1 набрал больше, 2 набрал больше 3
+                GameUser::where('game_id',$this->game->id)->where('user_id',$users[0])->update(array('place'=>1));
+                GameUser::where('game_id',$this->game->id)->where('user_id',$users[1])->update(array('place'=>2));
+                GameUser::where('game_id',$this->game->id)->where('user_id',$users[2])->update(array('place'=>3));
+                $rating = array(100,50,0);
+            endif;
+            foreach($users as $index => $user_id):
+                $this->changeUserRating($user_id,$rating[$index]);
+            endforeach;
+        endif;
+        return TRUE;
+    }
+    /********************************* OTHER *************************************/
+    private function exclude_indexes($capital,$map_places, $map_places_ids){
+
+        $adjacent_places = Config::get('game.adjacent_places');
+        $temp_map_places_ids = $map_places_ids;
+        $map_places_ids = array();
+        foreach ($temp_map_places_ids as $map_place_id):
+            if ($map_place_id != $capital && !in_array($map_places[$map_place_id]->zone,$adjacent_places[$map_places[$capital]->zone])):
+                $map_places_ids[$map_place_id] = $map_place_id;
+            endif;
+        endforeach;
+        return $map_places_ids;
+    }
+
+    private function getCurrentAnswer($userGameQuestion){
+
+        $currentAnswer = FALSE;
+        if (!empty($userGameQuestion->question) && !empty($userGameQuestion->question->answers)):
+            $answers = json_decode($userGameQuestion->question->answers);
+            foreach($answers as $index => $answer):
+                if ($answer->current == 1):
+                    $currentAnswer = $userGameQuestion->question->type == 'quiz' ? $answer->title : $index;
+                    break;
+                endif;
+            endforeach;
+        endif;
+        return $currentAnswer;
+    }
+
+    private function nextStep($user_id = 0){
 
         $json_settings = json_decode($this->game->json_settings,TRUE);
-        if (isset($json_settings['duel'])):
-            return $json_settings['duel'];
-        else:
-            return FALSE;
+        $json_settings['next_step'] = $user_id;
+        $this->game->json_settings = json_encode($json_settings);
+        $this->game->save();
+        $this->game->touch();
+    }
+
+    private function nextStepInSecondStage(){
+
+        $json_settings = json_decode($this->game->json_settings, TRUE);
+        $current_tour = $json_settings['current_tour'];
+        $stage2_tours = $json_settings['stage2_tours'];
+        if (isset($stage2_tours[$current_tour])):
+            if($current_tour < 3):
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == FALSE):
+                        $this->nextStep($user_id);
+                        break;
+                    endif;
+                endforeach;
+            elseif($current_tour == 3):
+                $this->nextStep();
+                $firstStep = TRUE;
+                foreach($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == TRUE):
+                        $firstStep = FALSE;
+                        break;
+                    endif;
+                endforeach;
+                if($firstStep):
+                    if ($winner = $this->getWinnerByPoints()):
+                        $this->nextStep($winner);
+                    else:
+                        $this->randomStep();
+                    endif;
+                else:
+                    foreach($stage2_tours[$current_tour] as $user_id => $status):
+                        if ($status == FALSE):
+                            $this->nextStep($user_id);
+                            break;
+                        endif;
+                    endforeach;
+                endif;
+            endif;
         endif;
     }
 
@@ -1516,42 +1549,6 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
-    }
-
-    private function setGameWinners(){
-
-        if ($users_points = GameUser::where('game_id', $this->game->id)->lists('points','user_id')):
-            arsort($users_points);
-            $users = array_keys($users_points);
-            $points = array_values($users_points);
-            GameUser::where('game_id',$this->game->id)->update(array('place'=>0));
-            $rating = array(0,0,0);
-            if($points[0] == $points[1] && $points[1] == $points[2]):
-                // набрано одинаково очков
-                GameUser::where('game_id',$this->game->id)->update(array('place'=>1));
-                $rating = array(100,100,100);
-            elseif($points[0] == $points[1] && $points[1] > $points[2]):
-                // 1 и 2 набрали одинаково
-                GameUser::where('game_id',$this->game->id)->whereIn('user_id',array($users[0],$users[1]))->update(array('place'=>1));
-                GameUser::where('game_id',$this->game->id)->where('user_id',$users[2])->update(array('place'=>2));
-                $rating = array(100,100,50);
-            elseif($points[0] > $points[1] && $points[1] == $points[2]):
-                // 1 набрал больше, 2 и 3 - одинаково
-                GameUser::where('game_id',$this->game->id)->where('user_id',$users[0])->update(array('place'=>1));
-                GameUser::where('game_id',$this->game->id)->whereIn('user_id',array($users[1],$users[2]))->update(array('place'=>2));
-                $rating = array(100,50,50);
-            elseif($points[0] > $points[1] && $points[1] > $points[2]):
-                // 1 набрал больше, 2 набрал больше 3
-                GameUser::where('game_id',$this->game->id)->where('user_id',$users[0])->update(array('place'=>1));
-                GameUser::where('game_id',$this->game->id)->where('user_id',$users[1])->update(array('place'=>2));
-                GameUser::where('game_id',$this->game->id)->where('user_id',$users[2])->update(array('place'=>3));
-                $rating = array(100,50,0);
-            endif;
-            foreach($users as $index => $user_id):
-                $this->changeUserRating($user_id,$rating[$index]);
-            endforeach;
-        endif;
-        return TRUE;
     }
 
     private function getGameBotsIDs(){

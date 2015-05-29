@@ -23,7 +23,7 @@ GAME.reInitialize = function(){
     GAME.timer = {timer_object: 0, time: 10};
     GAME.game_timer = 0;                                    // таймер игры
     GAME.bots_timer = 0                                     // таймер ботов
-    GAME.time_bot = 20;                                     // время в секундах до инициалицации ботов
+    GAME.time_bot = 5;                                     // время в секундах до инициалицации ботов
 }
 /*
  Метод получает информацию о текущей игре или инициирует новую
@@ -689,7 +689,7 @@ GAME.startBotTimer = function(){
 GAME.startGameTimer = function(){
     GAME.game_timer = setInterval(function(){
         GAME.getGame();
-    },3000);
+    },10000);
 }
 /*
  Метод проверяет "не пустая" ли карта
