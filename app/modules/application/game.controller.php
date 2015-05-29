@@ -233,7 +233,10 @@ class GameController extends BaseController {
                 $this->randomStep();
             endif;
         endif;
-        $this->setGameStatus();
+        if($this->setGameStatus()):
+            $this->game = Game::where('id',Input::get('game'))->with('users','users.user_social','map_places')->first();
+            $this->user = GameUser::where('game_id',Input::get('game'))->where('user_id',Auth::user()->id)->first();
+        endif;
         $this->stage2FourTour();
         $this->createGameJSONResponse();
         return Response::json($this->json_request,200);
@@ -485,7 +488,7 @@ class GameController extends BaseController {
                             $nextStep = $this->createTemplateStepInSecondStage();
                             $this->nextStep($nextStep);
                             $this->setStepInSecondStageJSON();
-                            $this->isBotNextStep();
+                            $this->isBotNextStepStage2();
                         endif;
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
@@ -615,7 +618,7 @@ class GameController extends BaseController {
     private function setGameStatus(){
 
         if (!is_null($this->game->status)):
-            return TRUE;
+            return FALSE;
         endif;
         $current_status = $this->game->status;
         if (!$this->game->status_begin):
@@ -628,8 +631,10 @@ class GameController extends BaseController {
         if ($current_status != $this->game->status):
             $this->game->save();
             $this->game->touch();
+            return TRUE;
         endif;
-        return TRUE;
+        return FALSE;
+
     }
     /****************************** CREATING ************************************/
     private function createNewGame(){
@@ -1141,32 +1146,42 @@ class GameController extends BaseController {
             $question_id = isset($userGameQuestion->question_id) ? $userGameQuestion->question_id : 0;
             if($question = GameQuestions::where('id',$question_id)->first()):
                 $question_type = $question->type;
-                if($question_type == 'quiz'):
-                    foreach($bots_id as $bot_id):
-                        $min_value = $current_answer - round($current_answer*0.4,0);
-                        $max_value = $current_answer + round($current_answer*0.4,0);
-                        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $bot_id)->first()):
-                            $botGameQuestion->status = 1;
-                            $botGameQuestion->answer = mt_rand($min_value, $max_value);
-                            $botGameQuestion->seconds = mt_rand(3, 7);
-                            $botGameQuestion->save();
-                            $botGameQuestion->touch();
-                        endif;
+                if ($question_type == 'quiz'):
+                    foreach ($bots_id as $bot_id):
+                        $this->botAnswerQuizQuestion($bot_id, $current_answer, $userGameQuestion->group_id);
                     endforeach;
-                elseif($question_type == 'normal'):
-                    foreach($bots_id as $bot_id):
-                        $answer = mt_rand() == 1 ? $current_answer : 99999;
-                        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $bot_id)->first()):
-                            $botGameQuestion->status = 1;
-                            $botGameQuestion->answer = $answer;
-                            $botGameQuestion->seconds = mt_rand(3, 7);
-                            $botGameQuestion->save();
-                            $botGameQuestion->touch();
-                        endif;
+                elseif ($question_type == 'normal'):
+                    foreach ($bots_id as $bot_id):
+                        $this->botAnswerNormalQuestion($bot_id, $current_answer, $userGameQuestion->group_id);
                     endforeach;
                 endif;
             endif;
 
+        endif;
+    }
+
+    private function botAnswerQuizQuestion($bot_id, $current_answer, $question_group_id) {
+
+        $min_value = $current_answer - round($current_answer * 0.4, 0);
+        $max_value = $current_answer + round($current_answer * 0.4, 0);
+        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $bot_id)->first()):
+            $botGameQuestion->status = 1;
+            $botGameQuestion->answer = mt_rand($min_value, $max_value);
+            $botGameQuestion->seconds = mt_rand(3, 7);
+            $botGameQuestion->save();
+            $botGameQuestion->touch();
+        endif;
+    }
+
+    private function botAnswerNormalQuestion($bot_id, $current_answer, $question_group_id) {
+
+        $answer = mt_rand() == 1 ? $current_answer : 99999;
+        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $bot_id)->first()):
+            $botGameQuestion->status = 1;
+            $botGameQuestion->answer = $answer;
+            $botGameQuestion->seconds = mt_rand(3, 7);
+            $botGameQuestion->save();
+            $botGameQuestion->touch();
         endif;
     }
 
@@ -1186,23 +1201,48 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function isBotNextStep(){
+    private function isBotNextStepStage2(){
 
-        $next_step = $this->getNextStep();
-        if($this->isBot($next_step)):
-            $this->nextStep();
-            if($adjacentZonesList = $this->getAdjacentPlaces()):
+        if($this->validGameStage(2)):
+            $next_step = $this->getNextStep();
+            if($this->isBot($next_step)):
+                #$this->nextStep();
+                if($adjacentZonesList = $this->getAdjacentPlaces($next_step)):
+                    $adjacentZones = array();
+                    foreach($adjacentZonesList as $adjacentZone):
+                        if($adjacentZone['capital'] == 0):
+                            $adjacentZones[$adjacentZone['zone']] = $adjacentZone['user_id'];
+                        endif;
+                    endforeach;
+                    $zones_numbers = array_keys($adjacentZones);
+                    $zones_users = array_values($adjacentZones);
+                    $conqueror = array_rand($zones_numbers);
+                    if (isset($zones_users[$conqueror])):
+                        $duel = array('conqu' => $next_step, 'def' => $zones_users[$conqueror]);
+                        $this->botCreateNormalQuestion($duel);
+                        $this->createDuel($duel);
 
-                foreach($adjacentZonesList as $adjacentZone):
-                    if($adjacentZone['capital'] == 0):
-                        #Helper::ta($adjacentZone);
+                        #if($this->isBot($zones_users[$conqueror])):
+                        if ($this->isBot(4)):
+                            print_r('БОТ');
+                            exit;
+                        endif;
                     endif;
-                endforeach;
-
-                #Helper::tad($adjacentZonesList);
+                endif;
             endif;
         endif;
     }
+
+    private function botCreateNormalQuestion($users_ids){
+
+        GameUser::where('game_id', $this->game->id)->where('status', 2)->update(array('status' => 0,
+            'available_steps' => 0, 'make_steps' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+        $this->createStepInSecondStage();
+        $this->setStepInSecondStageJSON();
+        $randomQuestion = $this->randomQuestion('normal');
+        $this->createQuestion($randomQuestion->id,$users_ids);
+    }
+
     /******************************** CONQUEST ***********************************/
     private function conquestTerritory($zone, $user_id = NULL){
 
