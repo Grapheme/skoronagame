@@ -301,7 +301,7 @@ class GameController extends BaseController {
                         $randomQuestion = $this->randomQuestion('normal');
                         $this->createQuestion($randomQuestion->id,Input::get('users'));
                         $this->createDuel(Input::get('users'));
-                        $this->nextStep(0);
+                        $this->nextStep();
                     endif;
                     $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
                     $this->createQuestionJSONResponse($question);
@@ -339,7 +339,7 @@ class GameController extends BaseController {
     public function getResultQuestion(){
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required', 'zone'=> ''));
+        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required', 'zone_type'=> ''));
         if ($validation->passes()):
             if ($this->initGame()):
                 $number_participants = Config::get('game.number_participants');
@@ -373,9 +373,17 @@ class GameController extends BaseController {
                             if ($this->validGameBots()):
                                 $this->isBotsWinners();
                             endif;
-                            if($this->validGameStage(2)):
-                                $this->createDuel();
-                                $this->nextStepInSecondStage();
+                            if ($this->validGameStage(2)):
+                                if (Input::has('zone_type') && Input::get('zone_type') == 'capital'):
+                                    if ($duel = $this->getDuel()):
+                                        if (GameUser::where('game_id', $this->game->id)->where('user_id', $duel['def'])->where('place', 1)->exists()):
+                                            $this->nextStepInSecondStage();
+                                        endif;
+                                    endif;
+                                else:
+                                    $this->createDuel();
+                                    $this->nextStepInSecondStage();
+                                endif;
                             endif;
                         else:
                             $this->game_winners = 'standoff';
@@ -472,10 +480,10 @@ class GameController extends BaseController {
                         endif;
                         if($this->isConqueredTerritories()):
                             $this->changeGameStage(2);
-                            $this->nextStep();
                             $nextStep = $this->createTemplateStepInSecondStage();
                             $this->nextStep($nextStep);
                             $this->setStepInSecondStageJSON();
+                            $this->isBotNextStep();
                         endif;
                         $this->json_request['responseText'] = 'Вы заняли территорию.';
                         $this->json_request['status'] = TRUE;
@@ -607,6 +615,7 @@ class GameController extends BaseController {
         if (!is_null($this->game->status)):
             return TRUE;
         endif;
+        $current_status = $this->game->status;
         if (!$this->game->status_begin):
             $this->game->status = $this->game_statuses[0];
         elseif ($this->game->status_begin):
@@ -614,8 +623,10 @@ class GameController extends BaseController {
         elseif ($this->game->status_over):
             $this->game->status = $this->game_statuses[3];
         endif;
-        $this->game->save();
-        $this->game->touch();
+        if ($current_status != $this->game->status):
+            $this->game->save();
+            $this->game->touch();
+        endif;
         return TRUE;
     }
     /****************************** CREATING ************************************/
@@ -1084,7 +1095,6 @@ class GameController extends BaseController {
                     endif;
                     if($this->isConqueredTerritories()):
                         $this->changeGameStage(2);
-                        $this->nextStep();
                         $nextStep = $this->createTemplateStepInSecondStage();
                         $this->nextStep($nextStep);
                         $this->setStepInSecondStageJSON();
@@ -1126,7 +1136,16 @@ class GameController extends BaseController {
                         endif;
                     endforeach;
                 elseif($question_type == 'normal'):
-
+                    foreach($bots_id as $bot_id):
+                        $answer = mt_rand() == 1 ? $current_answer : 99999;
+                        if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $bot_id)->first()):
+                            $botGameQuestion->status = 1;
+                            $botGameQuestion->answer = $answer;
+                            $botGameQuestion->seconds = mt_rand(3, 7);
+                            $botGameQuestion->save();
+                            $botGameQuestion->touch();
+                        endif;
+                    endforeach;
                 endif;
             endif;
 
@@ -1144,7 +1163,25 @@ class GameController extends BaseController {
             if($this->isBot($winners_id[1])):
                 $this->nextStep($winners_id[1]);
                 $this->botConquestTerritory($winners_id[1]);
-                $this->nextStep(0);
+                $this->nextStep();
+            endif;
+        endif;
+    }
+
+    private function isBotNextStep(){
+
+        $next_step = $this->getNextStep();
+        if($this->isBot($next_step)):
+            $this->nextStep();
+            if($adjacentZonesList = $this->getAdjacentPlaces()):
+
+                foreach($adjacentZonesList as $adjacentZone):
+                    if($adjacentZone['capital'] == 0):
+                        #Helper::ta($adjacentZone);
+                    endif;
+                endforeach;
+
+                #Helper::tad($adjacentZonesList);
             endif;
         endif;
     }
@@ -1462,6 +1499,12 @@ class GameController extends BaseController {
         $this->game->touch();
     }
 
+    private function getNextStep(){
+
+        $json_settings = json_decode($this->game->json_settings, TRUE);
+        return isset($json_settings['next_step']) ? $json_settings['next_step'] : 0;
+    }
+
     private function nextStepInSecondStage(){
 
         $json_settings = json_decode($this->game->json_settings, TRUE);
@@ -1588,21 +1631,23 @@ class GameController extends BaseController {
 
     private function stage2FourTour(){
 
-        if($this->validGameStage(2)):
+        if ($this->validGameStage(2)):
             $json_settings = json_decode($this->game->json_settings, TRUE);
-            $current_tour = $json_settings['current_tour'];
-            $stage2_tours = $json_settings['stage2_tours'];
-            if($current_tour == 3):
-                $all_steps = TRUE;
-                foreach($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == FALSE):
-                        $all_steps = FALSE;
-                        break;
+            if (isset($json_settings['current_tour']) && isset($json_settings['stage2_tours'])):
+                $current_tour = $json_settings['current_tour'];
+                $stage2_tours = $json_settings['stage2_tours'];
+                if ($current_tour == 3):
+                    $all_steps = TRUE;
+                    foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                        if ($status == FALSE):
+                            $all_steps = FALSE;
+                            break;
+                        endif;
+                    endforeach;
+                    if ($all_steps && !$this->validAvailableSteps() && $this->validUsersStatus(2)):
+                        $this->nextStep();
+                        $this->finishGame(1);
                     endif;
-                endforeach;
-                if($all_steps && !$this->validAvailableSteps() && $this->validUsersStatus(2)):
-                    $this->nextStep();
-                    $this->finishGame(1);
                 endif;
             endif;
         endif;
@@ -1618,7 +1663,7 @@ class GameController extends BaseController {
         $rating = array();
         foreach($rating_list as $user_rating):
             $rating[$user_rating->user_id]['user_id'] = $user_rating->user_id;
-            $rating[$user_rating->user_id]['user_name'] = $user_rating->user->name;
+            $rating[$user_rating->user_id]['user_name'] = isset($user_rating->user->name) ? $user_rating->user->name : 'No name' ;
             $rating[$user_rating->user_id]['wins'] = 0;
             $rating[$user_rating->user_id]['rating'] = 0;
         endforeach;

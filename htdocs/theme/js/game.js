@@ -380,7 +380,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
-            $(".js-map-empty-block").removeClass('js-map-empty-block');
+            $(".js-map-empty-block").css('background-color', '#FFFFFF').removeClass('js-map-empty-block');
             $("#js-server-response").html('');
         },
         success: function (response) {
@@ -419,7 +419,7 @@ GAME.sendConquestTerritory = function(){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
-            $(".js-map-empty-block").removeClass('js-map-empty-block');
+            $(".js-map-empty-block").css('background-color', '#FFFFFF').removeClass('js-map-empty-block');
             $("#js-server-response").html('');
         },
         success: function (response) {
@@ -495,7 +495,7 @@ GAME.parseGameResponse = function(){
             $("#js-user-response").html(JSON.stringify(GAME.user));
         }
     });
-    GAME.steps = GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
+    GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
     if(GAME.bots_timer == 0 && GAME.user.id == GAME.game_owner)
         GAME.startBotTimer();
     if(GAME.response.users.length == 3)
@@ -689,7 +689,7 @@ GAME.startBotTimer = function(){
 GAME.startGameTimer = function(){
     GAME.game_timer = setInterval(function(){
         GAME.getGame();
-    },10000);
+    },5000);
 }
 /*
  Метод проверяет "не пустая" ли карта
