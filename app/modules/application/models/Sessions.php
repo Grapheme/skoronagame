@@ -34,10 +34,11 @@ class Sessions extends \BaseModel {
         return $users;
     }
 
-    public static function getUserIDsLastActivity(){
+    public static function getUserIDsLastActivity($user_ids = NULL){
 
         $users = array();
-        if($sessions = self::where('user_id','!=','null')->where('last_activity','>=',Config::get('game.time_activity'))->with('user')->get()):
+        $user_ids = (array)$user_ids;
+        if($sessions = self::where('user_id','!=','null')->whereIn('user_id', $user_ids)->where('last_activity','>=',Config::get('game.time_activity'))->with('user')->get()):
             foreach($sessions as $session):
                 if(!empty($session->user)):
                     $users[] = $session->user->id;

@@ -249,7 +249,10 @@ class GameController extends BaseController {
     public function overGame(){
 
         if(!Request::ajax()) return App::abort(404);
+
+
         if ($this->initGame()):
+            #Helper::tad($this->game);
             if($this->validGameStatus($this->game_statuses[3])):
                 $this->setGameWinners();
                 $this->json_request['status'] = TRUE;
@@ -396,7 +399,14 @@ class GameController extends BaseController {
                 elseif(GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 99)->exists()):
                     $this->game_winners = 'standoff';
                 else:
+
+                    /*
+                     * Получить всех игроков текущей игры, у которых статус = 100 (или 99)
+                     * И дать от их имени ответ: answer = 99999 / seconds = 10 / status = 1
+                     */
+
                     $this->game_winners = 'retry';
+
                 endif;
                 $this->createQuestionResultJSONResponse();
                 if (is_array($this->game_winners)):
@@ -763,8 +773,32 @@ class GameController extends BaseController {
 
         if ($this->game):
             $users = $map = array();
-            $activeUsers = Sessions::getUserIDsLastActivity();
-            foreach (GameUser::where('game_id', $this->game->id)->with('user','user_social')->get() as $user_game):
+            $gut = (new GameUser)->getTable();
+            $st = (new Sessions)->getTable();
+            $users = (new GameUser)
+                ->where('game_id', $this->game->id)
+                ->leftJoin($st, $st.'.user_id', '=', $gut.'.user_id')
+                ->addSelect($st.'.last_activity')
+                ->with('user','user_social')
+                ->get()
+            ;
+
+            #Helper::tad($users);
+
+            $user_ids = array();
+            foreach ($users as $user)
+                $users_ids[] = $user->id;
+
+            $activeUsers = Sessions::getUserIDsLastActivity($user_ids);
+            foreach ($users as $user_game):
+
+                #$user_game
+                # > 30 sec => status = 100
+                if ((time() - $user_game->last_activity) > Config::get('game.disconnect_user_timeout', 30)) {
+
+                    #$this->
+                }
+
                 $photo_link = '';
                 if(!empty($user_game->user_social) && isset($user_game->user_social->photo_big) &&!empty($user_game->user_social->photo_big)):
                     $photo_link = $user_game->user_social->photo_big;
