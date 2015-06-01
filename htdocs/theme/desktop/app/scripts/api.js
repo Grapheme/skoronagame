@@ -72,7 +72,9 @@ overGame = function(){
                 //alert('КОнец')
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
     });
 }
 
@@ -102,7 +104,9 @@ getNormalQuestion = function(callback){
                 getNormalQuestion(callback);
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            getNormalQuestion(callback);
+        }
     });
 }
 
@@ -176,7 +180,9 @@ sendConquestEmptyTerritory = function(territory, callback){
                 callback();
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            sendConquestEmptyTerritory(territory, callback);
+        }
     });
 }
 
@@ -195,7 +201,7 @@ sendConquestCapital = function(territory, callback){
             }
         },
         error: function (xhr, textStatus, errorThrown) {
-            
+            sendConquestCapital(territory, callback)
         }
     });
 }
@@ -282,6 +288,7 @@ getUsersResultQuestions = function (callback) {
             }
         },
         error: function (xhr, textStatus, errorThrown) {
+            getUsersResultQuestions(callback);
         }
     });
 }
