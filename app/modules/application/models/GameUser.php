@@ -18,4 +18,8 @@ class GameUser extends \BaseModel {
     public function game(){
         return $this->belongsTo('Game', 'game_id');
     }
+
+    public function session(){
+        return $this->belongsTo('Sessions', 'user_id', 'user_id');
+    }
 }

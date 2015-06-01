@@ -21,7 +21,11 @@ class GameController extends BaseController {
         if(!is_null($this->game) && is_object($this->game)):
             return TRUE;
         elseif (Input::has('game') && Input::get('game') > 0 ):
-            $this->game = Game::where('id',Input::get('game'))->with('users','users.user_social','map_places')->first();
+
+            $gut = (new GameUser)->getTable();
+            $st = (new Sessions)->getTable();
+
+            $this->game = Game::where('id',Input::get('game'))->with('users','users.user_social','users.session','map_places')->first();
             $this->user = GameUser::where('game_id',Input::get('game'))->where('user_id',Auth::user()->id)->first();
             return TRUE;
         else:
@@ -33,9 +37,12 @@ class GameController extends BaseController {
     public function reInitGame(){
 
         if(isset($this->game->id)):
-            $this->game = Game::where('id',$this->game->id)->with('users','users.user_social','map_places')->first();
+            $this->game = Game::where('id',$this->game->id)->with('users','users.user_social','users.session','map_places')->first();
             $this->user = GameUser::where('game_id',$this->game->id)->where('user_id',Auth::user()->id)->first();
         endif;
+
+        #echo '789';
+        #die;
     }
     /****************************************************************************/
     public static function returnRoutes() {
@@ -241,11 +248,13 @@ class GameController extends BaseController {
             endif;
         endif;
 
+        /*
         if(true):
             $this->resetGameUsers();
             $this->nextStep(3);
             $this->isBotNextStepStage2();
         endif;
+        */
 
         $this->finishGameInFourTour();
         $this->createGameJSONResponse();
@@ -785,9 +794,43 @@ class GameController extends BaseController {
 
         if ($this->game):
             $users = $map = array();
-            $activeUsers = Sessions::getUserIDsLastActivity();
+
+
+            ## Получим ID игроков из текущей игры и получим их время последней активности
+            $users = $this->game->users;
+            $users_ids = [];
+            foreach ($users as $user)
+                $users_ids[] = $user->id;
+
+            $activeUsers = Sessions::getUserIDsLastActivity($users_ids);
+
+            #Helper::tad($this->game->users);
+            $time_limit = Config::get('game.disconnect_user_timeout', 30);
+
             if(count($this->game->users)):
                 foreach ($this->game->users as $user_game):
+
+                    ## Если у игрока есть сессия и последний раз он проявлял активность слишком давно...
+                    if (
+                        isset($user_game->session)
+                        && is_object($user_game->session)
+                        && $user_game->status != 100
+                    ) {
+
+                        #echo (time() - $user_game->session->last_activity) . ' > ' . $time_limit . PHP_EOL;
+
+                        ## Устанавливаем статус игрока как "отключившийся" = 100.
+                        if ((time() - $user_game->session->last_activity) > $time_limit) {
+                            $this->changeGameUsersStatus(100, $user_game);
+                        }
+
+                    } else {
+
+                        ## Если у юзера нет сессии - сразу помечаем его как отключившегося
+                        $this->changeGameUsersStatus(100, $user_game);
+                    }
+
+
                     $photo_link = '';
                     if(!empty($user_game->user_social) && isset($user_game->user_social->photo_big) &&!empty($user_game->user_social->photo_big)):
                         $photo_link = $user_game->user_social->photo_big;
