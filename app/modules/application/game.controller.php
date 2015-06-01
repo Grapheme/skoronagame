@@ -71,6 +71,8 @@ class GameController extends BaseController {
             Route::post('question/get-users-results', array('as'=>'get-users-results-question','uses'=>$class.'@getUsersResultsQuestion'));
             Route::post('conquest/territory', array('as'=>'send-conquest-territory','uses'=>$class.'@sendConquestTerritory'));
             Route::post('conquest/capital', array('as'=>'send-conquest-capital','uses'=>$class.'@sendConquestCapital'));
+
+            Route::any('disconnect_user', array('as'=>'disconnect_user_url','uses'=>$class.'@sendDisconnectUser'));
         });
     }
     /****************************************************************************/
@@ -807,6 +809,9 @@ class GameController extends BaseController {
             #Helper::tad($this->game->users);
             $time_limit = Config::get('game.disconnect_user_timeout', 30);
 
+            #$this->game->disconnect_user_timeout = $time_limit;
+            #Helper::tad($this->game);
+
             if(count($this->game->users)):
                 foreach ($this->game->users as $user_game):
 
@@ -851,17 +856,36 @@ class GameController extends BaseController {
                                    'settings' => json_decode($map_place->json_settings, TRUE));
                 endforeach;
             endif;
-            $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
-                                                        'game_stage' => $this->game->stage,
-                                                        'game_status' => $this->game->status, 'game_owner' => $this->game->started_id,
-                                                        'current_user' => Auth::user()->id, 'users' => $users,
-                                                        'map' => $map, 'settings' => json_decode($this->game->json_settings, TRUE));
+            $this->json_request['responseJSON'] = array(
+                'game_id' => $this->game->id,
+                'game_stage' => $this->game->stage,
+                'game_status' => $this->game->status,
+                'game_owner' => $this->game->started_id,
+                'current_user' => Auth::user()->id,
+                'users' => $users,
+                'map' => $map,
+                'settings' => json_decode($this->game->json_settings, TRUE),
+                'disconnect_user_timeout' => $time_limit,
+                'disconnect_user_url' => URL::route('disconnect_user_url'),
+            );
             $this->json_request['status'] = TRUE;
             return TRUE;
         else:
             return FALSE;
         endif;
     }
+
+
+    public function sendDisconnectUser() {
+
+        $user_id = Input::get('user_id');
+        if (is_numeric($user_id) && (int)$user_id > 0) {
+            $this->changeGameUsersStatus(100, $user_id);
+            $json_request['status'] = TRUE;
+        }
+        #return Response::json($json_request['status']);
+    }
+
 
     private function createQuestionJSONResponse($user_question){
 
@@ -991,7 +1015,11 @@ class GameController extends BaseController {
 
     private function changeGameUsersStatus($status,$users = NULL){
 
-        if (!is_null($users) && count($users) == 1):
+        #dd($users);
+
+        if (is_numeric($users)):
+            GameUser::where('user_id', $users)->update(['status' => 100]);
+        elseif (!is_null($users) && count($users) == 1):
             $users->status = $status;
             $users->save();
             $users->touch();
