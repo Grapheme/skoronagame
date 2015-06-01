@@ -343,6 +343,7 @@ class GameController extends BaseController {
                     $userGameQuestion->save();
                     $userGameQuestion->touch();
                     $this->sendBotsAnswers($userGameQuestion);
+                    $this->checkOfflineUsers($userGameQuestion);
                     if ($userGameQuestion->answer != 99999):
                         $this->json_request['responseText'] = "GOOD";
                     else:
@@ -426,6 +427,12 @@ class GameController extends BaseController {
                 elseif(GameUserQuestions::where('id', Input::get('question'))->where('game_id', $this->game->id)->where('status', 99)->exists()):
                     $this->game_winners = 'standoff';
                 else:
+
+                    /*
+                     * Получить всех игроков текущей игры, у которых статус = 100 (или 99)
+                     * И дать от их имени ответ: answer = 99999 / seconds = 10 / status = 1
+                     */
+
                     $this->game_winners = 'retry';
                 endif;
                 $this->createQuestionResultJSONResponse();
@@ -1285,6 +1292,26 @@ class GameController extends BaseController {
             endif;
 
         endif;
+    }
+
+
+    private function checkOfflineUsers($userGameQuestion){
+
+        #$this->game->user
+        foreach ($this->game->user as $user) {
+
+            if ($user->status == 100 || $user->status == 99) {
+
+                $question_group_id = $userGameQuestion->group_id;
+                if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $user->id)->first()):
+                    $botGameQuestion->status = 1;
+                    $botGameQuestion->answer = 99999;
+                    $botGameQuestion->seconds = 10;
+                    $botGameQuestion->save();
+                    $botGameQuestion->touch();
+                endif;
+            }
+        }
     }
 
     private function botAnswerQuizQuestion($bot_id, $current_answer, $question_group_id) {
