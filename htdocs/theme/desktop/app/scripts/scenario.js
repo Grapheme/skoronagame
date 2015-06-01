@@ -351,8 +351,14 @@ function renderMap(nodelay) {
         $area.addClass('reserved');
         $area.removeClass('red green blue');
         $area.addClass(getUserById(value.user_id).color);
+        if (value.user_id == GAME.user.id) {
+          $area.addClass('my');
+        } else {
+          $area.removeClass('my');          
+        }
       } else {
         $area.removeClass('reserved');
+        $area.removeClass('my');
         $area.addClass('empty');
       }
     } else {
@@ -410,9 +416,8 @@ var whoTurn_is_run = false;
 whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
-    //getUsersResultQuestions();
-    //console.log(GAME.next_turn);
     if (GAME.stage == 1) {
+      $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');
         $('#map .areas').addClass('active');
@@ -441,6 +446,8 @@ whoTurn = function() {
       }
       setTimeout(whoTurn, 1000);
     } else if (GAME.stage == 2) {
+      $('#map .areas').removeClass('stage-1');
+      $('#map .areas').addClass('stage-2');
       //alert('Этап захвата')
 //      console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
