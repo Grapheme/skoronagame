@@ -819,8 +819,21 @@ class GameController extends BaseController {
             #$this->game->disconnect_user_timeout = $time_limit;
             #Helper::tad($this->game);
 
+            ## Если в текущей игре есть текущие игроки
             if(count($this->game->users)):
                 foreach ($this->game->users as $user_game):
+
+                    ###################################################################################
+
+                    ## Считаем количество отвалившихся игроков
+                    $dead_users_count = 0;
+                    if (
+                        isset($user_game->session)
+                        && is_object($user_game->session)
+                        && $user_game->status == 100
+                    ) {
+                        $dead_users_count++;
+                    }
 
                     ## Если у игрока есть сессия и последний раз он проявлял активность слишком давно...
                     if (
@@ -829,11 +842,68 @@ class GameController extends BaseController {
                         && $user_game->status != 100
                     ) {
 
-                        #echo (time() - $user_game->session->last_activity) . ' > ' . $time_limit . PHP_EOL;
-
-                        ## Устанавливаем статус игрока как "отключившийся" = 100.
+                        ## Если от игрока слишком долго не было ответа...
                         if ((time() - $user_game->session->last_activity) > $time_limit) {
+
+                            ## ...Устанавливаем статус игрока как "отключившийся" = 100...
                             $this->changeGameUsersStatus(100, $user_game);
+
+                            ## ...Также проверяем, а не ходит ли сейчас этот игрок?
+                            ## Первый этап
+                            if ($this->validGameStage(1)) {
+
+                                ## Если у игрока было два доступных хода...
+                                if ($user_game->available_steps == 2 && $user_game->status == 0) {
+
+                                    ## ...найти чувака, у которого available_steps = 1 (следующий ходящий)
+                                    $user_id = GameUser::where('game_id',$this->game->id)->where('status',0)->where('available_steps',1)->pluck('user_id');
+                                    $this->nextStep($user_id);
+                                    if($this->isBot($user_id)):
+                                        $this->botConquestTerritory($user_id);
+                                        $this->nextStep();
+                                    endif;
+
+                                } elseif ($user_game->available_steps == 1 && $user_game->status == 0) {
+
+                                    ## Если у игрока был один доступный ход...
+                                    ## ...найти чувака, у которого available_steps = 2 (победителя предыдущего шага)
+                                    $user_id = GameUser::where('game_id',$this->game->id)->where('status',1)->where('available_steps',2)->pluck('user_id');
+                                    if ($user_id) {
+                                        $this->nextStep();
+                                    }
+                                }
+
+                            } elseif ($this->validGameStage(2)) {
+
+                                ## Второй этап
+                                ## ID игрока, который сейчас ходит
+                                $current_user_id = $this->getNextStep();
+
+                                ## Карта ходов второго этапа (флажки для Марата)
+                                $json_settings = json_decode($this->game->json_settings, TRUE);
+                                $stage2_tours = $json_settings['stage2_tours'];
+
+                                ## Ищем ходы текущего игрока
+                                foreach ($stage2_tours as $t => $tour) {
+                                    foreach ($tour as $user_id => $bool) {
+                                        if ($user_id == $current_user_id) {
+                                            ## Если найден ход отвалившегося игрока - ставим пометку о том, что ход уже был "совершен"
+                                            $stage2_tours[$t][$user_id] = true;
+                                        }
+                                    }
+                                }
+
+                                ## Запаковываем карту обратно и записываем ее в БД
+                                $this->game->json_settings = json_encode($stage2_tours);
+                                $this->game->save();
+
+                                ## Отвечаем на все неотвеченные вопросы текущего юзера
+                                GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_game->id)->where('status', 0)->update(['answer' => 99999, 'seconds' => 10, 'status' => 1]);
+
+                                ## Переход хода
+                                $next_step = $this->nextStepInSecondStage();
+                                $this->nextStep($next_step);
+                            }
                         }
 
                     } else {
@@ -841,6 +911,15 @@ class GameController extends BaseController {
                         ## Если у юзера нет сессии - сразу помечаем его как отключившегося
                         $this->changeGameUsersStatus(100, $user_game);
                     }
+
+                    ## Если отвалилось 2 игрока - делаем Game Over
+                    if ($dead_users_count >= 2) {
+                        $this->nextStep();
+                        $this->finishGame(1);
+                        $this->reInitGame();
+                    }
+
+                    ###################################################################################
 
 
                     $photo_link = '';
@@ -1300,7 +1379,7 @@ class GameController extends BaseController {
         #$this->game->user
         foreach ($this->game->user as $user) {
 
-            if ($user->status == 100 || $user->status == 99) {
+            if ($user->status == 100|| $user->status == 99) {
 
                 $question_group_id = $userGameQuestion->group_id;
                 if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $user->id)->first()):
