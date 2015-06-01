@@ -44,6 +44,7 @@ $('.areas .countur svg path').hover(function(){
   $(this).closest('.area').toggleClass('active');
   if ($(this).closest('.area').data('info')) {
     var _points = $(this).closest('.area').data('info').points || 0;
+    //var _sgt = 
     $('.infowindow-holder .infowindow-small').text(_points);
     $('.infowindow-holder').toggle();
   }

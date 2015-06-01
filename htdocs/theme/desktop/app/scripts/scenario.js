@@ -103,6 +103,8 @@ function quizQuesionRender(players) {
       var _user = getUserById(value);
       $('#question-1 .left .unit.'+_user.color).show();
     });
+  } else if (players.length==0) {
+    $('#question-1 .left .unit').show();
   }
   
   getQuizQuestion(players, function(){
@@ -131,11 +133,12 @@ function takingLand() {
 function matchmaking() {
   getGame(function(){
     if (GAME.status == 'wait') {
+      //createPlayers();
       renderPlayers();
       setTimeout(matchmaking, 1000)
     } else {
-      createPlayers();
       renderPlayers();
+      createPlayers();
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
@@ -192,19 +195,32 @@ function tryToConquer() {
   
   normalQuestionIsrender = false;
   getGame(function(){
-    console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
+    //console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
     if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || (GAME.question.result && GAME.question.result[GAME.user.id]==1) )) {
-      sendConquestEmptyTerritory(GAME.mustConquer, function(){
-        //normalQuestionIsrender=false;
-        //GAalert('ЗАХВАт')
-        //GAME.mustConquer = null
-      })
+      var _area = getAreaById(GAME.mustConquer);
+      if (_area.capital == 1) {
+        sendConquestCapital(GAME.mustConquer, function(response){
+          //console.log(arguments);
+          //console.log(response);
+          if (response.conquest_result == 'retry') {
+            alert('повтор!');
+            $('#area-'+GAME.mustConquer).click();
+          }
+        })
+      } else {
+        sendConquestEmptyTerritory(GAME.mustConquer, function(){
+          //normalQuestionIsrender=false;
+          //GAalert('ЗАХВАт')
+          //GAME.mustConquer = null
+        })
+      }
     }
   })
 }
 
 function createPlayers() {
   $.each(GAME.users, function(index, value){
+    console.log(GAME.users);
     if (GAME.user.id != value.id) {
       $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
     } else {
@@ -393,7 +409,7 @@ whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
     //getUsersResultQuestions();
-    console.log(GAME.next_turn);
+    //console.log(GAME.next_turn);
     if (GAME.stage == 1) {
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');
@@ -424,7 +440,7 @@ whoTurn = function() {
       setTimeout(whoTurn, 1000);
     } else if (GAME.stage == 2) {
       //alert('Этап захвата')
-      console.log('Этап захвата');
+//      console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');
@@ -483,6 +499,7 @@ showQuestionResult = function(response){
     $.each(GAME.users, function(index, value){
       var _answ = GAME.resultQuestion.results[value.id];
       var $unit = $('#question-1 .left .unit.'+value.color);
+      console.log(_answ, $unit, $unit.size());
       if (_answ) {
         $unit.show();
         $unit.data('place', _answ.place);

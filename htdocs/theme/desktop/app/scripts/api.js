@@ -27,15 +27,14 @@ var getGame = function(callback){
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                
                 parseGameData(response);
-                callback();
-                renderPlayers();
-                //console.log(response);
                 console.log(GAME.status);
+                callback();
+                //console.log(response);
+                //console.log(GAME.status);
                 //GAME.response = response.responseJSON;
                 //GAME.map = GAME.response.map;
-                
+                renderPlayers();
                 if (GAME.next_turn == 0 && GAME.status == "over") {
                     /*var _status = true;
                     $.each(GAME.users, function(index, value){
@@ -153,6 +152,17 @@ function getUserById(id) {
     return returnVal;
 }
 
+function getAreaById(id) {
+    var returnVal;
+    $.each(GAME.map, function(index, value){
+        if (value.zone == id) {
+            returnVal = value;
+        }
+        
+    });
+    return returnVal;
+}
+
 sendConquestEmptyTerritory = function(territory, callback){
     callback = callback || function(){}
     $.ajax({
@@ -169,6 +179,27 @@ sendConquestEmptyTerritory = function(territory, callback){
         error: function (xhr, textStatus, errorThrown) {}
     });
 }
+
+sendConquestCapital = function(territory, callback){
+    callback = callback || function(){}
+
+    $.ajax({
+        type: "POST",
+        url: '/game/conquest/capital',
+        data: {game: GAME.game_id, zone: territory},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                console.log(response, 'ОТВЕТ НА ЗАХВАТ СТОЛИЦЫ');
+                callback(response);
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            
+        }
+    });
+}
+
 
 
 function parseGameData(response) {
@@ -260,7 +291,7 @@ getResultQuestion = function(){
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
-      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.conquerorZone},
+      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.mustConquer},
       dataType: 'json',
       success: function (response) {
           if (response.status) {

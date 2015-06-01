@@ -50,7 +50,7 @@
         </div>
     </div>
     <div class="right">
-        <div class="small-title">Распределение земель</div>
+        <!--<div class="small-title">Распределение земель</div>-->
         <div class="title">Вопрос:</div>
         <div class="q">В каком году произошло сражение на льду Чудского озера?</div>
         <div class="answerlkhbdsfksdlhfg">

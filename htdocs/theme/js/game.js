@@ -23,7 +23,7 @@ GAME.reInitialize = function(){
     GAME.timer = {timer_object: 0, time: 10};
     GAME.game_timer = 0;                                    // таймер игры
     GAME.bots_timer = 0                                     // таймер ботов
-    GAME.time_bot = 20;                                     // время в секундах до инициалицации ботов
+    GAME.time_bot = 5;                                      // время в секундах до инициалицации ботов
 }
 /*
  Метод получает информацию о текущей игре или инициирует новую
@@ -65,9 +65,7 @@ GAME.getGame = function(){
         url: '/game/get-game',
         data: {game: GAME.game_id},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -95,9 +93,7 @@ GAME.getBots = function (){
         url: '/game/add-bots',
         data: {game: GAME.game_id},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -122,9 +118,7 @@ GAME.overGame = function(){
         url: '/game/over-game',
         data: {game: GAME.game_id},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -154,7 +148,6 @@ GAME.getAdjacentZones = function(){
         dataType: 'json',
         beforeSend: function () {
             $(".js-map-empty-block").removeClass('js-map-empty-block');
-            $("#js-server-response").html('');
         },
         success: function (response) {
             if (response.status) {
@@ -189,9 +182,7 @@ GAME.getQuizQuestion = function(){
         url: '/game/question/get-quiz',
         data: {game: GAME.game_id, users: GAME.users_question},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.user_step = 0;
@@ -229,9 +220,7 @@ GAME.getNormalQuestion = function(){
         url: '/game/question/get-normal',
         data: {game: GAME.game_id, users: {conqu: GAME.users_question[0],def: GAME.users_question[1]}},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.user_step = 0;
@@ -268,9 +257,7 @@ GAME.sendQuestionAnswer = function(){
         url: '/game/question/send-answer',
         data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -306,9 +293,7 @@ GAME.getResultQuestion = function(){
         url: '/game/question/get-result',
         data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.conquerorZone},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -347,9 +332,7 @@ GAME.getUsersResultQuestions = function () {
         url: '/game/question/get-users-results',
         data: {game: GAME.game_id, question: 1, type: 'quiz'},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 GAME.response = response.responseJSON;
@@ -380,8 +363,7 @@ GAME.sendConquestEmptyTerritory = function(territory){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
-            $(".js-map-empty-block").removeClass('js-map-empty-block');
-            $("#js-server-response").html('');
+            $(".js-map-empty-block").css('background-color', '#FFFFFF').removeClass('js-map-empty-block');
         },
         success: function (response) {
             if (response.status) {
@@ -419,8 +401,7 @@ GAME.sendConquestTerritory = function(){
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
         beforeSend: function () {
-            $(".js-map-empty-block").removeClass('js-map-empty-block');
-            $("#js-server-response").html('');
+            $(".js-map-empty-block").css('background-color', '#FFFFFF').removeClass('js-map-empty-block');
         },
         success: function (response) {
             if (response.status) {
@@ -458,9 +439,7 @@ GAME.sendConquestCapital = function(){
         url: '/game/conquest/capital',
         data: {game: GAME.game_id, zone: GAME.conquerorZone},
         dataType: 'json',
-        beforeSend: function () {
-            $("#js-server-response").html('');
-        },
+        beforeSend: function () {},
         success: function (response) {
             if (response.status) {
                 $(".js-map-block[data-zone='"+GAME.conquerorZone+"']").css('background-color', GAME.user.color).attr('data-user',GAME.user.id).html('Zona: ' + $(territory).data('zone') + '<br>ID: ' + $(territory).data('zone_id') + '<br>User: ' + $(territory).data('user') + '<br>Lives: ' + $(territory).data('lives') + '<br>Points: ' + $(territory).data('points'));
@@ -495,7 +474,7 @@ GAME.parseGameResponse = function(){
             $("#js-user-response").html(JSON.stringify(GAME.user));
         }
     });
-    GAME.steps = GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
+    GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
     if(GAME.bots_timer == 0 && GAME.user.id == GAME.game_owner)
         GAME.startBotTimer();
     if(GAME.response.users.length == 3)
@@ -505,7 +484,6 @@ GAME.parseGameResponse = function(){
     if(GAME.status == GAME.statuses[1]){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
-            GAME.stage = 1;
             GAME.getQuizQuestion();
         }
     }else if(GAME.status == GAME.statuses[2]){
@@ -689,7 +667,7 @@ GAME.startBotTimer = function(){
 GAME.startGameTimer = function(){
     GAME.game_timer = setInterval(function(){
         GAME.getGame();
-    },3000);
+    },5000);
 }
 /*
  Метод проверяет "не пустая" ли карта
