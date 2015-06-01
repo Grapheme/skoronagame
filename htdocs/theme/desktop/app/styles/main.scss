@@ -286,7 +286,7 @@ body {
           a {
             font-size: 13px;
             border: 1px solid rgba(#c9aa49, 0.5);
-            width: 208px;
+            width: 206px;
             text-align: center;
             //display: block;
             //float: left;
@@ -297,9 +297,25 @@ body {
             padding: 10px 0px;
             margin: 0 15px;
             margin-bottom: 20px;
-            &:hover, &.active {
+            &:hover {
               background: rgba(#002819, 0.5);
               color: white;
+            }
+            &.green {
+              background: rgba(#d39500, 0.5);
+              color: white;
+            }
+            &.red {
+              background: rgba(#ad062e, 0.5);
+              color: white;
+            }
+            &.blue {
+              background: rgba(#0000ff, 0.5);
+              color: white;
+            }
+            &.true {
+              border-width: 3px;
+              border-color: green;
             }
           }
         }
