@@ -204,7 +204,9 @@ function tryToConquer() {
           //console.log(response);
           if (response.conquest_result == 'retry') {
             alert('повтор!');
-            $('#area-'+GAME.mustConquer).click();
+            setTimeout(function(){
+              $('#area-'+GAME.mustConquer).click();
+            }, 2000)
           }
         })
       } else {
