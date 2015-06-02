@@ -737,9 +737,8 @@ function matchmaking() {
       renderPlayers();
       setTimeout(matchmaking, 1000)
     } else {
-      createPlayers();
       renderPlayers();
-      
+      createPlayers();
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
@@ -805,7 +804,9 @@ function tryToConquer() {
           //console.log(response);
           if (response.conquest_result == 'retry') {
             alert('повтор!');
-            $('#area-'+GAME.mustConquer).click();
+            setTimeout(function(){
+              $('#area-'+GAME.mustConquer).click();
+            }, 2000)
           }
         })
       } else {
