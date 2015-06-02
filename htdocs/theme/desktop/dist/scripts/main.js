@@ -252,6 +252,8 @@ function parseGameData(response) {
     GAME.stage = response.responseJSON.game_stage;
     GAME.status = response.responseJSON.game_status;
     GAME.map = response.responseJSON.map;
+    idleWait = response.responseJSON.disconnect_user_timeout;
+    idleUrl = response.responseJSON.disconnect_user_url;
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
         if (response.responseJSON.settings.duel) {
@@ -433,9 +435,25 @@ $(document).bind('mousemove keydown scroll', function(){
   idleState = false;
   idleTimer = setTimeout(function(){ 
     // Действия на отсутствие пользователя
-    var text = "Вы отсутствовали более чем " + idleWait/1000 + " секунд. И были отключены от сервера. <a href=''>Обновите страницу</a> чтобы начать новую игру."
+    var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
     hidePoppups();
-    sexyAlert(text, 99999999999);
+    setInterval(function(){
+        sexyAlert(text, 99999999999, function(){
+            sexyAlert(text, 99999999999, function(){
+                sexyAlert(text, 99999999999, function(){
+                    sexyAlert(text, 99999999999, function(){
+                        sexyAlert(text, 99999999999, function(){
+                            sexyAlert(text, 99999999999, function(){
+                                sexyAlert(text, 99999999999, function(){
+                                
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }, 500);
     sexyAlert(text, 99999999999);
     playerDisconect();
     idleState = true; 

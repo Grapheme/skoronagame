@@ -38,9 +38,25 @@ $(document).bind('mousemove keydown scroll', function(){
   idleState = false;
   idleTimer = setTimeout(function(){ 
     // Действия на отсутствие пользователя
-    var text = "Вы отсутствовали более чем " + idleWait/1000 + " секунд. И были отключены от сервера. <a href=''>Обновите страницу</a> чтобы начать новую игру."
+    var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
     hidePoppups();
-    sexyAlert(text, 99999999999);
+    setInterval(function(){
+        sexyAlert(text, 99999999999, function(){
+            sexyAlert(text, 99999999999, function(){
+                sexyAlert(text, 99999999999, function(){
+                    sexyAlert(text, 99999999999, function(){
+                        sexyAlert(text, 99999999999, function(){
+                            sexyAlert(text, 99999999999, function(){
+                                sexyAlert(text, 99999999999, function(){
+                                
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }, 500);
     sexyAlert(text, 99999999999);
     playerDisconect();
     idleState = true; 
