@@ -145,6 +145,18 @@ $('body').on('click', '.popup.with-tabs .tabs-btn a', function(e){
   }
 });
 
+$('#infowindow-question').click(function(e){
+    if (!$('.popup-wrapper').is(':visible')) {
+        showPoppups();
+        openFrame('help-stage-'+GAME.stage)
+    }
+    e.preventDefault();
+});
+
+$('#help-stage-2 .close, #help-stage-1 .close').click(function(){
+    hidePoppups();
+});
+
 $('#help .q').click(function(){
   $(this).toggleClass('active');
   $(this).next('.a').slideToggle();

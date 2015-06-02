@@ -1,3 +1,6 @@
+<a id="infowindow-question" href="">
+    <img src="{{ asset(Config::get('site.theme_path').'/images/ico-question.svg') }}">
+</a>
 <div id="user-list">
   <div class="user red">
     <div class="ava">
