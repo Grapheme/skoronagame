@@ -16,7 +16,7 @@ GAME.user_step = 0;                                     // id пользоват
 GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
 GAME.users = {};
 //GAME.question;
-GAME.mustConquer = null;
+GAME.mustConquer = 0;
 
 var getGame = function(callback){
     callback = callback || function(){}
@@ -68,7 +68,7 @@ playerDisconect = function() {
             }
         },
         error: function (xhr, textStatus, errorThrown) {
-            overGame();
+            playerDisconect();
         }
     });
 }
@@ -313,6 +313,7 @@ getUsersResultQuestions = function (callback) {
 
 getResultQuestion = function(){
     //console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
+    console.log(GAME.mustConquer);
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -332,13 +333,13 @@ getResultQuestion = function(){
                   //alert('Ничья');
                     //hidePoppups(function(){
                     //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
-                    //    setTimeout(function(){
+                        setTimeout(function(){
                             if (GAME.stage == 2) {
                                 quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
                             } else {
                                 quizQuesionRender();
                             }
-                        //}, 0) 
+                        }, 3000) 
                     //});
                 //});
                     
