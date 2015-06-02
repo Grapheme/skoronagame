@@ -11,7 +11,6 @@ class GameController extends BaseController {
     private $game_answers;
     private $game_winners = array();
     private $json_request = array('status' => FALSE, 'responseJSON' => '', 'responseText' => '', 'redirect' => FALSE);
-
     /****************************************************************************/
     public function __construct() {
 
