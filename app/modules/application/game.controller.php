@@ -149,9 +149,7 @@ class GameController extends BaseController {
 //              Auth::loginUsingId(6);
 //              $this->json_request['redirect'] = AuthAccount::getStartPage();
 //              $this->json_request['status'] = TRUE;
-            if (Auth::attempt(array('email' => Input::get('email'), 'password' => Input::get('password'),
-                'active' => 1), FALSE)
-            ):
+            if (Auth::attempt(array('email' => Input::get('email'), 'password' => Input::get('password'), 'active' => 1), FALSE)):
                 if (Auth::check()):
                     $this->json_request['redirect'] = AuthAccount::getStartPage();
                     $this->json_request['status'] = TRUE;
@@ -243,7 +241,6 @@ class GameController extends BaseController {
         endif;
         return View::make(Helper::acclayout('demo'), array('game' => $this->game));
     }
-
     /********************************* JSON *************************************/
     public function getGame() {
 

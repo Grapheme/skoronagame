@@ -153,7 +153,6 @@ GAME.getAdjacentZones = function(){
             if (response.status) {
                 GAME.response = response.responseJSON;
                 $.each(GAME.response.zones, function (index, value) {
-                    console.log(".territory-block[data-zone=" + value + "]");
                     $(".territory-block[data-zone=" + value + "]").css('background-color', '#FFFF00').addClass('js-map-empty-block');
                 });
                 $("#js-server-response").html(JSON.stringify(GAME.response));
