@@ -23,7 +23,7 @@ GAME.reInitialize = function(){
     GAME.timer = {timer_object: 0, time: 10};
     GAME.game_timer = 0;                                    // таймер игры
     GAME.bots_timer = 0                                     // таймер ботов
-    GAME.time_bot = 500000;                                      // время в секундах до инициалицации ботов
+    GAME.time_bot = 5;                                      // время в секундах до инициалицации ботов
 }
 /*
  Метод получает информацию о текущей игре или инициирует новую
@@ -153,7 +153,8 @@ GAME.getAdjacentZones = function(){
             if (response.status) {
                 GAME.response = response.responseJSON;
                 $.each(GAME.response.zones, function (index, value) {
-                    $(".territory-block[data-zone='" + value + "']").css('background-color', '#FFFF00').addClass('js-map-empty-block');
+                    console.log(".territory-block[data-zone=" + value + "]");
+                    $(".territory-block[data-zone=" + value + "]").css('background-color', '#FFFF00').addClass('js-map-empty-block');
                 });
                 $("#js-server-response").html(JSON.stringify(GAME.response));
             }
