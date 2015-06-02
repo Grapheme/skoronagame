@@ -2017,7 +2017,6 @@ class GameController extends BaseController {
     private function getTerritoryPoints($zone){
 
         if ($this->validGameStatus($this->game_statuses[2])):
-            Helper::tad($this->game->map_places);
             foreach($this->game->map_places as $map):
                 if($map->zone == $zone):
                     return $map->points;
