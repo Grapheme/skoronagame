@@ -325,7 +325,16 @@ class GameController extends BaseController {
                         if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
-                            $this->createStepInSecondStage();
+                            if($this->getDuel() === FALSE):
+                                $this->createStepInSecondStage();
+
+                                Log::info('createStepInSecondStage', array('method' => 'getNormalQuestion',
+                                    'message' => 'Дуель не существует. Пользователь совершил ход', 'step' => $this->getNextStep(),
+                                    'current_user' => Auth::user()->id));
+
+                            endif;
+
+
                             $this->setStepInSecondStageJSON();
                             $randomQuestion = $this->randomQuestion('normal');
                             $this->createQuestion($randomQuestion->id, Input::get('users'));
@@ -949,11 +958,6 @@ class GameController extends BaseController {
 
         if (isset($stage2_tours[$current_tour][Auth::user()->id]) && $stage2_tours[$current_tour][Auth::user()->id] == FALSE):
             $stage2_tours[$current_tour][Auth::user()->id] = TRUE;
-
-            Log::info('stage2_tours', array('method' => 'createStepInSecondStage',
-                'message' => 'Пользователь совершил ход', 'step' => $stage2_tours[$current_tour][Auth::user()->id],
-                'current_user' => Auth::user()->id));
-
             $nextTour = TRUE;
             foreach ($stage2_tours[$current_tour] as $user_id => $status):
                 if ($status == FALSE):
@@ -1693,6 +1697,11 @@ class GameController extends BaseController {
 
         $this->resetGameUsers();
         $this->createStepInSecondStage();
+
+        Log::info('createStepInSecondStage', array('method' => 'botCreateNormalQuestion',
+            'message' => 'БОТ совершил ход', 'step' => $this->getNextStep(),
+            'current_user' => Auth::user()->id));
+
         $this->setStepInSecondStageJSON();
         $randomQuestion = $this->randomQuestion('normal');
         $this->createQuestion($randomQuestion->id, $users_ids);
