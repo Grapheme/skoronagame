@@ -252,7 +252,7 @@ function parseGameData(response) {
     GAME.stage = response.responseJSON.game_stage;
     GAME.status = response.responseJSON.game_status;
     GAME.map = response.responseJSON.map;
-    idleWait = response.responseJSON.disconnect_user_timeout;
+    idleWait = response.responseJSON.disconnect_user_timeout*1000;
     idleUrl = response.responseJSON.disconnect_user_url;
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
@@ -261,7 +261,6 @@ function parseGameData(response) {
         } else {
             GAME.duel = {};
         }
-        
         if (response.responseJSON.settings.stage2_tours_json) {
             GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
             renderSteps();
