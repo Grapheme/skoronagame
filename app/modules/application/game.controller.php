@@ -71,7 +71,6 @@ class GameController extends BaseController {
             Route::any('disconnect_user', array('as'=>'disconnect_user_url','uses'=>$class.'@sendDisconnectUser'));
         });
     }
-
     /****************************************************************************/
     public static function returnInfo() {
 
