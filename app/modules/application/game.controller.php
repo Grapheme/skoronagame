@@ -673,6 +673,10 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     if ($this->changeGameUsersSteps()):
+
+                        Log::info('changeGameUsersSteps', array('method' => 'sendConquestCapital', 'message' => 'У пользователя отобралось доступное очко хода',
+                            'current_user' => Auth::user()->id));
+
                         $capitalLives = $this->conquestCapital(Input::get('zone'));
                         if ($capitalLives === 0):
                             $this->closeGameUsersQuestions();
@@ -694,7 +698,7 @@ class GameController extends BaseController {
                                 $this->nextStep();
 
                                 Log::info('isConqueredCapitals', array('method' => 'sendConquestCapital', 'message' => 'nextStep',
-                                    'nextStep' => $this->getNextStep()));
+                                    'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
 
                                 $this->finishGame(1);
                             endif;
