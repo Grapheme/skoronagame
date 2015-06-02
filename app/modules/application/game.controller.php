@@ -334,7 +334,6 @@ class GameController extends BaseController {
 
                             endif;
 
-
                             $this->setStepInSecondStageJSON();
                             $randomQuestion = $this->randomQuestion('normal');
                             $this->createQuestion($randomQuestion->id, Input::get('users'));
