@@ -420,7 +420,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 30; // время ожидания в мс. (1/1000 секунды)
+idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -434,13 +434,15 @@ $(document).bind('mousemove keydown scroll', function(){
   idleTimer = setTimeout(function(){ 
     // Действия на отсутствие пользователя
     var text = "Вы отсутствовали более чем " + idleWait/1000 + " секунд. И были отключены от сервера. <a href=''>Обновите страницу</a> чтобы начать новую игру."
+    hidePoppups();
+    sexyAlert(text, 99999999999);
     sexyAlert(text, 99999999999);
     playerDisconect();
     idleState = true; 
   }, idleWait);
 });
  
-$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
+//$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
 
 var bg_width = $('#map').width();
 
