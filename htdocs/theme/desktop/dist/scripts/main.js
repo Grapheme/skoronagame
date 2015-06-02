@@ -56,7 +56,22 @@ var getGame = function(callback){
     });
 };
 
-
+playerDisconect = function() {
+    $.ajax({
+        type: "POST",
+        url: idleUrl,
+        data: {game: GAME.game_id, user: GAME.user.id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
+    });
+}
 
 overGame = function(){
 
@@ -402,6 +417,30 @@ function isEmpty(obj) {
 
     return true;
 }
+
+idleTimer = null;
+idleState = false; // состояние отсутствия
+idleWait = 30; // время ожидания в мс. (1/1000 секунды)
+idleUrl = "/game/disconnect_user";
+
+$(document).bind('mousemove keydown scroll', function(){
+  clearTimeout(idleTimer); // отменяем прежний временной отрезок
+  if(idleState == true){ 
+    // Действия на возвращение пользователя
+     //$("body").append("<p>С возвращением!</p>");
+  }
+
+  idleState = false;
+  idleTimer = setTimeout(function(){ 
+    // Действия на отсутствие пользователя
+    var text = "Вы отсутствовали более чем " + idleWait/1000 + " секунд. И были отключены от сервера. <a href=''>Обновите страницу</a> чтобы начать новую игру."
+    sexyAlert(text, 99999999999);
+    playerDisconect();
+    idleState = true; 
+  }, idleWait);
+});
+ 
+$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
 
 var bg_width = $('#map').width();
 

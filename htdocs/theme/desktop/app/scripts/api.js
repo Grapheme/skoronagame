@@ -56,7 +56,22 @@ var getGame = function(callback){
     });
 };
 
-
+playerDisconect = function() {
+    $.ajax({
+        type: "POST",
+        url: idleUrl,
+        data: {game: GAME.game_id, user: GAME.user.id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
+    });
+}
 
 overGame = function(){
 
