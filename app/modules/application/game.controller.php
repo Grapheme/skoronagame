@@ -38,7 +38,6 @@ class GameController extends BaseController {
             $this->user = GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->first();
         endif;
     }
-
     /****************************************************************************/
     public static function returnRoutes() {
 
@@ -81,7 +80,6 @@ class GameController extends BaseController {
                 'uses' => $class . '@sendConquestCapital'));
         });
     }
-
     /****************************************************************************/
     public static function returnInfo() {
 
@@ -140,7 +138,6 @@ class GameController extends BaseController {
             'delete' => 'Удаление',
         );
     }
-
     /****************************************************************************/
     public function QuickAuth() {
 
@@ -191,7 +188,6 @@ class GameController extends BaseController {
         endif;
         return Response::json($this->json_request, 200);
     }
-
     /****************************************************************************/
     public function ProfilePasswordSave() {
 
@@ -322,10 +318,12 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     if (Input::get('users.conqu') == Auth::user()->id || Input::get('users.def') == Auth::user()->id):
-                        if (!GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
+                        $next_step = $this->getNextStep();
+                        if ($next_step == Auth::user()->id && !GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
-                            if($this->getDuel() === FALSE):
+                            $duel = $this->getDuel();
+                            if(empty($duel)):
                                 $this->createStepInSecondStage();
 
                                 Log::info('createStepInSecondStage', array('method' => 'getNormalQuestion',
@@ -722,17 +720,18 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     if ($this->changeGameUsersSteps()):
+                        $post = Input::all();
 
                         Log::info('changeGameUsersSteps', array('method' => 'sendConquestCapital',
                             'message' => 'У пользователя отобралось доступное очко хода',
                             'current_user' => Auth::user()->id));
 
-                        $capitalLives = $this->conquestCapital(Input::get('zone'));
+                        $capitalLives = $this->conquestCapital($post['zone']);
                         if ($capitalLives === 0):
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
                             $this->createDuel();
-                            $points = $this->getTerritoryPoints(Input::get('zone'));
+                            $points = $this->getTerritoryPoints($post['zone']);
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             $this->nextStepInSecondStage();
 
@@ -762,7 +761,8 @@ class GameController extends BaseController {
 
                             Log::info('capitalLives > 0', array('method' => 'sendConquestCapital',
                                 'message' => 'У столицы остались жизни',
-                                'zone' => Input::get('zone'), 'current_user' => Auth::user()->id));
+                                'capitalLives' => $capitalLives,
+                                'zone' => $post['zone'], 'current_user' => Auth::user()->id));
 
                             $this->nextStep($this->user->user_id);
 
@@ -1171,7 +1171,6 @@ class GameController extends BaseController {
             endif;
         endif;
     }
-
     /******************************** CHANGES ************************************/
     private function changeGameStatus($status) {
 
@@ -1277,7 +1276,6 @@ class GameController extends BaseController {
         endif;
         return 0;
     }
-
     /******************************* VALIDATION **********************************/
     private function validGameStatus($status) {
 
@@ -1350,7 +1348,6 @@ class GameController extends BaseController {
         endif;
         return $dead_users_count;
     }
-
     /********************************** BOTS *************************************/
     public function addBots() {
 
@@ -1705,7 +1702,6 @@ class GameController extends BaseController {
         $randomQuestion = $this->randomQuestion('normal');
         $this->createQuestion($randomQuestion->id, $users_ids);
     }
-
     /******************************** CONQUEST ***********************************/
     private function conquestTerritory($zone, $user_id = NULL) {
 
@@ -1809,7 +1805,6 @@ class GameController extends BaseController {
         $this->changeGameUsersStatus(2, $users);
         $this->reInitGame();
     }
-
     /******************************** WINNERS ************************************/
     private function setQuizQuestionWinner() {
 
@@ -2034,7 +2029,6 @@ class GameController extends BaseController {
         GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
             ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
     }
-
     /********************************* OTHER *************************************/
     private function exclude_indexes($capital, $map_places, $map_places_ids) {
 
