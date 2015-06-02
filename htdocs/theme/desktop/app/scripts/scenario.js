@@ -394,6 +394,24 @@ renderNormalQuestion = function(conqu, enemy_id){
       clearInterval(quiz_interval);
       clearInterval(normal_interval);
       startNormalTimer();
+      
+      GAME.duel.conqu, GAME.duel.def
+      var _note = '';
+      if (!GAME.duel || GAME.duel.size==0) {
+        var _user = getUserById(enemy_id);
+        _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>'
+      }
+      if (GAME.duel.conqu == GAME.user.id) {
+        var _user = getUserById(GAME.duel.def);
+        _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>'
+      }
+      
+      if (GAME.duel.def == GAME.user.id) {
+        var _user = getUserById(GAME.duel.conqu);
+        _note = 'На вас напал игрок: <span class="'+_user.color+'">'+_user.name+'</span>'        
+      }
+      
+      $('#question-2 .small-title').html(_note);
       $('#question-2 .left').removeClass('red green blue');
       $('#question-2 .right').removeClass('red green blue');
       $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
@@ -427,7 +445,12 @@ whoTurn = function() {
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {
-        sexyAlert('Ваш ход!');
+        if (GAME.user.available_steps == 2) {
+          sexyAlert('Ваш ход. <br>Выберите 2 территории.');
+        }
+        if (GAME.user.available_steps == 1) {
+          sexyAlert('Ваш ход. <br>Выберите 1 территорию.');
+        }
         $('#map .areas').addClass('active');
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -438,7 +461,7 @@ whoTurn = function() {
         $('#map .areas').removeClass('active');
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
-          sexyAlert('Ходит игрок: '+ user_turn.name);
+          sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
         }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -460,13 +483,13 @@ whoTurn = function() {
 //      console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
-        sexyAlert('Ваш ход!');
+        sexyAlert('Выберите территорию для нападения.');
         //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
-          sexyAlert('Ходит игрок: '+ user_turn.name);
+          sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
         }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;

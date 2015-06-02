@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 1;//19                                       // id игры
+GAME.game_id = 0;//1 - 2ой этап, 3 - конец этапа 1                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -222,7 +222,7 @@ sendConquestCapital = function(territory, callback){
 }
 
 
-
+var last_stage;
 function parseGameData(response) {
     if (response.responseJSON.users) {
         GAME.users = response.responseJSON.users;
@@ -250,6 +250,10 @@ function parseGameData(response) {
     
     GAME.game_id = response.responseJSON.game_id;
     GAME.stage = response.responseJSON.game_stage;
+    if (last_stage == 1 && GAME.stage==2) {
+        sexyAlert('Начался 2 этап!')
+    }
+    last_stage = GAME.stage;
     GAME.status = response.responseJSON.game_status;
     GAME.map = response.responseJSON.map;
     /*if (response.responseJSON.disconnect_user_timeout) {

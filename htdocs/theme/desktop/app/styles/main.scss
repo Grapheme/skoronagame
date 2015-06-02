@@ -224,8 +224,30 @@ body {
           }
         }
       }
+      &#sexy-alert {
+        .green {
+          color: #d39500;
+        }
+        .red {
+          color: #ad062e;
+        }
+        .blue {
+          color: #0000ff;
+        }
+      }
       &#question-2 {
         width: 530px;
+        .small-title {
+          .green {
+            color: #d39500;
+          }
+          .red {
+            color: #ad062e;
+          }
+          .blue {
+            color: #0000ff;
+          }
+        }
         .row {
           @include cf();
           .left, .right {
