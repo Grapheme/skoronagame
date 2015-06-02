@@ -396,11 +396,23 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 $post = Input::all();
                 $number_participants = Config::get('game.number_participants');
+                $hasWinnersCalculate = TRUE;
                 if ($this->validGameStage(2)):
                     $number_participants = 2;
+                    if ($duel = $this->getDuel()):
+                        if($duel['def'] == Auth::user()->id):
+                            $hasWinnersCalculate = FALSE;
+
+                            Log::info('hasWinnersCalculate', array('method' => 'getResultQuestion',
+                                'message' => 'Запрос от защищающегося. Расчет победителей невозможен',
+                                'hasWinnersCalculate' => (int)$hasWinnersCalculate,
+                                'current_user' => Auth::user()->id));
+
+                        endif;
+                    endif;
                 endif;
 
-                if (GameUserQuestions::where('game_id', $this->game->id)->where('status', 1)->count() == $number_participants):
+                if ($hasWinnersCalculate && GameUserQuestions::where('game_id', $this->game->id)->where('status', 1)->count() == $number_participants):
 
                     Log::info('number_participants', array('method' => 'getResultQuestion',
                         'message' => 'Все игроки дали ответы', 'current_user' => Auth::user()->id));
