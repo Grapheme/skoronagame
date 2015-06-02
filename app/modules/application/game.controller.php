@@ -1183,7 +1183,7 @@ class GameController extends BaseController {
         #dd($users);
 
         if (is_numeric($users)):
-            GameUser::where('user_id', $users)->update(['status' => 100]);
+            GameUser::where('user_id', $users)->update(['status' => $status]);
         elseif (!is_null($users) && count($users) == 1):
             $users->status = $status;
             $users->save();
