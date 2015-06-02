@@ -741,6 +741,20 @@ class GameController extends BaseController {
         endif;
         return Response::json($this->json_request, 200);
     }
+
+    public function sendDisconnectUser() {
+
+        $validation = Validator::make(Input::all(), array('user_id' => 'required|numeric'));
+        if ($validation->passes()):
+            if ($this->initGame()):
+                if ($this->dropUser(Input::get('user_id'))):
+                    $this->json_request['dropped_user_id'] = Input::get('user_id');
+                    $this->json_request['status'] = TRUE;
+                endif;
+            endif;
+        endif;
+        return Response::json($this->json_request, 200);
+    }
     /****************************************************************************/
     /****************************************************************************/
     private function hasInitGame() {
@@ -2156,18 +2170,6 @@ class GameController extends BaseController {
 
     public function dropUser($user_id) {
 
-        ## Инициируем игру
-        if (!$this->initGame()):
-            if(!$this->hasCreatedGame()):
-                $this->createNewGame();
-                $this->reInitGame();
-            else:
-                $this->joinNewGame();
-                $this->startGame();
-                $this->reInitGame();
-            endif;
-        endif;
-
         ## Дропать игрока  в любом случае
         $drop_user_anyway = false;
 
@@ -2289,19 +2291,7 @@ class GameController extends BaseController {
             ###################################################################################
         }
 
-        return true;
+        return TRUE;
     }
 
-    public function sendDisconnectUser() {
-
-        $user_id = Input::get('user_id');
-        $json_request = ['status' => false];
-        if (is_numeric($user_id) && (int)$user_id > 0) {
-            ## Дропаем игрока по его ID
-            $result = $this->dropUser($user_id);
-            $json_request['status'] = $result;
-            $json_request['dropped_user_id'] = $user_id;
-        }
-        return Response::json($json_request, 200);
-    }
 }
