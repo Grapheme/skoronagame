@@ -19,5 +19,5 @@ return array(
     'colors' => array('red','green','blue'),
     'bots_ids' => array(3,4),
 
-    'disconnect_user_timeout' => 300,
+    'disconnect_user_timeout' => 3000000,
 );
