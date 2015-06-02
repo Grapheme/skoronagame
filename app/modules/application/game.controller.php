@@ -37,9 +37,6 @@ class GameController extends BaseController {
             $this->game = Game::where('id', $this->game->id)->with('users', 'users.user_social', 'users.session', 'map_places')->first();
             $this->user = GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->first();
         endif;
-
-        #echo '789';
-        #die;
     }
 
     /****************************************************************************/
@@ -1460,7 +1457,7 @@ class GameController extends BaseController {
     private function checkOfflineUsers($userGameQuestion){
 
         #$this->game->user
-        foreach ($this->game->user as $user) {
+        foreach ($this->game->users as $user) {
 
             if ($user->status == 100|| $user->status == 99) {
 
