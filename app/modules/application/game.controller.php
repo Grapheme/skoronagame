@@ -1178,10 +1178,10 @@ class GameController extends BaseController {
         return $status;
     }
 
-    private function changeGameUsersStatus($status, $users = NULL) {
+    private function changeGameUsersStatus($status, $users = NULL, $game_id = NULL) {
 
         if (is_numeric($users)):
-            GameUser::where('user_id', $users)->where('status', '!=', 100)->orWhere('status', '!=', 99)->update(array('status' => $status));
+            GameUser::where('user_id', $users)->where('game_id', $game_id)->where('status', '!=', 100)->orWhere('status', '!=', 99)->update(array('status' => $status));
         elseif (!is_null($users) && count($users) == 1):
             if($users->status != 100 && $users->status != 99):
                 $users->status = $status;
@@ -2172,6 +2172,7 @@ class GameController extends BaseController {
 
         ## Дропать игрока  в любом случае
         $drop_user_anyway = false;
+        $user_game = NULL;
 
         ## Если передан ID юзера...
         if (is_numeric($user_id)) {
@@ -2202,7 +2203,7 @@ class GameController extends BaseController {
         $time_limit = Config::get('game.disconnect_user_timeout', 30);
 
         ## Если игрок найден...
-        if (is_object($user_id)) {
+        if (is_object($user_game)) {
 
             ###################################################################################
 
