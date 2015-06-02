@@ -455,12 +455,10 @@ class GameController extends BaseController {
                             endif;
                             if ($this->validGameStage(2)):
 
-
                                 Log::info('ДАННЫЕ ОТСЕРВЕРА', array('method' => 'getResultQuestion',
                                 'message' => 'INPUT',
                                 'zone' => Input::get('zone'), 'current_user' => Auth::user()->id,
                                 'input'=>Input::all()));
-
 
                                 Log::info('ЗАХВАТ ТЕРРИТОРИИ', array('method' => 'getResultQuestion',
                                     'message' => 'ПОЛЬЗОВАТЕЛЬ ПЫТАЕТСЯ ЗАХВАТИТЬ ТЕРРИИТОРИЮ',
