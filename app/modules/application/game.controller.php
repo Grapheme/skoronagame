@@ -805,10 +805,6 @@ class GameController extends BaseController {
             endforeach;
             $activeUsers = Sessions::getUserIDsLastActivity($users_ids);
             $time_limit = Config::get('game.disconnect_user_timeout', 30);
-
-            #$this->game->disconnect_user_timeout = $time_limit;
-            #Helper::tad($this->game);
-
             ## Счетчик отвалившихся игроков
             $dead_users_count = 0;
 
@@ -1452,24 +1448,21 @@ class GameController extends BaseController {
         endif;
     }
 
+    private function checkOfflineUsers($userGameQuestion) {
 
-    private function checkOfflineUsers($userGameQuestion){
-
-        #$this->game->user
-        foreach ($this->game->users as $user) {
-
-            if ($user->status == 100|| $user->status == 99) {
-
-                $question_group_id = $userGameQuestion->group_id;
-                if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $user->id)->first()):
-                    $botGameQuestion->status = 1;
-                    $botGameQuestion->answer = 99999;
-                    $botGameQuestion->seconds = 10;
-                    $botGameQuestion->save();
-                    $botGameQuestion->touch();
+        if ($this->initGame()):
+            foreach ($this->game->users as $user):
+                if ($user->status == 100 || $user->status == 99):
+                    if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $user->id)->first()):
+                        $botGameQuestion->status = 1;
+                        $botGameQuestion->answer = 99999;
+                        $botGameQuestion->seconds = 10;
+                        $botGameQuestion->save();
+                        $botGameQuestion->touch();
+                    endif;
                 endif;
-            }
-        }
+            endforeach;
+        endif;
     }
 
     private function botAnswerQuizQuestion($bot_id, $current_answer, $question_group_id) {
