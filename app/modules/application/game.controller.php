@@ -2293,5 +2293,4 @@ class GameController extends BaseController {
 
         return TRUE;
     }
-
 }
