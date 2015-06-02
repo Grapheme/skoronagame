@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 21;//19                                       // id игры
+GAME.game_id = 0;//19                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -56,7 +56,22 @@ var getGame = function(callback){
     });
 };
 
-
+playerDisconect = function() {
+    $.ajax({
+        type: "POST",
+        url: idleUrl,
+        data: {game: GAME.game_id, user: GAME.user.id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
+    });
+}
 
 overGame = function(){
 
