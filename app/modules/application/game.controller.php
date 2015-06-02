@@ -2179,6 +2179,7 @@ class GameController extends BaseController {
 
         ## Дропать игрока  в любом случае
         $drop_user_anyway = false;
+        $user_game = NULL;
 
         ## Если передан ID юзера...
         if (is_numeric($user_id)) {
@@ -2209,7 +2210,7 @@ class GameController extends BaseController {
         $time_limit = Config::get('game.disconnect_user_timeout', 30);
 
         ## Если игрок найден...
-        if (is_object($user_id)) {
+        if (is_object($user_game)) {
 
             ###################################################################################
 
