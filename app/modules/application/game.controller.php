@@ -2266,6 +2266,8 @@ class GameController extends BaseController {
 
     private function dropUser($user_id) {
 
+        return FALSE;
+
         ## Дропать игрока  в любом случае
         $drop_user_anyway = false;
         $user_game = NULL;
@@ -2378,8 +2380,6 @@ class GameController extends BaseController {
                 }
 
             } else {
-                print_r('NOT');
-                exit;
                 ## Если у юзера нет сессии - сразу помечаем его как отключившегося
                 $this->changeGameUsersStatus(100, $user_game);
             }
