@@ -188,7 +188,7 @@ function renderSteps(){
 function tryToConquer() {
   //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
   if (GAME.stage == 2 && GAME.question.type == 'normal') {
-    setTimeout(hidePoppups, 1000);
+    //setTimeout(hidePoppups, 4000);
   } else {
     //setTimeout(hidePoppups, 7000);
   }
@@ -222,7 +222,6 @@ function tryToConquer() {
 
 function createPlayers() {
   $.each(GAME.users, function(index, value){
-    console.log(GAME.users);
     if (GAME.user.id != value.id) {
       $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
     } else {
@@ -310,7 +309,7 @@ $('body').on('click', '#question-2 .a a', function(e){
     clearInterval(normal_interval);
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
-    $(this).addClass('active');
+    $(this).addClass(GAME.user.color);
     sendQuestionAnswer(function(){
       getResultQuestion();
       //normalQuestionIsrender=false;
@@ -351,8 +350,14 @@ function renderMap(nodelay) {
         $area.addClass('reserved');
         $area.removeClass('red green blue');
         $area.addClass(getUserById(value.user_id).color);
+        if (value.user_id == GAME.user.id) {
+          $area.addClass('my');
+        } else {
+          $area.removeClass('my');          
+        }
       } else {
         $area.removeClass('reserved');
+        $area.removeClass('my');
         $area.addClass('empty');
       }
     } else {
@@ -410,9 +415,8 @@ var whoTurn_is_run = false;
 whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
-    //getUsersResultQuestions();
-    //console.log(GAME.next_turn);
     if (GAME.stage == 1) {
+      $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Ваш ход!');
         $('#map .areas').addClass('active');
@@ -441,6 +445,8 @@ whoTurn = function() {
       }
       setTimeout(whoTurn, 1000);
     } else if (GAME.stage == 2) {
+      $('#map .areas').removeClass('stage-1');
+      $('#map .areas').addClass('stage-2');
       //alert('Этап захвата')
 //      console.log('Этап захвата');
       //alert(GAME.response.settings.next_step);
@@ -495,31 +501,46 @@ showQuestionResult = function(response){
   
   getUsersResultQuestions(function(){
     //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
-    $('#question-1 .left .unit').hide();
-    $('#question-1 .right .answer-true .qa').text(GAME.resultQuestion.current_answer);
-    $('#question-1 .right .answer-true').slideDown(100);
-    $.each(GAME.users, function(index, value){
-      var _answ = GAME.resultQuestion.results[value.id];
-      var $unit = $('#question-1 .left .unit.'+value.color);
-      console.log(_answ, $unit, $unit.size());
-      if (_answ) {
-        $unit.show();
-        $unit.data('place', _answ.place);
-        if (_answ.answer == 99999) {
-          _answ.answer = '';
+    if(GAME.question.type=='quiz'){
+      $('#question-1 .left .unit').hide();
+      $('#question-1 .right .answer-true .qa').text(GAME.resultQuestion.current_answer);
+      $('#question-1 .right .answer-true').slideDown(100);
+      $.each(GAME.users, function(index, value){
+        var _answ = GAME.resultQuestion.results[value.id];
+        var $unit = $('#question-1 .left .unit.'+value.color);
+        if (_answ) {
+          $unit.show();
+          $unit.data('place', _answ.place);
+          if (_answ.answer == 99999) {
+            _answ.answer = '';
+          }
+          $unit.find('.timer').text(_answ.answer);
+          //$unit.find('.timer').text('10 сек.');
+          $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
+          $unit.find('.answer').text(_answ.seconds+' сек.');
+          }
+        })
+      if (whoTurn_is_run == false) {
+        whoTurn();
+      }
+      orderPlayers();
+      setTimeout(hidePoppups, 7000);
+    } else {
+      $.each(GAME.users, function(index, value){
+        var _answ = GAME.resultQuestion.results[value.id];
+        console.log(_answ)
+        if (_answ) {
+          var _usr = getUserById(value.id);
+          if (_answ.correctly==1) {
+            $('#question-2 .a a').eq(_answ.current_answer_index).addClass('true');
+            $('#question-2 .a a').eq(_answ.current_answer_index).addClass(_usr.color);
+          }
+          $('#question-2 .a a:contains("'+value.answer+'")').addClass(_usr.color);
         }
-        $unit.find('.timer').text(_answ.answer);
-        //$unit.find('.timer').text('10 сек.');
-        $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
-        $unit.find('.answer').text(_answ.seconds+' сек.');
-        }
-      })
-    if (whoTurn_is_run == false) {
-      whoTurn();
+      });
+      setTimeout(hidePoppups, 7000);
     }
     tryToConquer();
-    orderPlayers();
-    setTimeout(hidePoppups, 7000);
   })
   //alert(_s);
   //whoTurn();

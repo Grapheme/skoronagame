@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//35                                       // id игры
+GAME.game_id = 21;//19                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -72,7 +72,9 @@ overGame = function(){
                 //alert('КОнец')
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
     });
 }
 
@@ -102,7 +104,9 @@ getNormalQuestion = function(callback){
                 getNormalQuestion(callback);
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            getNormalQuestion(callback);
+        }
     });
 }
 
@@ -176,7 +180,9 @@ sendConquestEmptyTerritory = function(territory, callback){
                 callback();
             }
         },
-        error: function (xhr, textStatus, errorThrown) {}
+        error: function (xhr, textStatus, errorThrown) {
+            sendConquestEmptyTerritory(territory, callback);
+        }
     });
 }
 
@@ -195,7 +201,7 @@ sendConquestCapital = function(territory, callback){
             }
         },
         error: function (xhr, textStatus, errorThrown) {
-            
+            sendConquestCapital(territory, callback)
         }
     });
 }
@@ -276,12 +282,13 @@ getUsersResultQuestions = function (callback) {
         dataType: 'json',
         success: function (response) {
             if (response.status) {
-                //console.log(response, 'ВНИМАНИЕ!!');
+                console.log(response, 'ВНИМАНИЕ!!');
                 GAME.resultQuestion = response.responseJSON;
                 callback();
             }
         },
         error: function (xhr, textStatus, errorThrown) {
+            getUsersResultQuestions(callback);
         }
     });
 }
@@ -305,12 +312,14 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                  
-                  if (GAME.stage == 2) {
-                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
-                  } else {
-                    quizQuesionRender();
-                  }
+                  sexyAlert('Ничья! Будет задан другой вопрос.');
+                    setTimeout(function(){
+                    if (GAME.stage == 2) {
+                      quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                    } else {
+                      quizQuesionRender();
+                    }
+                    }, 3000)
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
@@ -323,12 +332,16 @@ getResultQuestion = function(){
             } else if (GAME.question.type=='normal') {
                 if(response.responseJSON.result === 'standoff'){
                     console.log('Ничья');
-                    quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                    sexyAlert('Ничья! Будет задан квиз-вопрос.');
+                    setTimeout(function(){
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                    }, 3000)
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
                     setTimeout(getResultQuestion, 1000)
                 }else if(typeof response.responseJSON.result == "object"){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
+                    showQuestionResult(response);
                     tryToConquer();
                     GAME.question = {};
                     /*GAME.question = {};

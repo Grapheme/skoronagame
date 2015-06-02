@@ -29,6 +29,7 @@ function scale() {
   var doc_width = $(window).width();
   $('#map').transition({ scale: doc_width/bg_width });
   $('#user-list').transition({ scale: doc_width/bg_width });
+  $('.infowindow.tour1, .infowindow.tour2').transition({ scale: doc_width/bg_width });
 }
 
 $(window).resize(function (){
@@ -62,7 +63,7 @@ function openFrame(href) {
   if (href=="mathcmaking") {
     matchmaking();
   }
-  var last_item = _history[_history.length-1]
+  var last_item = _history[_history.length-1];
   $('.popup-wrapper .popup-holder .popup').removeClass('active');
   $('.popup-wrapper .popup-holder .popup#'+last_item).addClass('active');
 }
@@ -130,6 +131,8 @@ function sexyAlert(text, timeOut, callback) {
 
 function hidePoppups() {
   $('.popup-wrapper').fadeOut(100);
+    clearInterval(quiz_interval);
+    clearInterval(normal_interval);
 }
 
 function showPoppups() {

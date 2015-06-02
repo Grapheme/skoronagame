@@ -39,12 +39,14 @@ body {
   }
 }
 .infowindow {
-  position: absolute;
+  position: fixed;
   color: #eee;
   font-family: "Verdana";
   bottom: 30px;
   left: 30px;
   display: none;
+  transform-origin: left bottom;
+  pointer-events: none;
   &.tour1 {
     display: block;
   }
@@ -136,12 +138,12 @@ body {
   }
 }
 
-@-webkit-keyframes bounce { 
+@-webkit-keyframes bounce {
   0%, 100% {-webkit-transform: translateY(2px);} 
   50% {-webkit-transform: translateY(-10px);} 
 } 
 
-@keyframes bounce { 
+@keyframes bounce {
   0%, 100% {transform: translateY(2px);} 
   50% {transform: translateY(-10px);} 
 } 
@@ -181,7 +183,7 @@ body {
         height: 14px;
         display: block;
         position: absolute;
-        top: -35px;
+        top: -8px;
         right: -30px;
       }
       &.active {
@@ -284,7 +286,7 @@ body {
           a {
             font-size: 13px;
             border: 1px solid rgba(#c9aa49, 0.5);
-            width: 208px;
+            width: 206px;
             text-align: center;
             //display: block;
             //float: left;
@@ -295,9 +297,25 @@ body {
             padding: 10px 0px;
             margin: 0 15px;
             margin-bottom: 20px;
-            &:hover, &.active {
+            &:hover {
               background: rgba(#002819, 0.5);
               color: white;
+            }
+            &.green {
+              background: rgba(#d39500, 0.5);
+              color: white;
+            }
+            &.red {
+              background: rgba(#ad062e, 0.5);
+              color: white;
+            }
+            &.blue {
+              background: rgba(#0000ff, 0.5);
+              color: white;
+            }
+            &.true {
+              border-width: 3px;
+              border-color: green;
             }
           }
         }
@@ -861,11 +879,12 @@ body {
 }
 
 #user-list {
-  position: absolute;
+  position: fixed;
   z-index: 99999;
   margin-left: 30px;
   transform-origin: top left;
   display: none;
+  pointer-events: none;
   .user {
     float: left;
     width: 100px;
@@ -1056,6 +1075,35 @@ body {
     
     &.active {
       .active.empty {
+        z-index: 900000;
+        .ground {
+          transform: translate(0, -15px);
+          //top: -15px;
+        }
+        .objects {
+          transform: translate(0, -15px);
+        }
+        .glow {
+          transform: translate(0, -15px) !important;
+          /*
+          fill: green !important;
+          stroke: blue !important;*/
+          #large {
+            //display: block;
+            opacity: 1;
+          }
+          #small {
+            //display: none;
+            opacity: 0;
+          }
+        }
+        .undeground {
+          opacity: 1 !important;
+        }
+      }
+    }
+    &.stage-2 {
+      .active:not(.my){
         z-index: 900000;
         .ground {
           transform: translate(0, -15px);
