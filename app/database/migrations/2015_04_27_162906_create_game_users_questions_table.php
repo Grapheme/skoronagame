@@ -8,6 +8,7 @@ class CreateGameUsersQuestionsTable extends Migration {
 	public function up(){
 		Schema::create('game_users_questions', function(Blueprint $table){
 			$table->increments('id');
+            $table->integer('started_id')->default(0)->nullable()->unsigned();
             $table->string('group_id',50)->nullable();
             $table->integer('game_id')->default(0)->nullable()->unsigned();
             $table->integer('user_id')->default(0)->nullable()->unsigned();
