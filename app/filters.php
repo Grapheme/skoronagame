@@ -65,6 +65,14 @@ Route::filter('admin.auth', function(){
 Route::filter('user.auth', function(){
 
 	if(Auth::check() && Auth::user()->group_id == 3):
+        #
+    else:
+		return Redirect::route('mainpage')->with('message','Сначала авторизуйтесь.');
+	endif;
+});
+Route::filter('user.auth.session', function(){
+
+	if(Auth::check() && Auth::user()->group_id == 3):
         Sessions::setUserLastActivity();
     else:
 		return Redirect::route('mainpage')->with('message','Сначала авторизуйтесь.');

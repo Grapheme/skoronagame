@@ -54,9 +54,6 @@ class GameController extends BaseController {
             Route::get('demo', array('as' => 'game-demo', 'uses' => $class . '@demoGame'));
         });
         Route::group(array('before' => 'user.auth', 'prefix' => $class::$name), function () use ($class) {
-            Route::post('profile/password-save', array('as' => 'profile-password-save',
-                'uses' => $class . '@ProfilePasswordSave'));
-
             Route::post('get-game', array('as' => 'get-game', 'uses' => $class . '@getGame'));
             Route::post('add-bots', array('as' => 'add-bots', 'uses' => $class . '@addBots'));
             Route::post('over-game', array('as' => 'over-game', 'uses' => $class . '@overGame'));
@@ -65,19 +62,23 @@ class GameController extends BaseController {
             Route::post('question/get-quiz', array('as' => 'get-quiz-question', 'uses' => $class . '@getQuizQuestion'));
             Route::post('question/get-normal', array('as' => 'get-normal-question',
                 'uses' => $class . '@getNormalQuestion'));
-            Route::post('question/send-answer', array('as' => 'send-answer-question',
-                'uses' => $class . '@sendAnswerQuestion'));
             Route::post('question/get-result', array('as' => 'get-result-question',
                 'uses' => $class . '@getResultQuestion'));
             Route::post('question/get-users-results', array('as' => 'get-users-results-question',
                 'uses' => $class . '@getUsersResultsQuestion'));
+            Route::any('disconnect_user', array('as' => 'disconnect_user_url', 'uses' => $class . '@sendDisconnectUser'));
+        });
+        Route::group(array('before' => 'user.auth.session', 'prefix' => $class::$name), function () use ($class) {
+            Route::post('profile/password-save', array('as' => 'profile-password-save',
+                'uses' => $class . '@ProfilePasswordSave'));
+
+            Route::post('question/send-answer', array('as' => 'send-answer-question',
+                'uses' => $class . '@sendAnswerQuestion'));
+
             Route::post('conquest/territory', array('as' => 'send-conquest-territory',
                 'uses' => $class . '@sendConquestTerritory'));
             Route::post('conquest/capital', array('as' => 'send-conquest-capital',
                 'uses' => $class . '@sendConquestCapital'));
-
-            Route::any('disconnect_user', array('as' => 'disconnect_user_url',
-                'uses' => $class . '@sendDisconnectUser'));
         });
     }
 
@@ -387,8 +388,7 @@ class GameController extends BaseController {
     public function getResultQuestion() {
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required',
-            'zone' => ''));
+        $validation = Validator::make(Input::all(), array('question' => 'required', 'type' => 'required', 'zone' => 'required|numeric'));
         if ($validation->passes()):
             if ($this->initGame()):
                 $number_participants = Config::get('game.number_participants');
@@ -789,7 +789,8 @@ class GameController extends BaseController {
         if ($validation->passes()):
             if ($this->initGame()):
                 if ($this->dropUser(Input::get('user'))):
-                    $this->json_request['status'] = TRUE;
+                    exit;
+                    #$this->json_request['status'] = TRUE;
                 endif;
             endif;
         endif;
@@ -2051,39 +2052,41 @@ class GameController extends BaseController {
 
     private function nextStepInSecondStage() {
 
-        $json_settings = json_decode($this->game->json_settings, TRUE);
-        $current_tour = $json_settings['current_tour'];
-        $stage2_tours = $json_settings['stage2_tours'];
-        if (isset($stage2_tours[$current_tour])):
-            if ($current_tour < 3):
-                foreach ($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == FALSE):
-                        $this->nextStep($user_id);
-                        break;
-                    endif;
-                endforeach;
-            elseif ($current_tour == 3):
-                $this->nextStep();
-                $firstStep = TRUE;
-                foreach ($stage2_tours[$current_tour] as $user_id => $status):
-                    if ($status == TRUE):
-                        $firstStep = FALSE;
-                        break;
-                    endif;
-                endforeach;
-                if ($firstStep):
-                    if ($winner = $this->getWinnerByPoints()):
-                        $this->nextStep($winner);
-                    else:
-                        $this->randomStep();
-                    endif;
-                else:
+        if($this->initGame() && $this->validGameStage(2)):
+            $json_settings = json_decode($this->game->json_settings, TRUE);
+            $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : array();
+            $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : 0;
+            if (isset($stage2_tours[$current_tour])):
+                if ($current_tour < 3):
                     foreach ($stage2_tours[$current_tour] as $user_id => $status):
                         if ($status == FALSE):
                             $this->nextStep($user_id);
                             break;
                         endif;
                     endforeach;
+                elseif ($current_tour == 3):
+                    $this->nextStep();
+                    $firstStep = TRUE;
+                    foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                        if ($status == TRUE):
+                            $firstStep = FALSE;
+                            break;
+                        endif;
+                    endforeach;
+                    if ($firstStep):
+                        if ($winner = $this->getWinnerByPoints()):
+                            $this->nextStep($winner);
+                        else:
+                            $this->randomStep();
+                        endif;
+                    else:
+                        foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                            if ($status == FALSE):
+                                $this->nextStep($user_id);
+                                break;
+                            endif;
+                        endforeach;
+                    endif;
                 endif;
             endif;
         endif;
@@ -2275,7 +2278,6 @@ class GameController extends BaseController {
             ## Если передан объект - значит это и есть объект с информацией об игроке
             $user_game = $user_id;
         }
-
         ## Если игрок найден...
         if (is_object($user_game)) {
 
@@ -2287,6 +2289,12 @@ class GameController extends BaseController {
                 && is_object($user_game->session)
                 && $user_game->status != 100
             ) {
+
+//                var_dump($drop_user_anyway);
+//                Helper::ta($user_game);
+//                Helper::ta(time());
+//                Helper::ta($user_game->session->last_activity);
+//                Helper::tad(time() - $user_game->session->last_activity);
 
                 ## Если от игрока слишком долго не было ответа (или стоит пометка "дропать в любом случае")...
                 if (
@@ -2359,7 +2367,8 @@ class GameController extends BaseController {
                 }
 
             } else {
-
+                print_r('NOT');
+                exit;
                 ## Если у юзера нет сессии - сразу помечаем его как отключившегося
                 $this->changeGameUsersStatus(100, $user_game);
             }
