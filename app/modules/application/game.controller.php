@@ -1169,10 +1169,10 @@ class GameController extends BaseController {
         return $status;
     }
 
-    private function changeGameUsersStatus($status, $users = NULL) {
+    private function changeGameUsersStatus($status, $users = NULL, $game_id = NULL) {
 
         if (is_numeric($users)):
-            GameUser::where('user_id', $users)->where('status', '!=', 100)->orWhere('status', '!=', 99)->update(array('status' => $status));
+            GameUser::where('user_id', $users)->where('game_id', $game_id)->where('status', '!=', 100)->orWhere('status', '!=', 99)->update(array('status' => $status));
         elseif (!is_null($users) && count($users) == 1):
             if($users->status != 100 && $users->status != 99):
                 $users->status = $status;
@@ -2163,7 +2163,7 @@ class GameController extends BaseController {
         return $rating;
     }
 
-    public function dropUser($user_id) {
+    public function dropUser($user_id, $game_id = NULL) {
 
         ## Инициируем игру
         if (!$this->initGame()):
@@ -2303,11 +2303,12 @@ class GameController extends BaseController {
 
     public function sendDisconnectUser() {
 
-        $user_id = Input::get('user_id');
+        $user_id = Input::get('user');
+        $game_id = Input::get('game');
         $json_request = ['status' => false];
         if (is_numeric($user_id) && (int)$user_id > 0) {
             ## Дропаем игрока по его ID
-            $result = $this->dropUser($user_id);
+            $result = $this->dropUser($user_id, $game_id);
             $json_request['status'] = $result;
             $json_request['dropped_user_id'] = $user_id;
         }
