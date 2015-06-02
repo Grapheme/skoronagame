@@ -252,11 +252,10 @@ function parseGameData(response) {
     GAME.stage = response.responseJSON.game_stage;
     GAME.status = response.responseJSON.game_status;
     GAME.map = response.responseJSON.map;
-    console.log(response);
-    if (response.responseJSON.disconnect_user_timeout) {
+    /*if (response.responseJSON.disconnect_user_timeout) {
         idleWait = (response.responseJSON.disconnect_user_timeout||30)*1000;
         idleUrl = response.responseJSON.disconnect_user_url;
-    }
+    }*/
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
         if (response.responseJSON.settings.duel) {
@@ -331,14 +330,18 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                  sexyAlert('Ничья! Будет задан другой вопрос.');
-                    setTimeout(function(){
-                    if (GAME.stage == 2) {
-                      quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
-                    } else {
-                      quizQuesionRender();
-                    }
-                    }, 3000)
+                    //hidePoppups(function(){
+                    //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
+                    //    setTimeout(function(){
+                            if (GAME.stage == 2) {
+                                quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                            } else {
+                                quizQuesionRender();
+                            }
+                        //}, 0) 
+                    //});
+                //});
+                    
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
@@ -350,11 +353,12 @@ getResultQuestion = function(){
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
             } else if (GAME.question.type=='normal') {
                 if(response.responseJSON.result === 'standoff'){
-                    console.log('Ничья');
-                    sexyAlert('Ничья! Будет задан квиз-вопрос.');
-                    setTimeout(function(){
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
-                    }, 3000)
+                    //hidePoppups(fun);
+                    //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
+                       //setTimeout(function(){
+                            quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        //}, 0) 
+                    //});
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
                     setTimeout(getResultQuestion, 1000)
@@ -424,7 +428,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -570,8 +574,11 @@ function sexyAlert(text, timeOut, callback) {
   
 }
 
-function hidePoppups() {
-  $('.popup-wrapper').fadeOut(100);
+function hidePoppups(callback) {
+    callback = callback || function(){};
+    $('.popup-wrapper').fadeOut(100, function(){
+        callback();
+    });
     clearInterval(quiz_interval);
     clearInterval(normal_interval);
 }
@@ -916,6 +923,7 @@ function createPlayers() {
 }
 
 function renderPlayers() {
+  $('#user-list .user').removeClass('active');
   $.each(GAME.users, function(index, value){
     
     if (!GAME.resultQuestion || !GAME.resultQuestion[value.id]) {
@@ -948,7 +956,6 @@ function renderPlayers() {
     }
     
     if (value.id == GAME.next_turn) {
-      $('#user-list .user').removeClass('active');
       $('#user-list .user.'+value.color).addClass('active');
     }
     
@@ -1092,6 +1099,11 @@ var whoTurn_is_run = false;
 whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
+    if (GAME.next_turn!=GAME.user.id) {
+      setTimeout(function(){
+        $("body").trigger("mousemove");
+      }, 1000)
+    }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {

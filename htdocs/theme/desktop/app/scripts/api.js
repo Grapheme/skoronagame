@@ -252,11 +252,10 @@ function parseGameData(response) {
     GAME.stage = response.responseJSON.game_stage;
     GAME.status = response.responseJSON.game_status;
     GAME.map = response.responseJSON.map;
-    console.log(response);
-    if (response.responseJSON.disconnect_user_timeout) {
+    /*if (response.responseJSON.disconnect_user_timeout) {
         idleWait = (response.responseJSON.disconnect_user_timeout||30)*1000;
         idleUrl = response.responseJSON.disconnect_user_url;
-    }
+    }*/
     if (response.responseJSON.settings) {
         GAME.next_turn = response.responseJSON.settings.next_step || 0;
         if (response.responseJSON.settings.duel) {
@@ -331,14 +330,18 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                  sexyAlert('Ничья! Будет задан другой вопрос.');
-                    setTimeout(function(){
-                    if (GAME.stage == 2) {
-                      quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
-                    } else {
-                      quizQuesionRender();
-                    }
-                    }, 3000)
+                    //hidePoppups(function(){
+                    //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
+                    //    setTimeout(function(){
+                            if (GAME.stage == 2) {
+                                quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                            } else {
+                                quizQuesionRender();
+                            }
+                        //}, 0) 
+                    //});
+                //});
+                    
                   //console.log(response)
                 } else {
                   showQuestionResult(response);
@@ -350,11 +353,12 @@ getResultQuestion = function(){
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
             } else if (GAME.question.type=='normal') {
                 if(response.responseJSON.result === 'standoff'){
-                    console.log('Ничья');
-                    sexyAlert('Ничья! Будет задан квиз-вопрос.');
-                    setTimeout(function(){
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
-                    }, 3000)
+                    //hidePoppups(fun);
+                    //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
+                       //setTimeout(function(){
+                            quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        //}, 0) 
+                    //});
                     //GAME.getQuizQuestion();
                 }else if(response.responseJSON.result === 'retry'){
                     setTimeout(getResultQuestion, 1000)

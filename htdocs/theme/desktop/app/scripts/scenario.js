@@ -239,6 +239,7 @@ function createPlayers() {
 }
 
 function renderPlayers() {
+  $('#user-list .user').removeClass('active');
   $.each(GAME.users, function(index, value){
     
     if (!GAME.resultQuestion || !GAME.resultQuestion[value.id]) {
@@ -271,7 +272,6 @@ function renderPlayers() {
     }
     
     if (value.id == GAME.next_turn) {
-      $('#user-list .user').removeClass('active');
       $('#user-list .user.'+value.color).addClass('active');
     }
     
@@ -415,6 +415,11 @@ var whoTurn_is_run = false;
 whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
+    if (GAME.next_turn!=GAME.user.id) {
+      setTimeout(function(){
+        $("body").trigger("mousemove");
+      }, 1000)
+    }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {

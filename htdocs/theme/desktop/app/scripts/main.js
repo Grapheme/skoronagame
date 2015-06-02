@@ -25,7 +25,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -171,8 +171,11 @@ function sexyAlert(text, timeOut, callback) {
   
 }
 
-function hidePoppups() {
-  $('.popup-wrapper').fadeOut(100);
+function hidePoppups(callback) {
+    callback = callback || function(){};
+    $('.popup-wrapper').fadeOut(100, function(){
+        callback();
+    });
     clearInterval(quiz_interval);
     clearInterval(normal_interval);
 }
