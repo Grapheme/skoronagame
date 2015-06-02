@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//19                                       // id игры
+GAME.game_id = 1;//19                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -313,7 +313,6 @@ getUsersResultQuestions = function (callback) {
 
 getResultQuestion = function(){
     //console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
-    console.log(GAME.mustConquer);
   $.ajax({
       type: "POST",
       url: '/game/question/get-result',
@@ -333,13 +332,12 @@ getResultQuestion = function(){
                   //alert('Ничья');
                     //hidePoppups(function(){
                     //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
-                        setTimeout(function(){
-                            if (GAME.stage == 2) {
-                                quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
-                            } else {
-                                quizQuesionRender();
-                            }
-                        }, 3000) 
+                        
+                    if (GAME.stage == 2) {
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                    } else {
+                        quizQuesionRender();
+                    }
                     //});
                 //});
                     
@@ -347,6 +345,7 @@ getResultQuestion = function(){
                 } else {
                   showQuestionResult(response);
                   if (GAME.stage == 2) {
+                    
                     tryToConquer();
                     GAME.question = {};
                   }
@@ -357,7 +356,7 @@ getResultQuestion = function(){
                     //hidePoppups(fun);
                     //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
                        //setTimeout(function(){
-                            quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
                         //}, 0) 
                     //});
                     //GAME.getQuizQuestion();
