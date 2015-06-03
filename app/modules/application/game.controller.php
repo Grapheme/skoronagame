@@ -885,7 +885,6 @@ class GameController extends BaseController {
         return Response::json($this->json_request, 200);
     }
     /****************************************************************************/
-    /****************************************************************************/
     private function hasInitGame() {
 
         if (!is_null($this->game) && is_object($this->game)):
