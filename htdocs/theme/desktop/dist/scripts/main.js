@@ -1,1 +1,1382 @@
-function getUserById(e){var t;return $.each(GAME.users,function(s,n){n.id==e&&(t=n)}),t}function getAreaById(e){var t;return $.each(GAME.map,function(s,n){n.zone==e&&(t=n)}),t}function parseGameData(e){e.responseJSON.users&&(GAME.users=e.responseJSON.users,$.each(e.responseJSON.users,function(t,s){if(s.id==e.responseJSON.current_user)GAME.user=s;else{var n=!1;$.each(GAME.enemies,function(e,t){t.id==s.id&&(n=!0,GAME.enemies[e]=s)}),0==n&&GAME.enemies.push(s)}})),e.responseJSON.question&&(GAME.question=e.responseJSON.question),GAME.game_id=e.responseJSON.game_id,GAME.stage=e.responseJSON.game_stage,1==last_stage&&2==GAME.stage&&sexyAlert("Начался 2 этап!"),last_stage=GAME.stage,GAME.status=e.responseJSON.game_status,GAME.map=e.responseJSON.map||GAME.map,e.responseJSON.settings&&(GAME.next_turn=e.responseJSON.settings.next_step||0,GAME.duel=e.responseJSON.settings.duel?e.responseJSON.settings.duel:{},e.responseJSON.settings.stage2_tours_json&&(GAME.stage2_tours_json=$.parseJSON(e.responseJSON.settings.stage2_tours_json),renderSteps())),GAME.response=e.responseJSON}function startQuizeTimer(){clearInterval(quiz_interval);var e=quiz_timer_default;$("#question-1 .right .timer").text(e),quiz_interval=setInterval(function(){$("#question-1 .right .timer").text(e),e--,0>e&&quizeExpire()},1e3)}function quizeExpire(){clearInterval(quiz_interval),$(".numpad").is(":visible")&&($("#question-1 form.a").find("input").val(99999),$("#question-1 form.a").submit())}function startNormalTimer(){clearInterval(normal_interval);var e=quiz_timer_default;$("#question-2 .timer").text(e),normal_interval=setInterval(function(){$("#question-2 .timer").text(e),e--,0>e&&normalExpire()},1e3)}function normalExpire(){clearInterval(normal_interval),0==$("#question-2 .a a.active").size()&&(GAME.question.answer=99999,GAME.question.time=quiz_timer_default-$("#question-2 .timer").text(),sendQuestionAnswer(function(){getResultQuestion()}))}function compareUsers(e,t){return t.points-e.points}function renderGameOver(){GAME.users.sort(compareUsers),$("#winer .places .first .name").text(GAME.users[0].name),""!=GAME.users[0].photo&&$("#winer .places .first .ava .img").css({"background-image":"url("+GAME.users[0].photo+")"}),$("#winer .places .second .name").text(GAME.users[1].name),""!=GAME.users[1].photo&&$("#winer .places .second .ava .img").css({"background-image":"url("+GAME.users[1].photo+")"}),$("#winer .places .third .name").text(GAME.users[2].name),""!=GAME.users[2].photo&&$("#winer .places .third .ava .img").css({"background-image":"url("+GAME.users[2].photo+")"}),openFrame("winer"),showPoppups()}function quizQuesionRender(e){e=e||[],clearInterval(quiz_interval),clearInterval(normal_interval),renderPlayers(),e.length>0?($("#question-1 .left .unit").hide(),$.each(e,function(e,t){var s=getUserById(t);$("#question-1 .left .unit."+s.color).show()})):0==e.length&&$("#question-1 .left .unit").show(),getQuizQuestion(e,function(){$("#question-1 .left .timer").text("...").prev(".led").removeClass("red").addClass("black"),$("#question-1 .left .answer").text(""),$("#question-1 .right .answerlkhbdsfksdlhfg").slideUp(),$("#question-1 form.a, #question-1 .numpad, #question-1 .right .timer").slideDown(),$("#question-1 .right .q").html(GAME.question.text),$("#question-1 .right .answer-true .qa").text(""),$("#question-1 .right .answer-true").slideUp(100),openFrame("question-1"),showPoppups(),startQuizeTimer()})}function takingLand(){getGame(function(){quizQuesionRender()})}function matchmaking(){getGame(function(){"wait"==GAME.status?(renderPlayers(),setTimeout(matchmaking,1e3)):(renderPlayers(),createPlayers(),("start"==GAME.status||"ready"==GAME.status)&&(renderMap(!0),hidePoppups(),console.log("ВНИМАНИЕ!",GAME.status,GAME.stage),0==GAME.stage&&takingLand(),1==GAME.stage&&setTimeout(function(){takingLand()},3e3),2==GAME.stage&&whoTurn()))})}function renderSteps(){$(".infowindow.tour1").hide(),$(".infowindow.tour2").show(),$.each(GAME.stage2_tours_json,function(e,t){var s=$(".infowindow.tour2 .tour.n"+(e+1));GAME.response&&GAME.response.settings&&GAME.response.settings.current_tour==e?s.addClass("active"):s.removeClass("active"),$.each(t,function(e,t){var n=Object.keys(t)[0],a=(t[n],getUserById(n)),r=s.find(".flag").eq(e);r.removeClass("red green blue").addClass(a.color),GAME.next_turn==n?r.addClass("active"):r.removeClass("active")})})}function tryToConquer(){2==GAME.stage&&"normal"==GAME.question.type,getGame(function(){if(console.log("ВНИМАНИЕ",GAME.stage,GAME.mustConquer,GAME.user.available_steps,GAME.question.result,GAME.question.result[GAME.user.id]),2==GAME.stage&&GAME.mustConquer&&(GAME.user.available_steps>0||GAME.question.result&&1==GAME.question.result[GAME.user.id])){var e=getAreaById(GAME.mustConquer);1==e.capital?sendConquestCapital(GAME.mustConquer,function(e){console.log(e.conquest_result,"Ответ на захват"),"retry"==e.conquest_result&&(console.log("Ходит игрок",GAME.next_turn,getUserById(GAME.next_turn).name,getUserById(GAME.next_turn).color),console.log("повтор!",$("#area-"+GAME.mustConquer),$("#area-"+GAME.mustConquer).size()),setTimeout(function(){hidePoppups(function(){$("#area-"+GAME.mustConquer).click()})},8e3))}):sendConquestEmptyTerritory(GAME.mustConquer,function(){})}})}function createPlayers(){$.each(GAME.users,function(e,t){GAME.user.id!=t.id?$("#question-1 .left .unit").eq(e).find(".name").text(t.name).addClass(t.color):$("#question-1 .left .unit").eq(e).find(".name").text("Вы").addClass(t.color),$("#question-1 .left .unit").eq(e).addClass(t.color),""!=t.photo&&$("#question-1 .left .unit").eq(e).find(".ava .img").css({"background-image":"url("+t.photo+")"}),$("#question-1 .left .unit").eq(e).addClass(t.color)})}function renderPlayers(){$("#user-list .user").removeClass("active"),$.each(GAME.users,function(e,t){!GAME.resultQuestion||!GAME.resultQuestion[t.id],$("#user-list").show();var s=$("#user-list .user."+t.color);s.find(".name").text(t.name),""!=t.photo&&s.find(".ava .img").css({"background-image":"url("+t.photo+")"}),s.find(".points").text(t.points),t.id==GAME.user.id&&$("#user-list .user."+t.color).find(".name").text("Вы"),t.id==GAME.next_turn&&$("#user-list .user."+t.color).addClass("active")}),$.each(GAME.enemies,function(e,t){0==e&&($("#mathcmaking .ava").first().find(".name").text(t.name),""!=t.photo&&$("#mathcmaking .ava").first().find(".img").css({"background-image":"url("+t.photo+")"})),1==e&&($("#mathcmaking .ava").last().find(".name").text(t.name),""!=t.photo&&$("#mathcmaking .ava").last().find(".img").css({"background-image":"url("+t.photo+")"}))}),""!=GAME.user.photo&&$("#mathcmaking .ava").eq(1).find(".img").css({"background-image":"url("+GAME.user.photo+")"})}function renderMap(e){if(e=e||!1)var t=0;else var t=500;$("#map").addClass("user_"+GAME.user.color),$.each(GAME.map,function(s,n){if(e){var a=parseInt(s)+1,r=$("#map #area-"+a);r.data("zone",n.zone).data("info",n),r.attr("data-zone",n.zone),n.user_id>0?(r.removeClass("empty"),r.addClass("reserved"),r.removeClass("red green blue"),r.addClass(getUserById(n.user_id).color),n.user_id==GAME.user.id?r.addClass("my"):r.removeClass("my"),1==n.capital&&2==n.lives?r.addClass("lives-2"):r.removeClass("lives-2"),1==n.capital&&1==n.lives?r.addClass("lives-1"):r.removeClass("lives-1")):(r.removeClass("reserved"),r.removeClass("my"),r.addClass("empty"))}else setTimeout(function(){$("<div>           capital:"+n.capital+"<br>          id:"+n.id+"<br>          lives:"+n.lives+"<br>          user_id:"+n.user_id+"<br>          zone:"+n.zone+"        </div>").appendTo(".temp-map").css({"background-color":n.settings.color}).data("zone",n.zone)},t*s)})}function orderPlayers(){$("#question-1 .left").find(".unit").sort(function(e,t){return $(e).data("place")-$(t).data("place")}).appendTo("#question-1 .left")}function afterAnswer(){$("#question-1 form.a, #question-1 .numpad, #question-1 .right .timer").slideUp(100),$("#question-1 .right .answerlkhbdsfksdlhfg").slideDown(100)}function isEmpty(e){if(null==e)return!0;if(e.length>0)return!1;if(0===e.length)return!0;for(var t in e)if(hasOwnProperty.call(e,t))return!1;return!0}function scale(){var e=$(window).width();$("#map").transition({scale:e/bg_width}),$("#user-list").transition({scale:e/bg_width}),$(".infowindow.tour1, .infowindow.tour2").transition({scale:e/bg_width})}function openFrame(e){"close"==e?_history.pop():_history.push(e),"mathcmaking"==e&&matchmaking();var t=_history[_history.length-1];$(".popup-wrapper .popup-holder .popup").removeClass("active"),$(".popup-wrapper .popup-holder .popup#"+t).addClass("active")}function sexyAlert(e,t,s){t=t||3,s=s||function(){},$("#sexy-alert .note").html()==e||$(".popup-wrapper").is(":visible")||(showPoppups(),$("#sexy-alert .note").html(e),openFrame("sexy-alert"),setTimeout(function(){hidePoppups(),s()},1e3*t))}function hidePoppups(e){e=e||function(){},$(".popup-wrapper").fadeOut(100,function(){e()}),clearInterval(quiz_interval),clearInterval(normal_interval)}function showPoppups(){$(".popup-wrapper").fadeIn(100)}var GAME=GAME||{};GAME.game_id=0,GAME.user={},GAME.enemies=[],GAME.status=0,GAME.stage=0,GAME.response={},GAME.map={},GAME.question={},GAME.steps=0,GAME.user_step=0,GAME.statuses=["wait","start","ready","over"],GAME.users={},GAME.mustConquer=0;var getGame=function(e){e=e||function(){},$.ajax({type:"POST",url:"/game/get-game",data:{game:GAME.game_id},dataType:"json",success:function(t){t.status&&(parseGameData(t),console.log(GAME.status),e(),renderPlayers(),0==GAME.next_turn&&"over"==GAME.status&&overGame())},error:function(t,s,n){getGame(e)}})};playerDisconect=function(){$.ajax({type:"POST",url:idleUrl,data:{game:GAME.game_id,user:GAME.user.id},dataType:"json",success:function(e){e.status},error:function(e,t,s){playerDisconect()}})},overGame=function(){$.ajax({type:"POST",url:"/game/over-game",data:{game:GAME.game_id},dataType:"json",success:function(e){e.status&&(GAME.response=e.responseJSON,renderGameOver())},error:function(e,t,s){overGame()}})},getNormalQuestion=function(e){e=e||function(){},console.log("Получить нормальный вопрос! Данные отправлены:",{game:GAME.game_id,users:GAME.users_question}),$.ajax({type:"POST",url:"/game/question/get-normal",data:{game:GAME.game_id,users:GAME.users_question},dataType:"json",success:function(t){t.status?(parseGameData(t),e()):getNormalQuestion(e)},error:function(t,s,n){getNormalQuestion(e)}})},getQuizQuestion=function(e,t){t=t||function(){},e=e||GAME.users,2==GAME.stage,$.ajax({type:"POST",url:"/game/question/get-quiz",data:{game:GAME.game_id,users:e},dataType:"json",success:function(s){s.status?(parseGameData(s),t()):getQuizQuestion(e,t)},error:function(s,n,a){getQuizQuestion(e,t)}})},sendConquestEmptyTerritory=function(e,t){t=t||function(){},$.ajax({type:"POST",url:"/game/conquest/territory",data:{game:GAME.game_id,zone:e},dataType:"json",success:function(e){e.status&&(console.log(e,"ОТВЕТ НА ЗАХВАТ"),t())},error:function(s,n,a){sendConquestEmptyTerritory(e,t)}})},sendConquestCapital=function(e,t){t=t||function(){},$.ajax({type:"POST",url:"/game/conquest/capital",data:{game:GAME.game_id,zone:e},dataType:"json",success:function(e){e.status&&(console.log(e,"ОТВЕТ НА ЗАХВАТ СТОЛИЦЫ"),t(e))},error:function(s,n,a){sendConquestCapital(e,t)}})};var last_stage;getUsersResultQuestions=function(e){e=e||function(){},$.ajax({type:"POST",url:"/game/question/get-users-results",data:{game:GAME.game_id,question:GAME.question.id,type:GAME.question.type},dataType:"json",success:function(t){t.status&&(console.log(t,"ВНИМАНИЕ!!"),GAME.resultQuestion=t.responseJSON,e())},error:function(t,s,n){getUsersResultQuestions(e)}})},getResultQuestion=function(){$.ajax({type:"POST",url:"/game/question/get-result",data:{game:GAME.game_id,question:GAME.question.id,type:GAME.question.type,zone:GAME.mustConquer},dataType:"json",success:function(e){e.status&&(console.log(e.responseJSON.result),"quiz"==GAME.question.type?"retry"==e.responseJSON.result?setTimeout(getResultQuestion,1e3):"standoff"==e.responseJSON.result?2==GAME.stage?quizQuesionRender([GAME.duel.conqu,GAME.duel.def]):quizQuesionRender():(showQuestionResult(e),2==GAME.stage&&(showQuestionResult(e),tryToConquer())):"normal"==GAME.question.type&&("standoff"===e.responseJSON.result?quizQuesionRender([GAME.duel.conqu,GAME.duel.def]):"retry"===e.responseJSON.result?setTimeout(getResultQuestion,1e3):"object"==typeof e.responseJSON.result&&(console.log("РЕЗУЛЬТАТ!!",e.responseJSON.result),showQuestionResult(e),tryToConquer(),GAME.question={})))},error:function(e,t,s){getResultQuestion()}})},sendQuestionAnswer=function(e){e=e||function(){},$.ajax({type:"POST",url:"/game/question/send-answer",data:{game:GAME.game_id,question:GAME.question.id,answer:GAME.question.answer,time:GAME.question.time},dataType:"json",success:function(t){t.status?e():sendQuestionAnswer(e)},error:function(t,s,n){sendQuestionAnswer(e)}})};var firstTime=(new Date).getTime()/1e3,search_timeout=90,quiz_timer_default=10,quiz_interval,normal_interval;$("body").on("click","#question-2 .a a",function(e){e.preventDefault(),0==$("#question-2 .a a.active").size()&&(clearInterval(normal_interval),GAME.question.answer=$(this).data("id"),GAME.question.time=quiz_timer_default-$("#question-2 .timer").text(),$(this).addClass(GAME.user.color),sendQuestionAnswer(function(){getResultQuestion()}))}),$("body").on("click","#map .area",function(e){GAME.user.id!=GAME.next_turn||1!=GAME.stage||$(this).hasClass("reserved")?GAME.user.id==GAME.next_turn&&2==GAME.stage&&$(this).data("info").user_id!=GAME.user.id&&(GAME.mustConquer=$(this).data("info").zone,renderNormalQuestion(GAME.user.id,$(this).data("info").user_id)):sendConquestEmptyTerritory($(this).data("zone"),function(){getGame(function(){renderMap(!0)})})}),normalQuestionIsrender=!1,renderNormalQuestion=function(e,t){$(".popup-wrapper").is(":visible")||(normalQuestionIsrender=!0,e=e||GAME.user.id,GAME.users_question={conqu:e,def:t},clearInterval(quiz_interval),clearInterval(normal_interval),getNormalQuestion(function(){clearInterval(quiz_interval),clearInterval(normal_interval),startNormalTimer(),GAME.duel.conqu,GAME.duel.def,GAME.mustConquer&&console.log(GAME.mustConquer);var e="";if(GAME.duel||0==GAME.duel.length){var s=getUserById(t);if(0!=GAME.mustConquer){var n=getAreaById(GAME.mustConquer);e=1==n.capital?'Вы напали на столицу игрока: <span class="'+s.color+'">'+s.name+"</span><br>Осталось жизней столицы: "+n.lives:'Вы напали на игрока: <span class="'+s.color+'">'+s.name+"</span>"}else e='Вы напали на игрока: <span class="'+s.color+'">'+s.name+"</span>"}if(GAME.duel.conqu==GAME.user.id){var s=getUserById(GAME.duel.def);if(console.log(GAME.mustConquer),0!=GAME.mustConquer){console.log(GAME.mustConquer);var n=getAreaById(GAME.mustConquer);console.log("zone!",n),e=1==n.capital?'Вы напали на столицу игрока: <span class="'+s.color+'">'+s.name+"</span><br>Осталось жизней столицы: "+n.lives:'Вы напали на игрока: <span class="'+s.color+'">'+s.name+"</span>"}else e='Вы напали на игрока: <span class="'+s.color+'">'+s.name+"</span>"}if(GAME.duel.def==GAME.user.id){var s=getUserById(GAME.duel.conqu);e='На вас напал игрок: <span class="'+s.color+'">'+s.name+"</span>"}$("#question-2 .small-title").html(e),$("#question-2 .left").removeClass("red green blue"),$("#question-2 .right").removeClass("red green blue"),$("#question-2 .left").addClass(getUserById(GAME.users_question.conqu).color),$("#question-2 .left .score").text(getUserById(GAME.users_question.conqu).points),$("#question-2 .right").addClass(getUserById(GAME.users_question.def).color),$("#question-2 .right .score").text(getUserById(GAME.users_question.def).points),$("#question-2 .q").html(GAME.question.text),$("#question-2 .a").html(""),$.each(GAME.question.answers,function(e,t){$('<a href="">'+t+"</a>").appendTo($("#question-2 .a")).data("id",e)}),openFrame("question-2"),showPoppups()}))};var last_turn=0,whoTurn_is_run=!1;whoTurn=function(){whoTurn_is_run=!0,getGame(function(){if(GAME.next_turn!=GAME.user.id&&setTimeout(function(){$("body").trigger("mousemove")},1e3),1==GAME.stage){if($("#map .areas").addClass("stage-1"),GAME.next_turn==GAME.user.id)2==GAME.user.available_steps&&sexyAlert("Ваш ход. <br>Выберите 2 территории."),1==GAME.user.available_steps&&sexyAlert("Ваш ход. <br>Выберите 1 территорию."),$("#map .areas").addClass("active"),GAME.next_turn!=last_turn&&(last_turn=GAME.next_turn);else{$("#map .areas").removeClass("active");var e=getUserById(GAME.next_turn);if(e&&sexyAlert('<span class="'+e.color+'">'+e.name+"</span> выбирает территорию"),GAME.next_turn!=last_turn){last_turn=GAME.next_turn;var e=getUserById(GAME.next_turn);e||(renderMap(!0),takingLand())}}setTimeout(whoTurn,1e3)}else if(2==GAME.stage){if($("#map .areas").removeClass("stage-1"),$("#map .areas").addClass("stage-2"),GAME.next_turn==GAME.user.id)sexyAlert("Выберите территорию для нападения.");else{0!=GAME.next_turn&&(GAME.mustConquer=0);var e=getUserById(GAME.next_turn);if(e&&sexyAlert('<span class="'+e.color+'">'+e.name+"</span> выбирает территорию"),GAME.next_turn!=last_turn&&(last_turn=GAME.next_turn),!isEmpty(GAME.duel))if(GAME.duel.def==GAME.user.id||GAME.duel.conqu==GAME.user.id)console.log("!!!!"),$(".popup-wrapper").is(":visible")||renderNormalQuestion(GAME.duel.conqu,GAME.duel.def);else{var t=getUserById(GAME.duel.conqu),s=getUserById(GAME.duel.def);sexyAlert('Подождите, пока закончится противостояние игроков <span class="'+t.color+'">'+t.name+'</span> и <span class="'+s.color+'">'+s.name+"</span>",10)}}"quize"==GAME.question.type||"normal"==GAME.question.type,setTimeout(whoTurn,1e3)}renderMap(!0)})};var showQuestionResult_timeout;showQuestionResult=function(e){GAME.question.result=e.responseJSON.result,clearTimeout(showQuestionResult_timeout),getUsersResultQuestions(function(){"quiz"==GAME.question.type?($("#question-1 .left .unit").hide(),$("#question-1 .right .answer-true .qa").text(GAME.resultQuestion.current_answer),$("#question-1 .right .answer-true").slideDown(100),$.each(GAME.users,function(e,t){var s=GAME.resultQuestion.results[t.id],n=$("#question-1 .left .unit."+t.color);s&&(n.show(),n.data("place",s.place),99999==s.answer&&(s.answer=""),n.find(".timer").text(s.answer),n.find(".timer").prev(".led").removeClass("black").addClass("red"),n.find(".answer").text(s.seconds+" сек."))}),0==whoTurn_is_run&&whoTurn(),orderPlayers()):$.each(GAME.users,function(e,t){var s=GAME.resultQuestion.results[t.id];if(console.log(s),s){var n=getUserById(t.id);1==s.correctly&&($("#question-2 .a a").eq(s.current_answer_index).addClass("true"),$("#question-2 .a a").eq(s.current_answer_index).addClass(n.color)),$('#question-2 .a a:contains("'+t.answer+'")').addClass(n.color)}}),showQuestionResult_timeout=setTimeout(function(){hidePoppups(function(){tryToConquer()})},7e3)})},$(document).ready(function(){$("#question-1 form.a").submit(function(){GAME.question.answer=$(this).find("input").val(),$("#question-1 .right .answerlkhbdsfksdlhfg .qa").text(99999!=parseInt(GAME.question.answer)?GAME.question.answer:""),$(this).find("input").val(""),GAME.question.time=quiz_timer_default-$("#question-1 .right .timer").text(),afterAnswer(),sendQuestionAnswer(function(){getResultQuestion()})})}),console.log("'Allo 'Allo!");var hasOwnProperty=Object.prototype.hasOwnProperty;idleTimer=null,idleState=!1,idleWait=9e5,idleUrl="/game/disconnect_user",$(document).bind("mousemove keydown scroll",function(){clearTimeout(idleTimer),1==idleState,idleState=!1,idleTimer=setTimeout(function(){var e="Вы отсутствовали более "+idleWait/1e3+" секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру.";hidePoppups(),setInterval(function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){sexyAlert(e,99999999999,function(){})})})})})})})},500),sexyAlert(e,99999999999),playerDisconect(),idleState=!0},idleWait)});var bg_width=$("#map").width();$(window).resize(function(){scale()}),$(window).load(function(){bg_width=$("#map").width(),scale()}),$(".areas .countur svg path").hover(function(){if($(this).closest(".area").toggleClass("active"),$(this).closest(".area").data("info")){var e=$(this).closest(".area").data("info").points||0;if(1==$(this).closest(".area").data("info").capital){var t=getUserById($(this).closest(".area").data("info").user_id);$(".infowindow-holder .infowindow-small").text("Столица игрока "+t.name+", "+e)}else $(".infowindow-holder .infowindow-small").text(e);$(".infowindow-holder").toggle()}});var _history=[],_history=["menu"];$("body").on("click","a",function(e){var t=$(this).attr("href").split("#");t[1]&&(openFrame(t[1]),e.preventDefault())}),$("body").on("click",".numpad a",function(e){var t=$(this).closest(".numpad").prev("form").find("input");t.focus(),$(this).hasClass("clear")?t.val(""):$(this).hasClass("del")?t.val(t.val().slice(0,-1)):t.val().length<4&&t.val(t.val()+$(this).text()),e.preventDefault()}),$("body").on("click",".popup.with-tabs .tabs-btn a",function(e){e.preventDefault();var t=$(".popup.with-tabs .tabs-btn a").index($(this));$(this).is(".active")||($(".popup.with-tabs .tabs-btn a").removeClass("active"),$(this).addClass("active"),$(".popup.with-tabs .tabs .tab").removeClass("active"),$(".popup.with-tabs .tabs .tab").eq(t).addClass("active"))}),$("#infowindow-question").click(function(e){$(".popup-wrapper").is(":visible")||(showPoppups(),openFrame("help-stage-"+GAME.stage)),e.preventDefault()}),$("#help-stage-2 .close, #help-stage-1 .close").click(function(){hidePoppups()}),$("#help .q").click(function(){$(this).toggleClass("active"),$(this).next(".a").slideToggle()}),_skoronagame_.open_frame&&openFrame(_skoronagame_.open_frame),sendForm=function(e){if($(e).is(".noajax"))return alert("!!!"),!1;console.log(e),console.log($(e));var t=$(e).attr("action"),s=$(e).attr("method"),n=$(e).attr("data-result");$.ajax({type:s,url:t,data:$(e).serialize(),success:function(t){console.log(t),1==t.status?(t.redirect&&(location.href=t.redirect),openFrame(n)):0==t.status&&$(e).prepend('<label class="error">'+t.responseText+"</label>")},error:function(e,t,s){console.log(e),console.log(t)}})},$("#login form").validate({rules:{email:{required:!0,email:!0},password:"required"},messages:{email:{required:"Обязательное поле",email:"Неверный формат. Попробуйте еще"},password:"Обязательное поле"},submitHandler:function(e){sendForm(e)}}),$("#register form").validate({rules:{email:{required:!0,email:!0},name:"required"},messages:{email:{required:"Обязательное поле",email:"Неверный формат. Попробуйте еще"},name:"Обязательное поле"},submitHandler:function(e){sendForm(e)}}),$("#new-password form").validate({rules:{},messages:{},submitHandler:function(e){sendForm(e)}}),$("form").submit(function(e){return $(this).is(".noajax")?!1:void 0});
+/*  Author: Grapheme Group
+ *  http://grapheme.ru/
+ */
+
+var GAME = GAME || {};
+GAME.game_id = 0;//10                                       // id игры
+GAME.user = {};                                         // пользователь
+GAME.enemies = [];                                         // враги
+GAME.status = 0;                                        // статус игры
+GAME.stage = 0;                                         // этап игры
+GAME.response = {};                                     // ответ от сервера
+GAME.map = {};                                          // карта
+GAME.question = {};                                     // текущий вопрос
+GAME.steps = 0;                                         // доступные шаги
+GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
+GAME.statuses = ['wait','start','ready','over'];        // возможные статусы игры
+GAME.users = {};
+//GAME.question;
+GAME.mustConquer = 0;
+
+var getGame = function(callback){
+    callback = callback || function(){}
+    $.ajax({
+        type: "POST",
+        url: '/game/get-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                parseGameData(response);
+                console.log(GAME.status);
+                callback();
+                //console.log(response);
+                //console.log(GAME.status);
+                //GAME.response = response.responseJSON;
+                //GAME.map = GAME.response.map;
+                renderPlayers();
+                if (GAME.next_turn == 0 && GAME.status == "over") {
+                    /*var _status = true;
+                    $.each(GAME.users, function(index, value){
+                        if (value.status != 2) {
+                            _status = false;
+                        }
+                    })
+                    if (_status == true) {*/
+                    
+                        overGame();
+                    //}
+                }
+                
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            getGame(callback);
+        }
+    });
+};
+
+getBots = function (){
+    $.ajax({
+        type: "POST",
+        url: '/game/add-bots',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {},
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
+    });
+}
+
+playerDisconect = function() {
+    $.ajax({
+        type: "POST",
+        url: idleUrl,
+        data: {game: GAME.game_id, user: GAME.user.id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            playerDisconect();
+        }
+    });
+}
+
+overGame = function(){
+
+    $.ajax({
+        type: "POST",
+        url: '/game/over-game',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                renderGameOver();
+                //alert('КОнец')
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            overGame();
+        }
+    });
+}
+
+
+getNormalQuestion = function(callback){
+    callback = callback || function(){};
+    console.log('Получить нормальный вопрос! Данные отправлены:', {game: GAME.game_id, users: GAME.users_question});
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-normal',
+        data: {game: GAME.game_id, users: GAME.users_question},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                //GAME.user_step = 0;
+                //console.log(response, 'ВНИМАНИЕ НОРМАЛЬНЫЙ ВОПРОС!!')
+                parseGameData(response);
+                /*GAME.response = response.responseJSON;
+                GAME.question.id = GAME.response.question.id;
+                GAME.question.text = GAME.response.question.text;
+                GAME.question.answers = GAME.response.question.answers;
+                GAME.question.type = GAME.response.question.type;*/
+                callback();
+                //GAME.parseQuestionResponse();
+                //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getNormalQuestion(callback);
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            getNormalQuestion(callback);
+        }
+    });
+}
+
+getQuizQuestion = function(_users, callback){
+    callback = callback || function(){}
+    _users = _users || GAME.users
+    //console.log(arguments)
+    if (GAME.stage==2) {
+        //alert('тревога. Лишний запрос!')
+    }
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-quiz',
+        data: {game: GAME.game_id, users: _users},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                //GAME.user_step = 0;
+                parseGameData(response);
+                callback();
+                //GAME.response = response.responseJSON;
+                //AME.question.id = GAME.response.question.id;
+                //GAME.question.text = GAME.response.question.text;
+                //GAME.question.answers = [];
+                //GAME.question.type = GAME.response.question.type;
+                //GAME.parseQuestionResponse();
+                //$("#js-server-response").html(JSON.stringify(GAME.response));
+            } else {
+                getQuizQuestion(_users, callback);
+            }
+            //$("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            getQuizQuestion(_users, callback);
+        }
+    });
+}
+
+function getUserById(id) {
+    var returnVal;
+    $.each(GAME.users, function(index, value){
+        if (value.id == id) {
+            returnVal = value;
+        }
+        
+    });
+    return returnVal;
+}
+
+function getAreaById(id) {
+    var returnVal;
+    $.each(GAME.map, function(index, value){
+        if (value.zone == id) {
+            returnVal = value;
+        }
+        
+    });
+    return returnVal;
+}
+
+sendConquestEmptyTerritory = function(territory, callback){
+    callback = callback || function(){}
+    $.ajax({
+        type: "POST",
+        url: '/game/conquest/territory',
+        data: {game: GAME.game_id, zone: territory},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                console.log(response, 'ОТВЕТ НА ЗАХВАТ');
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            sendConquestEmptyTerritory(territory, callback);
+        }
+    });
+}
+
+sendConquestCapital = function(territory, callback){
+    callback = callback || function(){}
+
+    $.ajax({
+        type: "POST",
+        url: '/game/conquest/capital',
+        data: {game: GAME.game_id, zone: territory},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                console.log(response, 'ОТВЕТ НА ЗАХВАТ СТОЛИЦЫ');
+                callback(response);
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            sendConquestCapital(territory, callback)
+        }
+    });
+}
+
+
+var last_stage;
+function parseGameData(response) {
+    if (response.responseJSON.users) {
+        GAME.users = response.responseJSON.users;
+        $.each(response.responseJSON.users, function(index, value){
+            if (value.id == response.responseJSON.current_user) {
+                GAME.user = value;
+            } else {
+                var exist = false;
+                $.each(GAME.enemies, function(i, v){
+                    if (v.id == value.id) {
+                        exist = true;
+                        GAME.enemies[i] = value
+                    }
+                });
+                if (exist == false) {
+                    GAME.enemies.push(value) 
+                }
+            }
+        });
+    }
+    
+    if (response.responseJSON.question) {
+        GAME.question = response.responseJSON.question;
+    }
+    
+    GAME.game_id = response.responseJSON.game_id;
+    GAME.stage = response.responseJSON.game_stage;
+    if (last_stage == 1 && GAME.stage==2) {
+        sexyAlert('Начался 2 этап!')
+    }
+    last_stage = GAME.stage;
+    GAME.status = response.responseJSON.game_status;
+    GAME.map = response.responseJSON.map || GAME.map;
+    /*if (response.responseJSON.disconnect_user_timeout) {
+        idleWait = (response.responseJSON.disconnect_user_timeout||30)*1000;
+        idleUrl = response.responseJSON.disconnect_user_url;
+    }*/
+    if (response.responseJSON.settings) {
+        GAME.next_turn = response.responseJSON.settings.next_step || 0;
+        if (response.responseJSON.settings.duel) {
+            GAME.duel = response.responseJSON.settings.duel;
+        } else {
+            GAME.duel = {};
+        }
+        if (response.responseJSON.settings.stage2_tours_json) {
+            GAME.stage2_tours_json = $.parseJSON(response.responseJSON.settings.stage2_tours_json);
+            renderSteps();
+        }
+    }
+    GAME.response = response.responseJSON;
+}
+
+
+/*
+ Метод запрашивает состояние ответов на вопрос
+ Отправляет:
+ game  - (int)ID игры.
+ question  - (int)ID вопроса.
+ type  - (string) тип вопроса.
+ Результат:
+ ...
+ current_answer - (string) Приавильный ответ
+ results - (JSON) ответы пользователей
+ results = {"15":{"answer":"9","seconds" :2,"place":1,"status":2,"correctly":1}
+    15 - (int)ID пользователя
+    answer - (string) ответ пользователя
+    seconds - (int) время потраченное на ответ пользователем
+    place - (int) занятое место по результам всех ответов
+    status - (int) статус ответа: 0 - нет ответа, 1 - ответил, 2 - результаты отпределены, вопрос закрыт, 99 - ничья
+    correctly - (int) 0 - если пользователь ответил не точно, 1 - если ответил точно
+ */
+
+getUsersResultQuestions = function (callback) {
+    callback = callback || function(){}
+    $.ajax({
+        type: "POST",
+        url: '/game/question/get-users-results',
+        data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type},
+        dataType: 'json',
+        success: function (response) {
+            if (response.status) {
+                console.log(response, 'ВНИМАНИЕ!!');
+                GAME.resultQuestion = response.responseJSON;
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            getUsersResultQuestions(callback);
+        }
+    });
+}
+
+getResultQuestion = function(){
+    //console.log('РЕЗУЛЬТАТ ВОПРОСААААА', {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type})
+  $.ajax({
+      type: "POST",
+      url: '/game/question/get-result',
+      data: {game: GAME.game_id, question: GAME.question.id, type: GAME.question.type, zone: GAME.mustConquer},
+      dataType: 'json',
+      success: function (response) {
+          if (response.status) {
+            console.log(response.responseJSON.result);
+            //if(GAME.stage == 1 || GAME.question.type=='quiz'){
+            if(GAME.question.type=='quiz'){
+                if (response.responseJSON.result == 'retry') {
+                  //console.log(response)
+                  //if (GAME.stage == 1) {
+                    setTimeout(getResultQuestion, 1000)
+                  //}
+                } else if (response.responseJSON.result == 'standoff') {
+                  //alert('Ничья');
+                    //hidePoppups(function(){
+                    //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
+                        
+                    if (GAME.stage == 2) {
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                    } else {
+                        quizQuesionRender();
+                    }
+                    //});
+                //});
+                    
+                  //console.log(response)
+                } else {
+                  showQuestionResult(response);
+                  if (GAME.stage == 2) {
+                    showQuestionResult(response);
+                    tryToConquer();
+                    //GAME.question = {};
+                  }
+                }
+            //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
+            } else if (GAME.question.type=='normal') {
+                if(response.responseJSON.result === 'standoff'){
+                    //hidePoppups(fun);
+                    //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
+                       //setTimeout(function(){
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        //}, 0) 
+                    //});
+                    //GAME.getQuizQuestion();
+                }else if(response.responseJSON.result === 'retry'){
+                    setTimeout(getResultQuestion, 1000)
+                }else if(typeof response.responseJSON.result == "object"){
+                    console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
+                    showQuestionResult(response);
+                    tryToConquer();
+                    //GAME.question = {};
+                    /*GAME.question = {};
+                    GAME.users_question = [];
+                    GAME.steps = GAME.response.result[GAME.user.id];
+                    GAME.sendConquestTerritory();*/
+                }
+            }
+          }
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        getResultQuestion();
+      }
+  });
+}
+
+sendQuestionAnswer = function(callback){
+  callback = callback || function(){}
+  $.ajax({
+    type: "POST",
+    url: '/game/question/send-answer',
+    data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
+    dataType: 'json',
+    success: function (response) {
+      if (response.status && response.status == true) {
+        //console.log(response);
+        callback();
+      } else {
+        sendQuestionAnswer(callback);
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+        sendQuestionAnswer(callback);
+    }
+  });
+}
+/* jshint devel:true */
+console.log('\'Allo \'Allo!');
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
+}
+
+idleTimer = null;
+idleState = false; // состояние отсутствия
+idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
+idleUrl = "/game/disconnect_user";
+
+$(document).bind('mousemove keydown scroll', function(){
+  clearTimeout(idleTimer); // отменяем прежний временной отрезок
+  if(idleState == true){ 
+    // Действия на возвращение пользователя
+     //$("body").append("<p>С возвращением!</p>");
+  }
+
+  idleState = false;
+  idleTimer = setTimeout(function(){ 
+    // Действия на отсутствие пользователя
+    var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
+    hidePoppups();
+    setInterval(function(){
+        sexyAlert(text, 99999999999, function(){
+            sexyAlert(text, 99999999999, function(){
+                sexyAlert(text, 99999999999, function(){
+                    sexyAlert(text, 99999999999, function(){
+                        sexyAlert(text, 99999999999, function(){
+                            sexyAlert(text, 99999999999, function(){
+                                sexyAlert(text, 99999999999, function(){
+                                
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }, 500);
+    sexyAlert(text, 99999999999);
+    playerDisconect();
+    idleState = true; 
+  }, idleWait);
+});
+ 
+//$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
+
+var bg_width = $('#map').width();
+
+function scale() {
+  var doc_width = $(window).width();
+  $('#map').transition({ scale: doc_width/bg_width });
+  $('#user-list').transition({ scale: doc_width/bg_width });
+  $('.infowindow.tour1, .infowindow.tour2').transition({ scale: doc_width/bg_width });
+}
+
+$(window).resize(function (){
+  scale();
+});
+
+$(window).load(function() {
+  bg_width = $('#map').width();
+  scale();
+});
+
+$('.areas .countur svg path').hover(function(){
+  $(this).closest('.area').toggleClass('active');
+  if ($(this).closest('.area').data('info')) {
+    var _points = $(this).closest('.area').data('info').points || 0;
+    //var _sgt =
+    if ($(this).closest('.area').data('info').capital == 1) {
+        var _usr = getUserById($(this).closest('.area').data('info').user_id)
+        $('.infowindow-holder .infowindow-small').text('Столица игрока '+_usr.name+', '+_points);
+    } else {
+        $('.infowindow-holder .infowindow-small').text(_points);        
+    }
+    $('.infowindow-holder').toggle();
+  }
+});
+
+var _history = [];
+var _history = ['menu'];
+
+function openFrame(href) {
+  if (href=='close') {
+    _history.pop();
+  } else {
+    _history.push(href);
+  }
+  if (href=="mathcmaking") {
+    matchmaking();
+  }
+  var last_item = _history[_history.length-1];
+  $('.popup-wrapper .popup-holder .popup').removeClass('active');
+  $('.popup-wrapper .popup-holder .popup#'+last_item).addClass('active');
+}
+
+$('body').on('click', 'a',function(e){
+  var href = $(this).attr('href').split('#');
+  //console.log(href[1]);
+  if (href[1]) {
+    openFrame(href[1]);
+    e.preventDefault();
+  }
+});
+
+$('body').on('click', '.numpad a', function(e){
+  var $input = $(this).closest('.numpad').prev('form').find('input');
+  $input.focus();
+  if ($(this).hasClass('clear')) {
+    $input.val('');
+  } else if ($(this).hasClass('del')) {
+    $input.val($input.val().slice(0, -1));
+  } else {
+    if ($input.val().length<4) {
+      $input.val($input.val()+$(this).text());
+    }
+  }
+  e.preventDefault();
+});
+
+$('body').on('click', '.popup.with-tabs .tabs-btn a', function(e){
+  e.preventDefault();
+  var _c = $('.popup.with-tabs .tabs-btn a').index($(this));
+  if (!$(this).is('.active')) {
+    $('.popup.with-tabs .tabs-btn a').removeClass('active');
+    $(this).addClass('active');
+    $('.popup.with-tabs .tabs .tab').removeClass('active');
+    $('.popup.with-tabs .tabs .tab').eq(_c).addClass('active');
+  }
+});
+
+$('#infowindow-question').click(function(e){
+    if (!$('.popup-wrapper').is(':visible')) {
+        showPoppups();
+        openFrame('help-stage-'+GAME.stage)
+    }
+    e.preventDefault();
+});
+
+$('#help-stage-2 .close, #help-stage-1 .close').click(function(){
+    hidePoppups();
+});
+
+$('#help .q').click(function(){
+  $(this).toggleClass('active');
+  $(this).next('.a').slideToggle();
+});
+
+if (_skoronagame_.open_frame) {
+  openFrame(_skoronagame_.open_frame);
+}
+
+function sexyAlert(text, timeOut, callback) {
+  timeOut = timeOut || 3;
+  callback = callback || function(){};
+  
+  if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    showPoppups();
+    $('#sexy-alert .note').html(text);
+    openFrame('sexy-alert');
+    
+    setTimeout(function(){
+      hidePoppups();
+      callback();
+    }, timeOut*1000);
+  }
+  
+}
+
+function hidePoppups(callback) {
+    callback = callback || function(){};
+    $('.popup-wrapper').fadeOut(100, function(){
+        callback();
+    });
+    clearInterval(quiz_interval);
+    clearInterval(normal_interval);
+}
+
+function showPoppups() {
+  $('.popup-wrapper').fadeIn(100);
+}
+
+sendForm = function(form) {
+  //alert('!!!')
+  //$(form).submit();
+  if ($(form).is('.noajax')) {
+    alert('!!!')
+    return false;
+  }
+  
+  console.log(form)
+  console.log($(form))
+  
+  var _href = $(form).attr('action');
+  var _method = $(form).attr('method');
+  var _popup = $(form).attr('data-result');
+  $.ajax({
+    type: _method,
+    url: _href,
+    data: $(form).serialize(),
+    success: function (response) {
+      console.log(response);
+      if (response.status == true) {
+      //open_popup = $(this).attr('data-result');
+        if (response.redirect) {
+          location.href=response.redirect
+        }
+        openFrame(_popup);
+      } else if (response.status == false) {
+        $(form).prepend('<label class="error">'+response.responseText+'</label>');
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.log(xhr)
+      console.log(textStatus)
+    }
+  });
+}
+
+
+$('#login form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    password: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    password: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('#register form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    },
+    name: 'required',
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
+    },
+    name: 'Обязательное поле'
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('#new-password form').validate({
+  rules: {
+  },
+  messages: {
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('form').submit(function(e){
+  if ($(this).is('.noajax')) {
+    return false
+    //e.preventDefault();
+  }
+});
+
+var firstTime = new Date().getTime()/1000;
+var search_timeout = 90;
+var quiz_timer_default = 10;
+
+var quiz_interval;
+var normal_interval;
+
+
+function startQuizeTimer() {
+  clearInterval(quiz_interval);
+  var timer = quiz_timer_default;
+  $('#question-1 .right .timer').text(timer);
+  quiz_interval = setInterval(function(){
+    $('#question-1 .right .timer').text(timer);
+    timer--
+    if (timer < 0) {
+      quizeExpire();
+    }
+  }, 1000)
+}
+
+function quizeExpire() {
+  clearInterval(quiz_interval)
+  if ($('.numpad').is(':visible')) {
+    $('#question-1 form.a').find('input').val(99999);
+    $('#question-1 form.a').submit();
+  }
+}
+
+function startNormalTimer() {
+  clearInterval(normal_interval);
+  var timer = quiz_timer_default;
+  $('#question-2 .timer').text(timer);
+  normal_interval = setInterval(function(){
+    $('#question-2 .timer').text(timer);
+    timer--
+    if (timer < 0) {
+      normalExpire();
+    }
+  }, 1000)
+}
+
+function normalExpire() {
+  clearInterval(normal_interval);
+  if ($('#question-2 .a a.active').size()==0) {
+    GAME.question.answer = 99999;
+    GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
+    sendQuestionAnswer(function(){
+      getResultQuestion();
+      //normalQuestionIsrender=false;
+    });
+  }
+}
+
+function compareUsers(userA, userB) {
+  return userB.points - userA.points;
+}
+
+function renderGameOver() {
+  
+  GAME.users.sort(compareUsers);
+  
+  $('#winer .places .first .name').text(GAME.users[0].name)
+  
+  if (GAME.users[0].photo != '') {
+    $('#winer .places .first .ava .img').css({
+      'background-image': 'url('+GAME.users[0].photo+')'
+    });
+  }
+  
+  $('#winer .places .second .name').text(GAME.users[1].name)
+  if (GAME.users[1].photo != '') {
+    $('#winer .places .second .ava .img').css({
+      'background-image': 'url('+GAME.users[1].photo+')'
+    });
+  }
+  
+  $('#winer .places .third .name').text(GAME.users[2].name)
+  if (GAME.users[2].photo != '') {
+    $('#winer .places .third .ava .img').css({
+      'background-image': 'url('+GAME.users[2].photo+')'
+    });
+  }
+  
+  openFrame('winer');
+  showPoppups();
+}
+
+function quizQuesionRender(players) {
+  players = players || [];
+  clearInterval(quiz_interval);
+  clearInterval(normal_interval);
+  renderPlayers();
+  
+  if (players.length>0) {
+    $('#question-1 .left .unit').hide();
+    $.each(players, function(index, value){
+      var _user = getUserById(value);
+      $('#question-1 .left .unit.'+_user.color).show();
+    });
+  } else if (players.length==0) {
+    $('#question-1 .left .unit').show();
+  }
+  
+  getQuizQuestion(players, function(){
+    //alert(GAME.question.text);
+    $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
+    $('#question-1 .left .answer').text('');
+    $('#question-1 .right .answerlkhbdsfksdlhfg').slideUp();
+    $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideDown();
+    $('#question-1 .right .q').html(GAME.question.text);
+    $('#question-1 .right .answer-true .qa').text('');
+    $('#question-1 .right .answer-true').slideUp(100);
+    openFrame('question-1');
+    showPoppups();
+    startQuizeTimer();
+  });
+}
+
+function takingLand() {
+  getGame(function(){
+    //console.log(GAME.status);
+    quizQuesionRender();
+    //getUsersResultQuestions();
+  });
+}
+
+function matchmaking() {
+  getGame(function(){
+    if (GAME.status == 'wait') {
+      //createPlayers();
+      renderPlayers();
+      setTimeout(matchmaking, 1000)
+    } else {
+      renderPlayers();
+      createPlayers();
+      if (GAME.status == "start" || GAME.status == "ready") {
+        renderMap(true);
+        hidePoppups();
+        console.log('ВНИМАНИЕ!', GAME.status, GAME.stage);
+        if (GAME.stage==0) {
+          takingLand();
+        }
+        if (GAME.stage==1) {
+          setTimeout(function(){
+            takingLand();            
+          }, 3000)
+        }
+        if (GAME.stage==2) {
+          whoTurn();
+        }
+        //setTimeout(takingLand, 10000);
+      }
+    }
+  });
+}
+
+function renderSteps(){
+  $('.infowindow.tour1').hide();
+  $('.infowindow.tour2').show();
+  $.each(GAME.stage2_tours_json, function(index, value){
+    var $tour = $('.infowindow.tour2 .tour.n'+(index+1));
+    if (GAME.response && GAME.response.settings && GAME.response.settings.current_tour == index) {
+      $tour.addClass('active');
+    } else {
+      $tour.removeClass('active');
+    }
+    
+    $.each(value, function(index2, value2){
+      var user_id = Object.keys(value2)[0];
+      var user_statuc = value2[user_id];
+      var user = getUserById(user_id);
+      var $flag = $tour.find('.flag').eq(index2);
+      
+      $flag.removeClass('red green blue').addClass(user.color);
+      if (GAME.next_turn == user_id) {
+        $flag.addClass('active');
+      } else {
+        $flag.removeClass('active');
+      }
+    });
+  })
+}
+
+function tryToConquer() {
+  //if (GAME.stage == 2 && GAME.mustConquer && GAME.question.result[GAME.user.id] == 1) {
+  if (GAME.stage == 2 && GAME.question.type == 'normal') {
+    //setTimeout(hidePoppups, 4000);
+  } else {
+    //setTimeout(hidePoppups, 7000);
+  }
+  
+  //normalQuestionIsrender = false;
+  getGame(function(){
+    //console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
+    console.log('ВНИМАНИЕ', GAME.stage, GAME.mustConquer, GAME.user.available_steps, GAME.question.result, GAME.question.result[GAME.user.id])
+    if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || (GAME.question.result && GAME.question.result[GAME.user.id]==1) )) {
+      var _area = getAreaById(GAME.mustConquer);
+      if (_area.capital == 1) {
+        sendConquestCapital(GAME.mustConquer, function(response){
+          //console.log(arguments);
+          //console.log(response);
+          console.log(response.conquest_result, 'Ответ на захват')
+          if (response.conquest_result == 'retry') {
+            console.log('Ходит игрок', GAME.next_turn, getUserById(GAME.next_turn).name, getUserById(GAME.next_turn).color);
+            console.log('повтор!', $('#area-'+GAME.mustConquer), $('#area-'+GAME.mustConquer).size());
+            setTimeout(function(){
+              hidePoppups(function(){
+                $('#area-'+GAME.mustConquer).click();
+              }) 
+            }, 8000);
+          }
+        })
+      } else {
+        sendConquestEmptyTerritory(GAME.mustConquer, function(){
+          //normalQuestionIsrender=false;
+          //GAalert('ЗАХВАт')
+          //GAME.mustConquer = null
+        })
+      }
+    }
+  })
+}
+
+function createPlayers() {
+  $.each(GAME.users, function(index, value){
+    if (GAME.user.id != value.id) {
+      $('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    } else {
+      $('#question-1 .left .unit').eq(index).find('.name').text('Вы').addClass(value.color);      
+    }
+    //$('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    $('#question-1 .left .unit').eq(index).addClass(value.color);
+    if (value.photo != '') {
+      $('#question-1 .left .unit').eq(index).find('.ava .img').css({
+        'background-image': 'url('+value.photo+')'
+      });
+    }
+    $('#question-1 .left .unit').eq(index).addClass(value.color);
+  })
+}
+
+function renderPlayers() {
+  $('#user-list .user').removeClass('active');
+  $.each(GAME.users, function(index, value){
+    
+    if (!GAME.resultQuestion || !GAME.resultQuestion[value.id]) {
+      //$('#question-1 .left .unit').eq(index).find('.name').text(value.name).addClass(value.color);
+    } else {
+      /*
+      var _answ = GAME.resultQuestion[value.id];
+      var $unit = $('#question-1 .left .unit .name:contains('+value.name+')').closest('.unit');
+      $unit.data('place', _answ.place);
+      $unit.find('.timer').text(_answ.seconds);
+      $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
+      $unit.find('.answer').text(_answ.answer);
+      orderPlayers();*/
+    }
+    
+    //if ((GAME.stage==1|| GAME.stage==2)&& GAME.status =='ready') {
+    $('#user-list').show();
+    //}
+    var $user = $('#user-list .user.'+value.color);
+    $user.find('.name').text(value.name);
+    if (value.photo != '') {
+      $user.find('.ava .img').css({
+        'background-image': 'url('+value.photo+')'
+      });
+    }
+    
+    $user.find('.points').text(value.points);
+    if (value.id == GAME.user.id) {
+      $('#user-list .user.'+value.color).find('.name').text('Вы');
+    }
+    
+    if (value.id == GAME.next_turn) {
+      $('#user-list .user.'+value.color).addClass('active');
+    }
+    
+  });
+  $.each(GAME.enemies, function(index, value){
+    if (index==0) {
+      $('#mathcmaking .ava').first().find('.name').text(value.name);
+      if (value.photo != '') {
+        $('#mathcmaking .ava').first().find('.img').css({
+          'background-image': 'url('+value.photo+')'
+        });
+      }
+    }
+    if (index==1) {
+      $('#mathcmaking .ava').last().find('.name').text(value.name);
+      if (value.photo != '') {
+        $('#mathcmaking .ava').last().find('.img').css({
+          'background-image': 'url('+value.photo+')'
+        });
+      }
+    }
+  });
+  
+  if (GAME.user.photo != '') {
+    $('#mathcmaking .ava').eq(1).find('.img').css({
+      'background-image': 'url('+GAME.user.photo+')'
+    });
+  }
+}
+
+
+$('body').on('click', '#question-2 .a a', function(e){
+  e.preventDefault();
+  if ($('#question-2 .a a.active').size()==0) {
+    clearInterval(normal_interval);
+    GAME.question.answer = $(this).data('id');
+    GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
+    $(this).addClass(GAME.user.color);
+    sendQuestionAnswer(function(){
+      getResultQuestion();
+      //normalQuestionIsrender=false;
+    });
+  }
+});
+
+$('body').on('click', '#map .area', function(event){
+  if (GAME.user.id == GAME.next_turn && GAME.stage == 1 && !$(this).hasClass('reserved')) {
+    sendConquestEmptyTerritory($(this).data('zone'),function(){
+      getGame(function(){
+        renderMap(true);
+      });
+    });
+  } else if (GAME.user.id == GAME.next_turn && GAME.stage == 2 && $(this).data('info').user_id != GAME.user.id) {
+    GAME.mustConquer = $(this).data('info').zone;
+    renderNormalQuestion(GAME.user.id, $(this).data('info').user_id);
+  }
+})
+
+function renderMap(nodelay) {
+  nodelay = nodelay || false;
+  if (nodelay) {
+    var delay = 0
+  } else {
+    var delay = 500
+    
+  }
+  $('#map').addClass('user_'+GAME.user.color);
+  $.each(GAME.map, function(index, value){
+    if (nodelay) {
+      var offset_index = parseInt(index)+1;
+      var $area = $('#map #area-'+offset_index);
+      $area.data('zone', value.zone).data('info', value);
+      $area.attr('data-zone', value.zone);
+      if (value.user_id>0) {
+        $area.removeClass('empty');
+        $area.addClass('reserved');
+        $area.removeClass('red green blue');
+        $area.addClass(getUserById(value.user_id).color);
+        if (value.user_id == GAME.user.id) {
+          $area.addClass('my');
+        } else {
+          $area.removeClass('my');          
+        }
+        if (value.capital == 1 && value.lives == 2) {
+          $area.addClass('lives-2');
+        } else {
+          $area.removeClass('lives-2');
+        }
+        if (value.capital == 1 && value.lives == 1) {
+          $area.addClass('lives-1');
+        } else {
+          $area.removeClass('lives-1');
+        }
+      } else {
+        $area.removeClass('reserved');
+        $area.removeClass('my');
+        $area.addClass('empty');
+      }
+    } else {
+      setTimeout(function(){
+        $('<div> \
+          capital:'+ value.capital+'<br>\
+          id:'+ value.id+'<br>\
+          lives:'+ value.lives+'<br>\
+          user_id:'+ value.user_id+'<br>\
+          zone:'+ value.zone+'\
+        </div>').appendTo('.temp-map').css({
+          "background-color":value.settings.color
+        }).data('zone', value.zone);
+      }, delay*index);
+    }
+  });
+}
+
+normalQuestionIsrender = false;
+renderNormalQuestion = function(conqu, enemy_id){
+  if (!$('.popup-wrapper').is(":visible")) {
+    //showPoppups();
+    normalQuestionIsrender = true;
+    conqu = conqu || GAME.user.id;
+    
+    GAME.users_question = {
+      conqu: conqu,
+      def: enemy_id
+    }
+    
+    clearInterval(quiz_interval);
+    clearInterval(normal_interval);
+    getNormalQuestion(function(){
+      clearInterval(quiz_interval);
+      clearInterval(normal_interval);
+      startNormalTimer();
+      
+      GAME.duel.conqu, GAME.duel.def
+      if (GAME.mustConquer) {
+        console.log(GAME.mustConquer);
+      }
+      var _note = '';
+      if (GAME.duel || GAME.duel.length==0) {
+        var _user = getUserById(enemy_id);
+        if (GAME.mustConquer != 0) {
+          var _zone = getAreaById(GAME.mustConquer);
+          if (_zone.capital == 1) {
+            _note = 'Вы напали на столицу игрока: <span class="'+_user.color+'">'+_user.name+'</span><br>Осталось жизней столицы: '+_zone.lives;
+          }else {
+            _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';
+          }
+        } else {
+          _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';       
+        }
+      }
+      if (GAME.duel.conqu == GAME.user.id) {
+        var _user = getUserById(GAME.duel.def);
+        console.log(GAME.mustConquer);
+        if (GAME.mustConquer != 0) {
+          console.log(GAME.mustConquer);
+          var _zone = getAreaById(GAME.mustConquer);
+          console.log('zone!', _zone)
+          if (_zone.capital == 1) {
+            _note = 'Вы напали на столицу игрока: <span class="'+_user.color+'">'+_user.name+'</span><br>Осталось жизней столицы: '+_zone.lives;
+          } else {
+            _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';
+          }
+        } else {
+          _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';       
+        }
+      }
+      
+      if (GAME.duel.def == GAME.user.id) {
+        var _user = getUserById(GAME.duel.conqu);
+        _note = 'На вас напал игрок: <span class="'+_user.color+'">'+_user.name+'</span>'        
+      }
+      
+      $('#question-2 .small-title').html(_note);
+      $('#question-2 .left').removeClass('red green blue');
+      $('#question-2 .right').removeClass('red green blue');
+      $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
+      $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
+      $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
+      $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
+      $('#question-2 .q').html(GAME.question.text);
+      $('#question-2 .a').html('');
+      $.each(GAME.question.answers, function(index, value){
+        //$('#question-2 .a').append
+        $('<a href="">'+value+'</a>').appendTo($('#question-2 .a')).data('id', index);
+      });
+      //$('#question-2 .a')
+      openFrame('question-2');
+      showPoppups();
+    })
+  
+  }
+}
+
+var last_turn = 0;
+var whoTurn_is_run = false;
+whoTurn = function() {
+  whoTurn_is_run = true;
+  getGame(function(){
+    if (GAME.next_turn!=GAME.user.id) {
+      setTimeout(function(){
+        $("body").trigger("mousemove");
+      }, 1000)
+    }
+    if (GAME.stage == 1) {
+      $('#map .areas').addClass('stage-1');
+      if (GAME.next_turn==GAME.user.id) {
+        if (GAME.user.available_steps == 2) {
+          sexyAlert('Ваш ход. <br>Выберите 2 территории.');
+        }
+        if (GAME.user.available_steps == 1) {
+          sexyAlert('Ваш ход. <br>Выберите 1 территорию.');
+        }
+        $('#map .areas').addClass('active');
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+          //alert('Ваш ход! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+          //hidePoppups();
+        }
+      } else {
+        $('#map .areas').removeClass('active');
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
+        }
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+          var user_turn = getUserById(GAME.next_turn);
+          if (user_turn) {
+            //alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
+            //hidePoppups();
+          } else {
+            renderMap(true);
+            takingLand();
+          }
+        }
+      }
+      setTimeout(whoTurn, 1000);
+    } else if (GAME.stage == 2) {
+      $('#map .areas').removeClass('stage-1');
+      $('#map .areas').addClass('stage-2');
+      //alert('Этап захвата')
+//      console.log('Этап захвата');
+      //alert(GAME.response.settings.next_step);
+      if (GAME.next_turn==GAME.user.id) {
+        sexyAlert('Выберите территорию для нападения.');
+        //alert('Ваш ход. Этап захвата.');
+        //renderNormalQuestion();
+      } else {
+        if (GAME.next_turn!=0) {
+          GAME.mustConquer = 0;
+        }
+        var user_turn = getUserById(GAME.next_turn);
+        if (user_turn) {
+          sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
+        }
+        if (GAME.next_turn != last_turn) {
+          last_turn = GAME.next_turn;
+          //var user_turn = getUserById(GAME.next_turn);
+        };
+        
+        if (!isEmpty(GAME.duel)) {
+          //if (GAME.duel.def == GAME.user.id || GAME.duel.conqu == GAME.user.id) {
+          if (GAME.duel.def == GAME.user.id || GAME.duel.conqu == GAME.user.id) {
+            console.log('!!!!');
+            if (!$('.popup-wrapper').is(":visible")) {
+            //if (normalQuestionIsrender == false) {
+              renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
+            }
+          } else {
+            var _conq = getUserById(GAME.duel.conqu);
+            var _def = getUserById(GAME.duel.def);
+            sexyAlert('Подождите, пока закончится противостояние игроков <span class="'+_conq.color+'">'+_conq.name+'</span> и <span class="'+_def.color+'">'+_def.name+'</span>', 10)
+          }
+        }
+        //getResultQuestion();
+        //setTimeout(whoTurn, 1000);
+      }
+      if (GAME.question.type == 'quize' || GAME.question.type == 'normal') {
+        //getResultQuestion();
+      }
+      setTimeout(whoTurn, 1000);      
+    }
+    renderMap(true);
+  });
+}
+
+function orderPlayers() {
+  $('#question-1 .left').find('.unit').sort(function (a, b) {
+    return $(a).data('place') - $(b).data('place');
+  }).appendTo('#question-1 .left');
+}
+
+var showQuestionResult_timeout;
+showQuestionResult = function(response){
+  GAME.question.result = response.responseJSON.result;
+  //var _s = '';
+  clearTimeout(showQuestionResult_timeout);
+  /*$.each(GAME.users, function(index, value){
+    value.place = GAME.question.result[value.id]
+    _s = _s+'Игрок: '+value.color+' - '+ value.place +' место. \n'
+  });*/
+  
+  getUsersResultQuestions(function(){
+    //console.log('РУЗЕЛЬТАТ ВОООПРОООСАААА', GAME.question.result)
+    if(GAME.question.type=='quiz'){
+      $('#question-1 .left .unit').hide();
+      $('#question-1 .right .answer-true .qa').text(GAME.resultQuestion.current_answer);
+      $('#question-1 .right .answer-true').slideDown(100);
+      $.each(GAME.users, function(index, value){
+        var _answ = GAME.resultQuestion.results[value.id];
+        var $unit = $('#question-1 .left .unit.'+value.color);
+        if (_answ) {
+          $unit.show();
+          $unit.data('place', _answ.place);
+          if (_answ.answer == 99999) {
+            _answ.answer = '';
+          }
+          $unit.find('.timer').text(_answ.answer);
+          //$unit.find('.timer').text('10 сек.');
+          $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
+          $unit.find('.answer').text(_answ.seconds+' сек.');
+          }
+        })
+      if (whoTurn_is_run == false) {
+        whoTurn();
+      }
+      orderPlayers();
+      //showQuestionResult_timeout = setTimeout(hidePoppups, 7000);
+    } else {
+      $.each(GAME.users, function(index, value){
+        var _answ = GAME.resultQuestion.results[value.id];
+        console.log(_answ)
+        if (_answ) {
+          var _usr = getUserById(value.id);
+          if (_answ.correctly==1) {
+            $('#question-2 .a a').eq(_answ.current_answer_index).addClass('true');
+            $('#question-2 .a a').eq(_answ.current_answer_index).addClass(_usr.color);
+          }
+          $('#question-2 .a a:contains("'+value.answer+'")').addClass(_usr.color);
+        }
+      });
+    }
+    showQuestionResult_timeout = setTimeout(function(){
+      hidePoppups(function(){
+        tryToConquer();
+      });
+    }, 7000);
+  })
+  //alert(_s);
+  //whoTurn();
+}
+
+
+function afterAnswer() {
+  $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideUp(100);
+  $('#question-1 .right .answerlkhbdsfksdlhfg').slideDown(100);
+}
+
+$(document).ready(function () {
+
+  $('#question-1 form.a').submit(function(){
+    GAME.question.answer = $(this).find('input').val();
+    if (parseInt(GAME.question.answer)!=99999) {
+      $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text(GAME.question.answer);
+    } else {
+      $('#question-1 .right .answerlkhbdsfksdlhfg .qa').text('');
+    }
+    //GAME.question.answer
+    $(this).find('input').val('');
+    GAME.question.time = quiz_timer_default - $('#question-1 .right .timer').text();
+    afterAnswer();
+    sendQuestionAnswer(function(){
+      //afterAnswer();
+      getResultQuestion();
+    });
+    //GAME.sendQuestionAnswer();
+    //GAME.getResultQuestion();
+  });
+
+})

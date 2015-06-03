@@ -56,6 +56,26 @@ var getGame = function(callback){
     });
 };
 
+getBots = function (){
+    $.ajax({
+        type: "POST",
+        url: '/game/add-bots',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {},
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
+    });
+}
+
 playerDisconect = function() {
     $.ajax({
         type: "POST",
