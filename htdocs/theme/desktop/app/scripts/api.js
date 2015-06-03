@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//1 - 2ой этап, 3 - конец этапа 1                                       // id игры
+GAME.game_id = 0;//10                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -349,9 +349,9 @@ getResultQuestion = function(){
                 } else {
                   showQuestionResult(response);
                   if (GAME.stage == 2) {
-                    
+                    showQuestionResult(response);
                     tryToConquer();
-                    GAME.question = {};
+                    //GAME.question = {};
                   }
                 }
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
