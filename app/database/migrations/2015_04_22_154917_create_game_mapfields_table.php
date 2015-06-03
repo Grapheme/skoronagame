@@ -9,7 +9,7 @@ class CreateGameMapfieldsTable extends Migration {
 		Schema::create('game_mapfields', function(Blueprint $table){
 			$table->increments('id');
             $table->integer('game_id')->default(0)->nullable()->unsigned();
-            $table->integer('user_id')->default(0)->nullable()->unsigned();
+            $table->integer('user_id')->default(0)->nullable();
             $table->tinyInteger('zone')->default(0)->nullable()->unsigned();
             $table->boolean('capital')->default(0)->nullable()->unsigned();
             $table->integer('lives')->default(1)->nullable()->unsigned();
