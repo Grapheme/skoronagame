@@ -400,7 +400,7 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 $post = Input::all();
                 $number_participants = Config::get('game.number_participants');
-                $hasWinnersCalculate = FALSE;
+                $hasWinnersCalculate = TRUE;
                 if ($this->validGameStage(2)):
                     $number_participants = 2;
                     if ($duel = $this->getDuel()):
