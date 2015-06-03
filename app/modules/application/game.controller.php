@@ -565,16 +565,11 @@ class GameController extends BaseController {
                                                 'message' => 'Следующий ходит', 'next_step' => $this->getNextStep(),
                                                 'current_user' => Auth::user()->id));
 
-                                            Log::info('isBotNextStepStage2', array('method' => 'getResultQuestion',
-                                                'message' => 'Запуск сценария с ботами',
-                                                'current_user' => Auth::user()->id));
-
-
                                             if ($this->validGameBots()):
                                                 $this->isBotNextStepStage2();
 
                                                 Log::info('isBotNextStepStage2', array('method' => 'getResultQuestion',
-                                                    'message' => 'В игре есть боты побидители. Боты захватывают столицу',
+                                                    'message' => 'В игре есть боты побидители. Запуск сценария с ботами',
                                                     'current_user' => Auth::user()->id, 'stage' => 1));
 
                                             endif;
