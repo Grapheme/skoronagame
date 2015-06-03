@@ -509,6 +509,10 @@ whoTurn = function() {
             //if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
+          } else {
+            var _conq = getUserById(GAME.duel.conqu);
+            var _def = getUserById(GAME.duel.def);
+            sexyAlert('Подождите, пока закончится противостояние игроков <span class="'+_conq.color+'">'+_conq.name+'</span> и <span class="'+_def.color+'">'+_def.name+'</span>', 10)
           }
           
         }
