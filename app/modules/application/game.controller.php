@@ -329,17 +329,23 @@ class GameController extends BaseController {
         if ($validation->passes()):
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
+
+                    $createStepInSecondStage = TRUE;
+                    $duel = $this->getDuel();
+                    if (isset($duel['conqu']) && isset($duel['def'])):
+                        $createStepInSecondStage = FALSE;
+                    endif;
+
                     if (Input::get('users.conqu') == Auth::user()->id || Input::get('users.def') == Auth::user()->id):
                         $next_step = $this->getNextStep();
                         if ($next_step == Auth::user()->id && !GameUserQuestions::where('game_id', $this->game->id)->where('status', 0)->exists()):
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
-                            $duel = $this->getDuel();
-                            if (empty($duel)):
+                            if ($createStepInSecondStage === TRUE):
                                 $this->createStepInSecondStage();
 
                                 Log::info('createStepInSecondStage', array('method' => 'getNormalQuestion',
-                                    'message' => 'Дуель не существует. Пользователь совершил ход',
+                                    'message' => 'Дуели не существует. Пользователь совершил ход',
                                     'step' => $this->getNextStep(),
                                     'current_user' => Auth::user()->id));
 
