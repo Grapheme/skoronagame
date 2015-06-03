@@ -1748,8 +1748,8 @@ class GameController extends BaseController {
                         $territory->status = 0;
                         $territory->save();
                         $territory->touch();
-                        return 0;
                     endforeach;
+                    return 0;
                 elseif ($conquest->lives > 1):
                     $conquest->lives = $conquest->lives - 1;
                     $conquest->save();
