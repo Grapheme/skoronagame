@@ -2,7 +2,7 @@
 /**
  * TEMPLATE_IS_NOT_SETTABLE
  */
-$game_id = is_object($game) ? $game->id : 'null';
+$game_id = is_object($game) ? $game->id : 0;
 ?>
 
 @extends('templates/demo')
@@ -12,18 +12,18 @@ $game_id = is_object($game) ? $game->id : 'null';
     <p xmlns="http://www.w3.org/1999/html">{{ Auth::user()->name }}, добро пожаловать в игру.</p>
     <p id="js-bot"></p>
     <ul>
-        @if(!is_numeric($game_id))
+        @if(!$game_id)
             <li><a id="js-start-game" href="javascript:void(0);">Начать игру</a></li>
         @endif
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-update-game" href="javascript:void(0);">Обновить игру</a></li>
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-quiz-game" href="javascript:void(0);">Запросить квиз вопрос</a></li>
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-result" href="javascript:void(0);">Запросить результат вопроса</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-update-game" href="javascript:void(0);">Обновить игру</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-question-quiz-game" href="javascript:void(0);">Запросить квиз вопрос</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-question-result" href="javascript:void(0);">Запросить результат вопроса</a></li>
 
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-question-normal-game" href="javascript:void(0);">Запросить нормальный вопрос</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-question-normal-game" href="javascript:void(0);">Запросить нормальный вопрос</a></li>
 
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-users-questions-result" href="javascript:void(0);">Запросить результаты ответов пользователей</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-users-questions-result" href="javascript:void(0);">Запросить результаты ответов пользователей</a></li>
 
-        <li {{ !is_numeric($game_id) ? 'style="display: none;"' : '';  }}><a id="js-over-game" href="javascript:void(0);">Завершить игру</a></li>
+        <li {{ !$game_id ? 'style="display: none;"' : '';  }}><a id="js-over-game" href="javascript:void(0);">Завершить игру</a></li>
         <li><a href="{{ URL::route('logout') }}">Выйти</a></li>
     </ul>
     <div id="russia-map" style="display: none;">
@@ -59,7 +59,7 @@ $game_id = is_object($game) ? $game->id : 'null';
     <hr>
 
     <p style="clear: both;">Игрок</p>
-    <textarea id="js-user-response" style="width: 400px; height: 100px;"></textarea>
+    <textarea id="js-user-response" style="width: 800px; height: 100px;"></textarea>
 
     <p style="clear: both;">Ответ сервера</p>
     <textarea id="js-server-response" style="width: 800px; height: 150px;"></textarea>

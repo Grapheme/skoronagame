@@ -245,11 +245,9 @@ class GameController extends BaseController {
         if (!$this->initGame()):
             if (!$this->hasCreatedGame()):
                 $this->createNewGame();
-                $this->reInitGame();
             else:
                 $this->joinNewGame();
                 $this->startGame();
-                $this->reInitGame();
             endif;
         endif;
         $this->finishGameInFourTour();
@@ -402,15 +400,15 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 $post = Input::all();
                 $number_participants = Config::get('game.number_participants');
-                $hasWinnersCalculate = TRUE;
+                $hasWinnersCalculate = FALSE;
                 if ($this->validGameStage(2)):
                     $number_participants = 2;
                     if ($duel = $this->getDuel()):
-                        if($duel['def'] == Auth::user()->id):
-                            $hasWinnersCalculate = FALSE;
+                        if($duel['conqu'] == Auth::user()->id):
+                            $hasWinnersCalculate = TRUE;
 
                             Log::info('hasWinnersCalculate', array('method' => 'getResultQuestion',
-                                'message' => 'Запрос от защищающегося. Расчет победителей невозможен',
+                                'message' => 'Запрос от нападающего. Расчет победителей доступен',
                                 'hasWinnersCalculate' => (int)$hasWinnersCalculate,
                                 'current_user' => Auth::user()->id));
 
@@ -459,22 +457,28 @@ class GameController extends BaseController {
                                 if ($available_steps < 0):
                                     $this->gamerDefenceTerritory($post['zone']);
                                     $available_steps = 0;
+
                                     Log::info('gamerDefenceTerritory', array('method' => 'getResultQuestion',
                                         'message' => '2 этап. Дуель. Защищающийся победил',
                                         'user_id' => $user_id, 'steps' => $available_steps,
                                         'current_user' => Auth::user()->id));
+
                                 endif;
                                 $this->setGameUserAvailableSteps($user_id, $available_steps);
+
                                 Log::info('setGameUserAvailableSteps', array('method' => 'getResultQuestion',
                                     'message' => 'Установили доступные шаги для пользователя',
                                     'user_id' => $user_id, 'steps' => $available_steps,
                                     'current_user' => Auth::user()->id));
+
                             endforeach;
                             if ($this->validGameBots()):
                                 $this->isBotsWinners();
+
                                 Log::info('isBotsWinners', array('method' => 'getResultQuestion',
-                                    'message' => 'В игре есть боты побудители. Боты захватываю терирории',
+                                    'message' => 'В игре есть боты побудители. Боты захватывают терирории',
                                     'current_user' => Auth::user()->id));
+
                             endif;
                             if ($this->validGameStage(2)):
 
@@ -858,9 +862,12 @@ class GameController extends BaseController {
 
             $this->changeGameStatus($this->game_statuses[1]);
             $this->changeGameStage(1);
+            $this->randomUsersColor();
+            $this->reInitGame();
             $this->createGameMap();
             $this->randomDistributionCapital();
             $this->randomStep();
+            $this->reInitGame();
         endif;
     }
 
@@ -943,7 +950,7 @@ class GameController extends BaseController {
         $this->game->touch();
     }
 
-    private function createStepInSecondStage() {
+    private function createStepInSecondStage($userID = NULL) {
 
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : FALSE ;
@@ -955,8 +962,12 @@ class GameController extends BaseController {
             $this->reInitGame();
         endif;
 
-        if (isset($stage2_tours[$current_tour][Auth::user()->id]) && $stage2_tours[$current_tour][Auth::user()->id] == FALSE):
-            $stage2_tours[$current_tour][Auth::user()->id] = TRUE;
+        if(is_null($userID)):
+            $userID = Auth::user()->id;
+        endif;
+
+        if (isset($stage2_tours[$current_tour][$userID]) && $stage2_tours[$current_tour][$userID] == FALSE):
+            $stage2_tours[$current_tour][$userID] = TRUE;
             $nextTour = TRUE;
             foreach ($stage2_tours[$current_tour] as $user_id => $status):
                 if ($status == FALSE):
@@ -1020,6 +1031,7 @@ class GameController extends BaseController {
             'json_settings' => json_encode(array('next_step' => 0))));
         if ($this->game):
             self::joinNewGame();
+            $this->reInitGame();
         endif;
         return TRUE;
     }
@@ -1111,9 +1123,21 @@ class GameController extends BaseController {
     }
 
     /******************************* RANDOM**************************************/
+    private function randomUsersColor(){
+
+        if ($this->validGameStage(1)):
+            foreach ($this->game->users as $user_index => $user):
+                $random_color = $this->randomColor($user_index);
+                $user->color = $random_color;
+                $user->save();
+                $user->touch();
+            endforeach;
+        endif;
+    }
+
     private function randomDistributionCapital() {
 
-        if ($this->validGameStatus($this->game_statuses[1])):
+        if ($this->validGameStage(1)):
             if ($map_places_list = GameMap::where('game_id', $this->game->id)->orderBy('zone')->orderBy('id')->get()):
                 $map_places = $map_places_ids = $map_capital_ids = array();
                 foreach ($map_places_list as $map_place):
@@ -1130,9 +1154,7 @@ class GameController extends BaseController {
                     $map_places[$capital]->capital = 1;
                     $map_places[$capital]->lives = Config::get('game.map_capital_place_lives');
                     $settings = json_decode($map_places[$capital]->json_settings);
-                    $settings->color = $this->randomColor($user_index);
-                    $user->color = $settings->color;
-                    $user->save();
+                    $settings->color = $user->color;
                     $map_places[$capital]->json_settings = json_encode($settings);
                     $map_places[$capital]->save();
                 endforeach;
@@ -1354,7 +1376,9 @@ class GameController extends BaseController {
         if (!Request::ajax()) return App::abort(404);
         if ($this->initGame()):
             $this->joinBotsInGame();
+            $this->reInitGame();
             $this->startGame();
+            $this->reInitGame();
             $this->json_request['responseText'] = 'Виртуальные пользователи добавлены';
             $this->json_request['status'] = TRUE;
         endif;
@@ -1369,16 +1393,16 @@ class GameController extends BaseController {
         if ($user_games_count == 1):
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[0],
                 'is_bot' => 1,
-                'status' => 0, 'points' => 0,
+                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color'=>'', 'points' => 0,
                 'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[1],
                 'is_bot' => 1,
-                'status' => 0, 'points' => 0,
+                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color'=>'', 'points' => 0,
                 'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
         elseif ($user_games_count == 2):
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[0],
                 'is_bot' => 1,
-                'status' => 0, 'points' => 0,
+                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color'=>'', 'points' => 0,
                 'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
         endif;
         if (count($bots)):
@@ -1601,6 +1625,8 @@ class GameController extends BaseController {
 
         $winners_id = array_keys($this->game_winners);
         if ($this->isBot($winners_id[0])):
+            $this->createStepInSecondStage();
+
             $this->nextStep($winners_id[0]);
 
             Log::info('nextStep 1', array('method' => 'isBotsWinners', 'message' => 'nextStep',

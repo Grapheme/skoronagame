@@ -10,11 +10,11 @@ return array(
     'normal_question_answers_count' => 4,
 
     'adjacent_places' => array(
-        1 => array(2, 3), 2 => array(1, 3, 4, 5), 3 => array(1, 2, 4), 4 => array(3, 2, 5, 6),
-        5 => array(2, 4, 6, 7), 6 => array(4, 5, 7, 8, 9), 7 => array(5, 6, 8, 9, 12),
-        8 => array(6, 7, 9, 11, 12), 9 => array(6, 7, 8, 10, 11, 12), 10 => array(9, 11, 15),
-        11 => array(9, 10, 12, 13, 14, 15), 12 => array(7, 8, 9, 11, 13),
-        13 => array(11, 12, 14), 14 => array(11, 13, 15), 15 => array(10, 11, 14),
+        1 => array(2, 14), 2 => array(1, 14, 15, 4), 3 => array(4, 13, 12, 10), 4 => array(2, 15, 13, 3),
+        5 => array(9, 7, 8), 6 => array(10, 9, 12, 7), 7 => array(6, 9, 5, 12, 8),
+        8 => array(7, 12, 11), 9 => array(10, 6, 7, 5), 10 => array(3, 12, 6, 9),
+        11 => array(8, 12), 12 => array(13, 3, 10, 6, 7, 8, 11),
+        13 => array(15, 4, 3, 12), 14 => array(1, 2, 15), 15 => array(14, 2, 4, 13),
     ),
     'colors' => array('red','green','blue'),
     'bots_ids' => array(3,4),

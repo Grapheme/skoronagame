@@ -678,7 +678,7 @@ GAME.isEmptyMap = function() {
 $(document).ready(function () {
     GAME.reInitialize();
     GAME.game_id = $("#game-id").html();
-    if(isNaN(GAME.game_id) === false)
+    if(GAME.game_id > 0)
         GAME.startGameTimer();
     $("#js-start-game").click(function(event){
         event.preventDefault();
