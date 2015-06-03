@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//1 - 2ой этап, 3 - конец этапа 1                                       // id игры
+GAME.game_id = 0;//10                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -349,9 +349,9 @@ getResultQuestion = function(){
                 } else {
                   showQuestionResult(response);
                   if (GAME.stage == 2) {
-                    
+                    showQuestionResult(response);
                     tryToConquer();
-                    GAME.question = {};
+                    //GAME.question = {};
                   }
                 }
             //} else if (GAME.stage == 2 || GAME.question.type=='normal') {
@@ -896,17 +896,22 @@ function tryToConquer() {
   //normalQuestionIsrender = false;
   getGame(function(){
     //console.log(GAME.stage, GAME.mustConquer, GAME.user.available_steps)
+    console.log('ВНИМАНИЕ', GAME.stage, GAME.mustConquer, GAME.user.available_steps, GAME.question.result, GAME.question.result[GAME.user.id])
     if (GAME.stage == 2 && GAME.mustConquer && (GAME.user.available_steps > 0 || (GAME.question.result && GAME.question.result[GAME.user.id]==1) )) {
       var _area = getAreaById(GAME.mustConquer);
       if (_area.capital == 1) {
         sendConquestCapital(GAME.mustConquer, function(response){
           //console.log(arguments);
           //console.log(response);
+          console.log(response.conquest_result, 'Ответ на захват')
           if (response.conquest_result == 'retry') {
-            //alert('повтор!');
+            console.log('Ходит игрок', GAME.next_turn, getUserById(GAME.next_turn).name, getUserById(GAME.next_turn).color);
+            console.log('повтор!', $('#area-'+GAME.mustConquer), $('#area-'+GAME.mustConquer).size());
             setTimeout(function(){
-              $('#area-'+GAME.mustConquer).click();
-            }, 1000)
+              hidePoppups(function(){
+                $('#area-'+GAME.mustConquer).click();
+              }) 
+            }, 8000);
           }
         })
       } else {
