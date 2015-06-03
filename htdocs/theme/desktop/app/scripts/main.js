@@ -87,8 +87,13 @@ $('.areas .countur svg path').hover(function(){
   $(this).closest('.area').toggleClass('active');
   if ($(this).closest('.area').data('info')) {
     var _points = $(this).closest('.area').data('info').points || 0;
-    //var _sgt = 
-    $('.infowindow-holder .infowindow-small').text(_points);
+    //var _sgt =
+    if ($(this).closest('.area').data('info').capital == 1) {
+        var _usr = getUserById($(this).closest('.area').data('info').user_id)
+        $('.infowindow-holder .infowindow-small').text('Столица игрока '+_usr.name+', '+_points);
+    } else {
+        $('.infowindow-holder .infowindow-small').text(_points);        
+    }
     $('.infowindow-holder').toggle();
   }
 });

@@ -19,11 +19,6 @@ function startQuizeTimer() {
   }, 1000)
 }
 
-/*stage2_tours = [
-[{4:false},{5:true},{6:true}],
-[{6:true},{4:false},{5:true}]
-]*/
-
 function quizeExpire() {
   clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
@@ -142,12 +137,14 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
-        
+        console.log('ВНИМАНИЕ!', GAME.status, GAME.stage);
         if (GAME.stage==0) {
           takingLand();
         }
         if (GAME.stage==1) {
-          takingLand();
+          setTimeout(function(){
+            takingLand();            
+          }, 3000)
         }
         if (GAME.stage==2) {
           whoTurn();
@@ -401,14 +398,38 @@ renderNormalQuestion = function(conqu, enemy_id){
       startNormalTimer();
       
       GAME.duel.conqu, GAME.duel.def
+      if (GAME.mustConquer) {
+        console.log(GAME.mustConquer);
+      }
       var _note = '';
-      if (!GAME.duel || GAME.duel.size==0) {
+      if (GAME.duel || GAME.duel.length==0) {
         var _user = getUserById(enemy_id);
-        _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>'
+        if (GAME.mustConquer != 0) {
+          var _zone = getAreaById(GAME.mustConquer);
+          if (_zone.capital == 1) {
+            _note = 'Вы напали на столицу игрока: <span class="'+_user.color+'">'+_user.name+'</span><br>Осталось жизней столицы: '+_zone.lives;
+          }else {
+            _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';
+          }
+        } else {
+          _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';       
+        }
       }
       if (GAME.duel.conqu == GAME.user.id) {
         var _user = getUserById(GAME.duel.def);
-        _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>'
+        console.log(GAME.mustConquer);
+        if (GAME.mustConquer != 0) {
+          console.log(GAME.mustConquer);
+          var _zone = getAreaById(GAME.mustConquer);
+          console.log('zone!', _zone)
+          if (_zone.capital == 1) {
+            _note = 'Вы напали на столицу игрока: <span class="'+_user.color+'">'+_user.name+'</span><br>Осталось жизней столицы: '+_zone.lives;
+          } else {
+            _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';
+          }
+        } else {
+          _note = 'Вы напали на игрока: <span class="'+_user.color+'">'+_user.name+'</span>';       
+        }
       }
       
       if (GAME.duel.def == GAME.user.id) {
@@ -492,6 +513,9 @@ whoTurn = function() {
         //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
+        if (GAME.next_turn!=0) {
+          GAME.mustConquer = 0;
+        }
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
           sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
@@ -509,8 +533,11 @@ whoTurn = function() {
             //if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
+          } else {
+            var _conq = getUserById(GAME.duel.conqu);
+            var _def = getUserById(GAME.duel.def);
+            sexyAlert('Подождите, пока закончится противостояние игроков <span class="'+_conq.color+'">'+_conq.name+'</span> и <span class="'+_def.color+'">'+_def.name+'</span>', 10)
           }
-          
         }
         //getResultQuestion();
         //setTimeout(whoTurn, 1000);
