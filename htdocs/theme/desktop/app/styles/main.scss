@@ -1106,6 +1106,40 @@ body {
       }
     }
     
+    @keyframes smallsmoke {
+      100% {
+        background-position: -470px;
+      }
+    }
+    @keyframes bigsmoke {
+      100% {
+        background-position: -740px;
+      }
+    }
+    .lives-2 {
+      .lives {
+        width: 47px;
+        height: 69px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background: url('../images/smoke-small.png');
+        animation: smallsmoke 1.5s steps(10) infinite;
+      }
+    }
+    .lives-1 {
+      .lives {
+        width: 74px;
+        height: 92px;
+        position: absolute;
+        transform: translateX(-13px) translateY(-23px);
+        top: 0px;
+        left: 0px;
+        background: url('../images/smoke-big.png');
+        animation: bigsmoke 1.5s steps(10) infinite;
+      }
+    }
+    
     &.active {
       .active.empty {
         z-index: 900000;
@@ -1188,6 +1222,10 @@ body {
       width: 240px;
       height: 171px;
     }
+    .lives {
+      top: 10px;
+      left: 79px;
+    }
   }
   #area-14 {
     left: 307px;
@@ -1215,6 +1253,10 @@ body {
     .glow {
       transform: translate(0, 5px);
     }
+    .lives {
+      top: 100px;
+      left: 89px;
+    }
   }
   #area-13 {
     left: 665px;
@@ -1238,6 +1280,10 @@ body {
     .countur {
       width: 258px;
       height: 300px;
+    }
+    .lives {
+      top: 154px;
+      left: 124px;
     }
   }
   #area-12 {
@@ -1263,6 +1309,10 @@ body {
       width: 529px;
       height: 345px;
     }
+    .lives {
+      top: 146px;
+      left: 166px;
+    }
   }
   #area-11 {
     left: 1362px;
@@ -1286,6 +1336,10 @@ body {
     .countur {
       width: 415px;
       height: 414px;
+    }
+    .lives {
+      top: 82px;
+      left: 205px;
     }
   }
   #area-10 {
@@ -1314,6 +1368,10 @@ body {
     .glow {
       transform: translate(0px, 9px);
     }
+    .lives {
+      top: 78px;
+      left: 85px;
+    }
   }
   #area-9 {
     left: 1083px;
@@ -1337,6 +1395,10 @@ body {
     .countur {
       width: 309px;
       height: 215px;
+    }
+    .lives {
+      top: 42px;
+      left: 172px;
     }
   }
   #area-8 {
@@ -1365,6 +1427,10 @@ body {
     .glow {
       transform: translate(0px, 7px);
     }
+    .lives {
+      top: 62px;
+      left: 142px;
+    }
   }
   #area-7 {
     left: 1207px;
@@ -1388,6 +1454,10 @@ body {
     .countur {
       width: 268px;
       height: 237px;
+    }
+    .lives {
+      top: 12px;
+      left: 142px;
     }
   }
   #area-6 {
@@ -1413,6 +1483,10 @@ body {
       width: 243px;
       height: 212px;
     }
+    .lives {
+      top: 16px;
+      left: 102px;
+    }
   }
   #area-5 {
     left: 1350px;
@@ -1436,6 +1510,10 @@ body {
     .countur {
       width: 363px;
       height: 289px;
+    }
+    .lives {
+      top: 56px;
+      left: 172px;
     }
   }
   #area-4 {
@@ -1464,6 +1542,10 @@ body {
     .glow {
       transform: translate(0, 8px);
     }
+    .lives {
+      top: 8px;
+      left: 108px;
+    }
   }
   #area-3 {
     left: 718px;
@@ -1490,6 +1572,10 @@ body {
     }
     .glow {
       transform: translate(1px, 4px);
+    }
+    .lives {
+      top: 45px;
+      left: 106px;
     }
   }
   #area-2 {
@@ -1518,6 +1604,10 @@ body {
     .glow {
       transform: translate(0, 17px);
     }
+    .lives {
+      top: 15px;
+      left: 106px;
+    }
   }
   #area-1 {
     left: 218px;
@@ -1544,6 +1634,10 @@ body {
     }
     .glow {
       transform: translate(0, 13px);
+    }
+    .lives {
+      top: 25px;
+      left: 76px;
     }
   }
 }

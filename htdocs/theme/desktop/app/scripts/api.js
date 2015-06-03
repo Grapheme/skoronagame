@@ -370,7 +370,7 @@ getResultQuestion = function(){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
                     showQuestionResult(response);
                     tryToConquer();
-                    GAME.question = {};
+                    //GAME.question = {};
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
@@ -393,7 +393,7 @@ sendQuestionAnswer = function(callback){
     data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
     dataType: 'json',
     success: function (response) {
-      if (response.status) {
+      if (response.status && response.status == true) {
         //console.log(response);
         callback();
       } else {

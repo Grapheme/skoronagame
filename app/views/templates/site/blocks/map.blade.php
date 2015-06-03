@@ -45,6 +45,7 @@
                 {{ File::get(public_path(Config::get('site.theme_path').'/images/'.$i.'_glow.svg')) }}
             </div>
             <div class="objects"></div>
+            <div class="lives"></div>
         </div>
         @endfor
     </div>
