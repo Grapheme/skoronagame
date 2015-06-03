@@ -412,6 +412,23 @@ class GameController extends BaseController {
                                 'hasWinnersCalculate' => (int)$hasWinnersCalculate,
                                 'current_user' => Auth::user()->id));
 
+                        elseif($duel['def'] == Auth::user()->id):
+                            $hasWinnersCalculate = FALSE;
+
+                            Log::info('hasWinnersCalculate', array('method' => 'getResultQuestion',
+                                'message' => 'Запрос от защищающегося. Расчет победителей недоступен',
+                                'hasWinnersCalculate' => (int)$hasWinnersCalculate,
+                                'current_user' => Auth::user()->id));
+
+                        endif;
+                        if($hasWinnersCalculate === FALSE && ($this->isBot($duel['conqu']) || $this->isBot($duel['def']))):
+                            $hasWinnersCalculate = TRUE;
+
+                            Log::info('hasWinnersCalculate', array('method' => 'getResultQuestion',
+                                'message' => 'Запрос от защищающегося. В дуели есть боты. Расчет победителей доступен',
+                                'hasWinnersCalculate' => (int)$hasWinnersCalculate,
+                                'current_user' => Auth::user()->id));
+
                         endif;
                     endif;
                 endif;
