@@ -20,10 +20,11 @@ GAME.reInitialize = function(){
     GAME.user_step = 0;                                     // id пользователя который сейчас делает шаг
     GAME.conquerorZone = 0                                  // номер зоны для завоевания
     GAME.isCapital = 0;                                     // признак того что нападают на сталицу
-    GAME.timer = {timer_object: 0, time: 10};
+    GAME.timer = {timer_object: 0, time: 3};
     GAME.game_timer = 0;                                    // таймер игры
     GAME.bots_timer = 0                                     // таймер ботов
     GAME.time_bot = 5;                                      // время в секундах до инициалицации ботов
+    GAME.time_game = 5000;                                  // интервал обновления игры
 }
 /*
  Метод получает информацию о текущей игре или инициирует новую
@@ -676,9 +677,9 @@ GAME.startBotTimer = function(){
     }, 1000);
 }
 GAME.startGameTimer = function(){
-    GAME.game_timer = setInterval(function(){
+    GAME.game_timer = setInterval(function () {
         GAME.getGame();
-    },5000);
+    }, GAME.time_game);
 }
 /*
  Метод проверяет "не пустая" ли карта
