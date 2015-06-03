@@ -212,6 +212,10 @@ class GameController extends BaseController {
     /****************************************************************************/
     public function indexGame() {
 
+        if (File::exists(storage_path('logs/laravel.log'))):
+            File::delete(storage_path('logs/laravel.log'));
+        endif;
+
         $games = Game::where('status', '!=', $this->game_statuses[3])->with(array('users' => function ($query) {
             $query->where('user_id', Auth::user()->id);
         }))->get();
@@ -231,6 +235,10 @@ class GameController extends BaseController {
     }
 
     public function demoGame() {
+
+        if (File::exists(storage_path('logs/laravel.log'))):
+            File::delete(storage_path('logs/laravel.log'));
+        endif;
 
         $games = Game::where('status', '!=', $this->game_statuses[3])->with(array('users' => function ($query) {
             $query->where('user_id', Auth::user()->id);
@@ -349,7 +357,16 @@ class GameController extends BaseController {
                                 Log::info('createStepInSecondStage', array('method' => 'getNormalQuestion',
                                     'message' => 'Дуели не существует. Пользователь совершил ход',
                                     'next_step' => $this->getNextStep(),
-                                    'current_user' => Auth::user()->id));
+                                    'current_user' => Auth::user()->id,
+                                    'stage' => $this->game->stage));
+                            else:
+
+                                Log::info('createStepInSecondStage', array('method' => 'getNormalQuestion',
+                                    'message' => 'Дуель существует. Пользователь не соверает ход',
+                                    'next_step' => $this->getNextStep(),
+                                    'duel' => $duel,
+                                    'current_user' => Auth::user()->id,
+                                    'stage' => $this->game->stage));
 
                             endif;
 
@@ -368,7 +385,8 @@ class GameController extends BaseController {
                                 'users' => Input::get('users'), 'current_user' => Auth::user()->id));
 
                             $this->nextStep();
-                            Log::info('nextStep', array('method' => 'getNormalQuestion', 'message' => 'Обнуляем ход. Получаем нормальный вопрос',
+                            Log::info('nextStep', array('method' => 'getNormalQuestion',
+                                'message' => 'Обнуляем ход. Получаем нормальный вопрос',
                                 'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
                         endif;
                         $question = GameUserQuestions::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->where('status', 0)->with('question')->first();
@@ -588,7 +606,7 @@ class GameController extends BaseController {
                                             Log::info('conqu.available_steps = 1', array('method' => 'getResultQuestion',
                                                 'message' => 'Нападающий выиграл сражение.',
                                                 'current_user' => Auth::user()->id,
-                                                'stage'=> $this->game->stage));
+                                                'stage' => $this->game->stage));
                                         endif;
                                     endif;
 
@@ -630,7 +648,8 @@ class GameController extends BaseController {
 
                     Log::info('game_winners', array('method' => 'getResultQuestion',
                         'message' => 'Опеределились победители.',
-                        'places' => $this->json_request['responseText'], 'current_user' => Auth::user()->id));
+                        'places' => $this->json_request['responseText'], 'current_user' => Auth::user()->id,
+                        'next_step' => $this->getNextStep(), 'stage' => $this->game->stage));
 
                 endif;
             endif;
@@ -692,10 +711,11 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('zone' => 'required'));
         if ($validation->passes()):
             if ($this->initGame()):
+                $zone_conquest = Input::get('zone');
                 if ($this->validGameStage(1)):
                     if ($this->changeGameUsersSteps()):
-                        if ($this->conquestTerritory(Input::get('zone'))):
-                            $points = $this->getTerritoryPoints(Input::get('zone'));
+                        if ($this->conquestTerritory($zone_conquest)):
+                            $points = $this->getTerritoryPoints($zone_conquest);
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             if ($this->user->status == 1):
                                 if ($this->user->available_steps == 2):
@@ -703,7 +723,7 @@ class GameController extends BaseController {
                                     $this->nextStep($user_id);
 
                                     Log::info('available_steps == 2', array('method' => 'sendConquestTerritory',
-                                        'message' => 'nextStep',
+                                        'message' => 'Ход переходит игроку занявшему 2-е место',
                                         'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
 
                                     if ($this->isBot($user_id)):
@@ -711,7 +731,7 @@ class GameController extends BaseController {
                                         $this->nextStep();
 
                                         Log::info('botConquestTerritory', array('method' => 'sendConquestTerritory',
-                                            'message' => 'nextStep',
+                                            'message' => 'Бот занявший 2-е место выбрал территории. Ход сбрасывается.',
                                             'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
 
                                     endif;
@@ -719,7 +739,7 @@ class GameController extends BaseController {
                                     $this->nextStep();
 
                                     Log::info('available_steps != 2', array('method' => 'sendConquestTerritory',
-                                        'message' => 'nextStep',
+                                        'message' => 'Ход сбрасывается. Походил игрок занявший 2-е место.',
                                         'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
                                 endif;
                             endif;
@@ -754,10 +774,10 @@ class GameController extends BaseController {
                     endif;
                 elseif ($this->validGameStage(2)):
                     if ($this->changeGameUsersSteps()):
-                        if ($this->conquestTerritory(Input::get('zone'))):
-                            $points = $this->getTerritoryPoints(Input::get('zone'));
+                        if ($this->conquestTerritory($zone_conquest)):
+                            $points = $this->getTerritoryPoints($zone_conquest);
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
-                            $this->changeTerritoryPoints(Input::get('zone'), 200);
+                            $this->changeTerritoryPoints($zone_conquest, 200);
                             $users = GameUser::where('game_id', $this->game->id)->where('status', '!=', 99)->where('status', '!=', 100)->get();
                             $this->changeGameUsersStatus(2, $users);
                             $this->json_request['responseText'] = 'Вы заняли территорию.';
@@ -777,7 +797,7 @@ class GameController extends BaseController {
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
                     if ($this->changeGameUsersSteps()):
-                        $post = Input::all();
+                        $zone_conqueror = Input::get('zone');
 
                         Log::info('changeGameUsersSteps', array('method' => 'sendConquestCapital',
                             'message' => 'У пользователя отобралось доступное очко хода',
@@ -787,12 +807,12 @@ class GameController extends BaseController {
                             'message' => 'Запуск скрипта захвата столицы',
                             'current_user' => Auth::user()->id));
 
-                        $capitalLives = $this->conquestCapital($post['zone']);
+                        $capitalLives = $this->conquestCapital($zone_conqueror);
                         if ($capitalLives === 0):
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
                             $this->createDuel();
-                            $points = $this->getTerritoryPoints($post['zone']);
+                            $points = $this->getTerritoryPoints($zone_conqueror);
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             $this->nextStepInSecondStage();
 
@@ -827,7 +847,7 @@ class GameController extends BaseController {
                             Log::info('capitalLives > 0', array('method' => 'sendConquestCapital',
                                 'message' => 'У столицы остались жизни',
                                 'capitalLives' => $capitalLives,
-                                'zone' => $post['zone'], 'current_user' => Auth::user()->id));
+                                'zone' => $zone_conqueror, 'current_user' => Auth::user()->id));
 
                             $this->nextStep($this->user->user_id);
 
@@ -1048,12 +1068,24 @@ class GameController extends BaseController {
                 $current_tour++;
 
                 Log::info('current_tour < 3', array('method' => 'createStepInSecondStage',
-                    'message' => 'Наступил следующий тур', 'current_tour' => $current_tour,
+                    'message' => 'При фиксации хода наступил следующий тур', 'current_tour' => $current_tour,
+                    'user' => $userID, 'stage' => $this->game->stage,
+                    'current_user' => Auth::user()->id));
+            else:
+
+                Log::info('current_tour < 3', array('method' => 'createStepInSecondStage',
+                    'message' => 'При фиксации хода НЕ наступил следующий тур', 'current_tour' => $current_tour,
                     'current_user' => Auth::user()->id));
 
             endif;
             if (isset($stage2_tours[$current_tour][$userID]) && $stage2_tours[$current_tour][$userID] == FALSE):
                 $stage2_tours[$current_tour][$userID] = TRUE;
+
+                Log::info('user_step == TRUE', array('method' => 'createStepInSecondStage',
+                    'message' => 'Зафиксировался шаг игрока', 'current_tour' => $current_tour,
+                    'user' => $userID, 'stage' => $this->game->stage,
+                    'current_user' => Auth::user()->id));
+
             endif;
             $json_settings['current_tour'] = $current_tour;
             $json_settings['stage2_tours'] = $stage2_tours;
@@ -1715,7 +1747,7 @@ class GameController extends BaseController {
 
     private function botAnswerNormalQuestion($bot_id, $current_answer, $question_group_id) {
 
-        $answer = mt_rand() == 1 ? $current_answer : 99999;
+        $answer = (mt_rand() == 1) ? $current_answer : 99999;
         if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $question_group_id)->where('user_id', $bot_id)->where('status', 0)->first()):
             $botGameQuestion->status = 1;
             $botGameQuestion->answer = $answer;
@@ -1744,14 +1776,16 @@ class GameController extends BaseController {
 
             $this->nextStep($winners_id[0]);
 
-            Log::info('Сохраняем ход для бота. Бот занял 1-е место', array('method' => 'isBotNextStepStage1', 'message' => 'nextStep',
+            Log::info('Сохраняем ход для бота. Бот занял 1-е место', array('method' => 'isBotNextStepStage1',
+                'message' => 'nextStep',
                 'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
 
             $this->botConquestTerritory($winners_id[0]);
             $this->botConquestTerritory($winners_id[0]);
             $this->nextStep($winners_id[1]);
 
-            Log::info('Переводим ход на слудующего игрока. Бот отходил', array('method' => 'isBotNextStepStage1', 'message' => 'nextStep',
+            Log::info('Переводим ход на слудующего игрока. Бот отходил', array('method' => 'isBotNextStepStage1',
+                'message' => 'nextStep',
                 'nextStep' => $this->getNextStep(), 'current_user' => Auth::user()->id));
 
             if ($this->isBot($winners_id[1])):
@@ -1789,6 +1823,9 @@ class GameController extends BaseController {
                             'message' => 'Ходит бот, но у него статус НЕ 0', 'bot_id' => $botConqueror,
                             'current_user' => Auth::user()->id, 'stage' => $this->game->stage));
 
+                        $this->closeGameUsersQuestions();
+                        $this->resetGameUsers();
+                        $this->createDuel();
                         $this->nextStepInSecondStage();
 
                         Log::info('nextStepInSecondStage. ERROR', array('method' => 'isBotNextStepStage2',
@@ -1797,7 +1834,7 @@ class GameController extends BaseController {
 
                         return FALSE;
                     endif;
-
+                    $this->closeGameUsersQuestions();
                     $this->resetGameUsers();
                     $this->createStepInSecondStage($botConqueror);
                     $this->setStepInSecondStageJSON();
@@ -1952,6 +1989,9 @@ class GameController extends BaseController {
                                                     'stage' => $this->game->stage));
 
                                                 $this->gamerDefenceTerritory($zoneConqueror);
+                                                $this->closeGameUsersQuestions();
+                                                $this->resetGameUsers();
+                                                $this->createDuel();
                                                 $this->nextStepInSecondStage();
 
                                                 Log::info('nextStepInSecondStage', array('method' => 'isBotNextStepStage2',
@@ -1973,6 +2013,9 @@ class GameController extends BaseController {
 
                                         $this->setGameUserAvailableSteps($botConqueror, 1);
                                         $this->botConquestTerritory($botConqueror, $zoneConqueror);
+                                        $this->closeGameUsersQuestions();
+                                        $this->resetGameUsers();
+                                        $this->createDuel();
                                         $this->nextStepInSecondStage();
 
                                         Log::info('nextStepInSecondStage', array('method' => 'isBotNextStepStage2',
@@ -1990,6 +2033,8 @@ class GameController extends BaseController {
                                         'stage' => $this->game->stage));
 
                                     $this->gamerDefenceTerritory($zoneConqueror);
+                                    $this->closeGameUsersQuestions();
+                                    $this->resetGameUsers();
                                     $this->nextStepInSecondStage();
 
                                     Log::info('nextStepInSecondStage', array('method' => 'isBotNextStepStage2',
@@ -2004,6 +2049,7 @@ class GameController extends BaseController {
                                     'current_user' => Auth::user()->id,
                                     'stage' => $this->game->stage));
 
+                                $this->resetGameUsers();
                                 $this->botCreateNormalQuestion($duel);
                             endif;
                         endif;
@@ -2420,6 +2466,40 @@ class GameController extends BaseController {
             $json_settings = json_decode($this->game->json_settings, TRUE);
             $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : array();
             $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : 0;
+
+            if ($current_tour === FALSE || $stage2_tours === FALSE):
+                $this->nextStep();
+                $this->finishGame(0);
+
+                Log::info('finishGame (0)', array('method' => 'createStepInSecondStage',
+                    'message' => 'Игра завершилась. Отсутствуют данные current_tour или stage2_tours',
+                    'current_user' => Auth::user()->id));
+
+                $this->reInitGame();
+            endif;
+
+            $nextTour = TRUE;
+            foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                if ($status == FALSE):
+                    $nextTour = FALSE;
+                    break;
+                endif;
+            endforeach;
+
+            if ($nextTour && $current_tour < 3):
+                $current_tour++;
+
+                Log::info('current_tour < 3', array('method' => 'nextStepInSecondStage',
+                    'message' => 'При переходе хода наступил следующий тур', 'current_tour' => $current_tour,
+                    'current_user' => Auth::user()->id));
+            else:
+
+                Log::info('current_tour < 3', array('method' => 'nextStepInSecondStage',
+                    'message' => 'При переходе хода НЕ наступил следующий тур', 'current_tour' => $current_tour,
+                    'current_user' => Auth::user()->id));
+
+            endif;
+
             if (isset($stage2_tours[$current_tour])):
                 if ($current_tour < 3):
                     foreach ($stage2_tours[$current_tour] as $user_id => $status):
@@ -2496,39 +2576,43 @@ class GameController extends BaseController {
         return FALSE;
     }
 
-    private function removeUserInGame($userID = NULL) {
+    private function removeUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
 
-        if(is_null($userID)):
-            $userID = Auth::user()->id;
+        if (is_null($remove_user_id)):
+            $remove_user_id = Auth::user()->id;
+        endif;
+        if (is_null($set_new_owner)):
+            $set_new_owner = -1;
         endif;
 
-        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $userID)->first()):
-            $user->status = 99;
+        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->first()):
+            $user->status = $set_status;
             $user->available_steps = 0;
             $user->make_steps = 0;
             $user->save();
             $user->touch();
 
             Log::info('user.status', array('method' => 'removeUserInGame',
-                'message' => 'Пользователю выставился статус 99',
-                'user' => $userID, 'status' => $user->status, 'stage' => $this->game->stage));
+                'message' => 'Пользователю выставился статус ' . $set_status,
+                'user' => $remove_user_id, 'status' => $user->status, 'stage' => $this->game->stage));
 
         endif;
 
-        GameMap::where('game_id', $this->game->id)->where('user_id', $userID)
-            ->update(array('user_id' => -1, 'capital' => 0, 'points' => 0, 'status' => 99,
-                'json_settings' => '{"color":"black"}'));
+        GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)
+            ->update(array('user_id' => $set_new_owner, 'capital' => 0, 'points' => 0, 'status' => $set_status,
+                'json_settings' => '{"color":"' . $set_color . '"}'));
 
         Log::info('stage2_tours', array('method' => 'removeUserInGame',
-            'message' => 'Территории пользователя помечаны как 99. Цвет черный.',
-            'user' => $userID, 'stage' => $this->game->stage));
+            'message' => 'Новый владелец ' . $set_new_owner,
+            'zones_color' => $set_color,
+            'user' => $remove_user_id, 'stage' => $this->game->stage));
 
         if ($this->validGameStage(2)):
             $json_settings = json_decode($this->game->json_settings, TRUE);
             if (isset($json_settings['stage2_tours']) && !empty($json_settings['stage2_tours'])):
                 foreach ($json_settings['stage2_tours'] as $tour => $users_steps):
                     foreach ($users_steps as $user_id => $status):
-                        if ($user_id == $userID):
+                        if ($user_id == $remove_user_id):
                             $json_settings['stage2_tours'][$tour][$user_id] = TRUE;
                         endif;
                     endforeach;
@@ -2536,7 +2620,7 @@ class GameController extends BaseController {
 
                 Log::info('stage2_tours', array('method' => 'removeUserInGame',
                     'message' => 'Шаги пользователя помечанные как TRUE',
-                    'user' => $userID, 'stage2_tours' => $json_settings['stage2_tours'],
+                    'user' => $remove_user_id, 'stage2_tours' => $json_settings['stage2_tours'],
                     'stage' => $this->game->stage));
 
                 $this->game->json_settings = json_encode($json_settings);
