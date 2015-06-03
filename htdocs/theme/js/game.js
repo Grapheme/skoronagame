@@ -466,6 +466,12 @@ GAME.parseGameResponse = function(){
     GAME.status = GAME.response.game_status;
     GAME.stage = GAME.response.game_stage;
     GAME.user_step = GAME.response.settings.next_step;
+
+    $("#game-number").html(GAME.game_id);
+    $("#game-status").html(GAME.status);
+    $("#game-stage").html(GAME.stage);
+    $("#next-step-id").html(GAME.user_step);
+
     GAME.settings = GAME.response.settings;
     GAME.game_owner = GAME.response.game_owner;
     $.each(GAME.response.users,function(index, value){
@@ -474,6 +480,11 @@ GAME.parseGameResponse = function(){
             $("#js-user-response").html(JSON.stringify(GAME.user));
         }
     });
+
+    $("#user-color").html(GAME.user.color);
+    $("#user-available-steps").html(GAME.user.available_steps);
+    $("#user-make-steps").html(GAME.user.make_steps);
+
     GAME.steps = Math.abs(GAME.user.available_steps - GAME.user.make_steps);
     if(GAME.bots_timer == 0 && GAME.user.id == GAME.game_owner)
         GAME.startBotTimer();

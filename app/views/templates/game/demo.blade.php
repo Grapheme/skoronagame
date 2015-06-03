@@ -57,6 +57,15 @@ $game_id = is_object($game) ? $game->id : 0;
 @stop
 @section('json_response')
     <hr>
+    <p style="clear: both;">ИГРА</p>
+
+    <p style="clear: both;">Текущая игра: <span id="game-number">{{ $game_id }}</span></p>
+    <p style="clear: both;">Мой цвет: <span id="user-color"></span></p>
+    <p style="clear: both;">Текущий ходит: <span id="next-step-id"></span></p>
+    <p style="clear: both;">Текущий статус: <span id="game-status"></span></p>
+    <p style="clear: both;">Текущий этап: <span id="game-stage"></span></p>
+    <p style="clear: both;">Доступно ходов: <span id="user-available-steps"></span></p>
+    <p style="clear: both;">Сделано ходов: <span id="user-make-steps"></span></p>
 
     <p style="clear: both;">Игрок</p>
     <textarea id="js-user-response" style="width: 800px; height: 100px;"></textarea>
