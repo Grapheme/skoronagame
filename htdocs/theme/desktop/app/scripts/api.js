@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//10                                       // id игры
+GAME.game_id = 10;//10                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -255,7 +255,7 @@ function parseGameData(response) {
     }
     last_stage = GAME.stage;
     GAME.status = response.responseJSON.game_status;
-    GAME.map = response.responseJSON.map;
+    GAME.map = response.responseJSON.map || GAME.map;
     /*if (response.responseJSON.disconnect_user_timeout) {
         idleWait = (response.responseJSON.disconnect_user_timeout||30)*1000;
         idleUrl = response.responseJSON.disconnect_user_url;
