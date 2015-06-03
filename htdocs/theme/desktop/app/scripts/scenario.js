@@ -142,7 +142,9 @@ function matchmaking() {
           takingLand();
         }
         if (GAME.stage==1) {
-          takingLand();
+          setTimeout(function(){
+            takingLand();            
+          }, 3000)
         }
         if (GAME.stage==2) {
           whoTurn();
