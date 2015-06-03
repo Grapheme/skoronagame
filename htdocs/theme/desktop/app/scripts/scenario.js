@@ -357,6 +357,16 @@ function renderMap(nodelay) {
         } else {
           $area.removeClass('my');          
         }
+        if (value.capital == 1 && value.lives == 2) {
+          $area.addClass('lives-2');
+        } else {
+          $area.removeClass('lives-2');
+        }
+        if (value.capital == 1 && value.lives == 1) {
+          $area.addClass('lives-1');
+        } else {
+          $area.removeClass('lives-1');
+        }
       } else {
         $area.removeClass('reserved');
         $area.removeClass('my');

@@ -56,6 +56,26 @@ var getGame = function(callback){
     });
 };
 
+getBots = function (){
+    $.ajax({
+        type: "POST",
+        url: '/game/add-bots',
+        data: {game: GAME.game_id},
+        dataType: 'json',
+        beforeSend: function () {},
+        success: function (response) {
+            if (response.status) {
+                GAME.response = response.responseJSON;
+                $("#js-server-response").html(JSON.stringify(GAME.response));
+            }
+            $("#js-server-notification").html(response.responseText);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            clearInterval(GAME.game_timer);
+        }
+    });
+}
+
 playerDisconect = function() {
     $.ajax({
         type: "POST",
@@ -370,7 +390,7 @@ getResultQuestion = function(){
                     console.log('РЕЗУЛЬТАТ!!', response.responseJSON.result)
                     showQuestionResult(response);
                     tryToConquer();
-                    GAME.question = {};
+                    //GAME.question = {};
                     /*GAME.question = {};
                     GAME.users_question = [];
                     GAME.steps = GAME.response.result[GAME.user.id];
@@ -393,7 +413,7 @@ sendQuestionAnswer = function(callback){
     data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
     dataType: 'json',
     success: function (response) {
-      if (response.status) {
+      if (response.status && response.status == true) {
         //console.log(response);
         callback();
       } else {
@@ -1061,6 +1081,16 @@ function renderMap(nodelay) {
           $area.addClass('my');
         } else {
           $area.removeClass('my');          
+        }
+        if (value.capital == 1 && value.lives == 2) {
+          $area.addClass('lives-2');
+        } else {
+          $area.removeClass('lives-2');
+        }
+        if (value.capital == 1 && value.lives == 1) {
+          $area.addClass('lives-1');
+        } else {
+          $area.removeClass('lives-1');
         }
       } else {
         $area.removeClass('reserved');
