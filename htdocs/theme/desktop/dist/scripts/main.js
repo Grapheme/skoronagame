@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 10;//10                                       // id игры
+GAME.game_id = 0;//10                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -724,11 +724,6 @@ function startQuizeTimer() {
   }, 1000)
 }
 
-/*stage2_tours = [
-[{4:false},{5:true},{6:true}],
-[{6:true},{4:false},{5:true}]
-]*/
-
 function quizeExpire() {
   clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
@@ -847,7 +842,7 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
-        
+        console.log('ВНИМАНИЕ!', GAME.status, GAME.stage);
         if (GAME.stage==0) {
           takingLand();
         }

@@ -19,11 +19,6 @@ function startQuizeTimer() {
   }, 1000)
 }
 
-/*stage2_tours = [
-[{4:false},{5:true},{6:true}],
-[{6:true},{4:false},{5:true}]
-]*/
-
 function quizeExpire() {
   clearInterval(quiz_interval)
   if ($('.numpad').is(':visible')) {
@@ -142,7 +137,7 @@ function matchmaking() {
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
-        
+        console.log('ВНИМАНИЕ!', GAME.status, GAME.stage);
         if (GAME.stage==0) {
           takingLand();
         }
