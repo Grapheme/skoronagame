@@ -891,7 +891,7 @@ function matchmaking() {
           }, 1000);
           setTimeout(function(){
             takingLand();            
-          }, 1200)
+          }, 12000)
         }
         if (GAME.stage==2) {
           whoTurn();
