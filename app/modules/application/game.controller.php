@@ -948,10 +948,10 @@ class GameController extends BaseController {
 
     public function sendDisconnectUser() {
 
-        $validation = Validator::make(Input::all(), array('user' => 'required|numeric'));
+        $validation = Validator::make(Input::all(), array('user' => 'numeric'));
         if ($validation->passes()):
             if ($this->initGame()):
-                $this->removeUserInGame();
+                $this->dropUserInGame(Input::get('user'));
                 $this->json_request['status'] = TRUE;
             endif;
         endif;
@@ -1187,6 +1187,11 @@ class GameController extends BaseController {
             'started_id' => Auth::user()->id, 'winner_id' => 0, 'status_begin' => 0,
             'date_begin' => '000-00-00 00:00:00', 'status_over' => 0, 'date_over' => '000-00-00 00:00:00',
             'json_settings' => json_encode(array('next_step' => 0))));
+
+        Log::info('createNewGame', array('method' => 'createNewGame',
+            'message' => 'Создана новая игра',
+            'game_id' => $this->game->id, 'current_user' => Auth::user()->id));
+
         if ($this->game):
             self::joinNewGame();
             $this->reInitGame();
@@ -1685,7 +1690,7 @@ class GameController extends BaseController {
                             'zone' => $conqueror_zone, 'current_user' => $bot_id, 'stage' => $this->game->stage,
                             'owner' => $conquest->user_id));
 
-                        $this->removeUserInGame($conquest->user_id);
+                        $this->dropUserInGame($conquest->user_id);
                         foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
                             if ($territory->capital == 1):
                                 $territory->points = 200;
@@ -2278,12 +2283,12 @@ class GameController extends BaseController {
                         'zone' => $zone, 'current_user' => $user_id, 'stage' => $this->game->stage,
                         'owner' => $conquest->user_id));
 
-                    Log::info('removeUserInGame', array('method' => 'conquestCapital',
+                    Log::info('dropUserInGame', array('method' => 'conquestCapital',
                         'message' => 'Запуск скрипта на исключение пользователя из игры',
                         'remove_user' => $conquest->user_id, 'current_user' => $user_id,
                         'stage' => $this->game->stage));
 
-                    $this->removeUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
+                    $this->dropUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
                     foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
                         if ($territory->capital == 1):
                             $territory->points = 200;
@@ -2753,8 +2758,9 @@ class GameController extends BaseController {
         return FALSE;
     }
 
-    private function removeUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
+    private function dropUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
 
+        $validDropUser = FALSE;
         if (is_null($remove_user_id)):
             $remove_user_id = Auth::user()->id;
         endif;
@@ -2762,57 +2768,69 @@ class GameController extends BaseController {
             $set_new_owner = -1;
         endif;
 
-        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->first()):
+        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->where('is_bot', 0)->whereNotIn('status', array(99, 100))->first()):
+            $validDropUser = TRUE;
+        endif;
+
+        if($validDropUser && is_object($user)):
             $user->status = $set_status;
             $user->available_steps = 0;
             $user->make_steps = 0;
             $user->save();
             $user->touch();
 
-            Log::info('user.status', array('method' => 'removeUserInGame',
+            Log::info('user.status', array('method' => 'dropUserInGame',
                 'message' => 'Пользователю выставился статус ' . $set_status,
                 'user' => $remove_user_id, 'status' => $user->status, 'stage' => $this->game->stage));
 
-        endif;
-        foreach(GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
-            $zone->user_id = $set_new_owner;
-            if($set_status == 100):
-                $zone->points = 0;
-            elseif($set_status != 100 && $zone->capital == 1):
-                $zone->points = 200;
-            endif;
-            $zone->capital = 0;
-            $zone->status = $set_status;
-            $zone->json_settings = '{"color":"' . $set_color . '"}';
-            $zone->save();
-            $zone->touch();
-        endforeach;
+            foreach(GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
+                $zone->user_id = $set_new_owner;
+                if($set_status == 100):
+                    $zone->points = 0;
+                elseif($set_status != 100 && $zone->capital == 1):
+                    $zone->points = 200;
+                endif;
+                $zone->capital = 0;
+                $zone->status = $set_status;
+                $zone->json_settings = '{"color":"' . $set_color . '"}';
+                $zone->save();
+                $zone->touch();
+            endforeach;
 
-        Log::info('stage2_tours', array('method' => 'removeUserInGame',
-            'message' => 'Новый владелец ' . $set_new_owner,
-            'zones_color' => $set_color,
-            'user' => $remove_user_id, 'stage' => $this->game->stage));
-
-        if ($this->validGameStage(2)):
-            $json_settings = json_decode($this->game->json_settings, TRUE);
-            if (isset($json_settings['stage2_tours']) && !empty($json_settings['stage2_tours'])):
-                foreach ($json_settings['stage2_tours'] as $tour => $users_steps):
-                    foreach ($users_steps as $user_id => $status):
-                        if ($user_id == $remove_user_id):
-                            $json_settings['stage2_tours'][$tour][$user_id] = TRUE;
-                        endif;
+            Log::info('stage2_tours', array('method' => 'dropUserInGame',
+                'message' => 'Новый владелец ' . $set_new_owner,
+                'zones_color' => $set_color,
+                'user' => $remove_user_id, 'stage' => $this->game->stage));
+            if ($this->validGameStage(2)):
+                $json_settings = json_decode($this->game->json_settings, TRUE);
+                if (isset($json_settings['stage2_tours']) && !empty($json_settings['stage2_tours'])):
+                    foreach ($json_settings['stage2_tours'] as $tour => $users_steps):
+                        foreach ($users_steps as $user_id => $status):
+                            if ($user_id == $remove_user_id):
+                                $json_settings['stage2_tours'][$tour][$user_id] = TRUE;
+                            endif;
+                        endforeach;
                     endforeach;
-                endforeach;
 
-                Log::info('stage2_tours', array('method' => 'removeUserInGame',
-                    'message' => 'Шаги пользователя помечанные как TRUE',
-                    'user' => $remove_user_id, 'stage2_tours' => $json_settings['stage2_tours'],
-                    'stage' => $this->game->stage));
+                    Log::info('stage2_tours', array('method' => 'dropUserInGame',
+                        'message' => 'Шаги пользователя помечанные как TRUE',
+                        'user' => $remove_user_id, 'stage2_tours' => $json_settings['stage2_tours'],
+                        'stage' => $this->game->stage));
 
-                $this->game->json_settings = json_encode($json_settings);
-                $this->game->save();
-                $this->game->touch();
+                    $this->game->json_settings = json_encode($json_settings);
+                    $this->game->save();
+                    $this->game->touch();
+                endif;
             endif;
+            return TRUE;
+        else:
+
+            Log::info('not validDropUser', array('method' => 'dropUserInGame',
+                'message' => 'Исключить игрока не удалось. Или он бот, или был исключен из игры раньше',
+                'user' => $remove_user_id,
+                'stage' => $this->game->stage));
+
+            return FALSE;
         endif;
     }
 
