@@ -491,8 +491,7 @@ GAME.parseGameResponse = function(){
         GAME.startBotTimer();
     if(GAME.response.users.length == 3)
         clearInterval(GAME.bots_timer);
-    if(GAME.steps > 0)
-        GAME.getAdjacentZones();
+
     if(GAME.status == GAME.statuses[1]){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
@@ -500,9 +499,13 @@ GAME.parseGameResponse = function(){
         }
     }else if(GAME.status == GAME.statuses[2]){
         GAME.updateMap();
+        if(GAME.stage == 1 && GAME.steps > 0)
+            GAME.getAdjacentZones();
         if(GAME.user_step == 0 && GAME.stage == 1 && $.isEmptyObject(GAME.question)){
             GAME.getQuizQuestion();
         }
+        if(GAME.stage == 2 && GAME.user_step == GAME.user.id)
+            GAME.getAdjacentZones();
         if(GAME.stage == 2 && typeof GAME.settings.duel == "object"){
             if (GAME.settings.duel.conqu == GAME.user.id){
                 console.log('Я нападаю');
@@ -594,10 +597,14 @@ GAME.parseResultQuestionResponse = function(){
                     GAME.steps = 1;
                 }
             }
+            console.log('Доступно действий:' + GAME.steps);
+            console.log('Это столица? - ' + GAME.isCapital);
             if(GAME.steps > 0){
                 if(GAME.isCapital == 0){
-                    //GAME.sendConquestTerritory();
+                    console.log('Захват территории. Зона ' + GAME.conquerorZone);
+                    GAME.sendConquestTerritory();
                 }else{
+                    console.log('Захват столицы. Зона ' + GAME.conquerorZone);
                     GAME.sendConquestCapital();
                 }
             }
