@@ -120,6 +120,7 @@ function quizQuesionRender(players) {
 function takingLand() {
   getGame(function(){
     //console.log(GAME.status);
+    $('.infowindow.tour1').show();
     quizQuesionRender();
     //getUsersResultQuestions();
   });
@@ -143,8 +144,13 @@ function matchmaking() {
         }
         if (GAME.stage==1) {
           setTimeout(function(){
+            var _html = $('#help-stage-1').html();
+            sexyAlert(_html, 5, function(){}, 440);
+            $('#sexy-alert').find('.close').hide();
+          }, 1000);
+          setTimeout(function(){
             takingLand();            
-          }, 3000)
+          }, 7000)
         }
         if (GAME.stage==2) {
           whoTurn();
@@ -312,6 +318,7 @@ $('body').on('click', '#question-2 .a a', function(e){
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass(GAME.user.color);
+    $(this).addClass('active');
     sendQuestionAnswer(function(){
       getResultQuestion();
       //normalQuestionIsrender=false;
@@ -451,9 +458,29 @@ renderNormalQuestion = function(conqu, enemy_id){
       $('#question-2 .left').removeClass('red green blue');
       $('#question-2 .right').removeClass('red green blue');
       $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_left = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_left = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .left .ava .img').css({
+        'background-image': _photo_left
+      });
+      
       $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
       $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
+      
+      
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_right = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_right = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .right .ava .img').css({
+        'background-image': _photo_right
+      });
+      
       $('#question-2 .q').html(GAME.question.text);
       $('#question-2 .a').html('');
       $.each(GAME.question.answers, function(index, value){
@@ -477,6 +504,9 @@ whoTurn = function() {
       setTimeout(function(){
         $("body").trigger("mousemove");
       }, 1000)
+    }
+    if (GAME.user.status == 99) {
+      sexyAlert('Ваша столица захвачена,<br> игра продолжается между игроками <span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0]+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1]+'</span>', 900)
     }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');

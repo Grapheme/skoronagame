@@ -271,7 +271,10 @@ function parseGameData(response) {
     GAME.game_id = response.responseJSON.game_id;
     GAME.stage = response.responseJSON.game_stage;
     if (last_stage == 1 && GAME.stage==2) {
-        sexyAlert('Начался 2 этап!')
+        //sexyAlert('Начался 2 этап!')
+        var _html = $('#help-stage-2').html();
+        sexyAlert(_html, 5, function(){}, 440);
+        $('#sexy-alert').find('.close').hide();
     }
     last_stage = GAME.stage;
     GAME.status = response.responseJSON.game_status;

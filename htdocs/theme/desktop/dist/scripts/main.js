@@ -271,7 +271,10 @@ function parseGameData(response) {
     GAME.game_id = response.responseJSON.game_id;
     GAME.stage = response.responseJSON.game_stage;
     if (last_stage == 1 && GAME.stage==2) {
-        sexyAlert('Начался 2 этап!')
+        //sexyAlert('Начался 2 этап!')
+        var _html = $('#help-stage-2').html();
+        sexyAlert(_html, 5, function(){}, 440);
+        $('#sexy-alert').find('.close').hide();
     }
     last_stage = GAME.stage;
     GAME.status = response.responseJSON.game_status;
@@ -452,7 +455,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -468,13 +471,13 @@ $(document).bind('mousemove keydown scroll', function(){
     var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
     hidePoppups();
     setInterval(function(){
-        sexyAlert(text, 99999999999, function(){
-            sexyAlert(text, 99999999999, function(){
-                sexyAlert(text, 99999999999, function(){
-                    sexyAlert(text, 99999999999, function(){
-                        sexyAlert(text, 99999999999, function(){
-                            sexyAlert(text, 99999999999, function(){
-                                sexyAlert(text, 99999999999, function(){
+        sexyAlert(text, 99999, function(){
+            sexyAlert(text, 99999, function(){
+                sexyAlert(text, 99999, function(){
+                    sexyAlert(text, 99999, function(){
+                        sexyAlert(text, 99999, function(){
+                            sexyAlert(text, 99999, function(){
+                                sexyAlert(text, 99999, function(){
                                 
                                 });
                             });
@@ -483,8 +486,8 @@ $(document).bind('mousemove keydown scroll', function(){
                 });
             });
         });
-    }, 500);
-    sexyAlert(text, 99999999999);
+    }, 100);
+    sexyAlert(text, 99999);
     playerDisconect();
     idleState = true; 
   }, idleWait);
@@ -598,11 +601,13 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
-function sexyAlert(text, timeOut, callback) {
+function sexyAlert(text, timeOut, callback, width) {
   timeOut = timeOut || 3;
   callback = callback || function(){};
+  width = width || 320;
   
   if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    $('#sexy-alert .note').width(width);
     showPoppups();
     $('#sexy-alert .note').html(text);
     openFrame('sexy-alert');
@@ -845,6 +850,7 @@ function quizQuesionRender(players) {
 function takingLand() {
   getGame(function(){
     //console.log(GAME.status);
+    $('.infowindow.tour1').show();
     quizQuesionRender();
     //getUsersResultQuestions();
   });
@@ -868,8 +874,13 @@ function matchmaking() {
         }
         if (GAME.stage==1) {
           setTimeout(function(){
+            var _html = $('#help-stage-1').html();
+            sexyAlert(_html, 5, function(){}, 440);
+            $('#sexy-alert').find('.close').hide();
+          }, 1000);
+          setTimeout(function(){
             takingLand();            
-          }, 3000)
+          }, 7000)
         }
         if (GAME.stage==2) {
           whoTurn();
@@ -1037,6 +1048,7 @@ $('body').on('click', '#question-2 .a a', function(e){
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass(GAME.user.color);
+    $(this).addClass('active');
     sendQuestionAnswer(function(){
       getResultQuestion();
       //normalQuestionIsrender=false;
@@ -1176,9 +1188,29 @@ renderNormalQuestion = function(conqu, enemy_id){
       $('#question-2 .left').removeClass('red green blue');
       $('#question-2 .right').removeClass('red green blue');
       $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_left = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_left = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .left .ava .img').css({
+        'background-image': _photo_left
+      });
+      
       $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
       $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
+      
+      
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_right = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_right = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .right .ava .img').css({
+        'background-image': _photo_right
+      });
+      
       $('#question-2 .q').html(GAME.question.text);
       $('#question-2 .a').html('');
       $.each(GAME.question.answers, function(index, value){
@@ -1202,6 +1234,9 @@ whoTurn = function() {
       setTimeout(function(){
         $("body").trigger("mousemove");
       }, 1000)
+    }
+    if (GAME.user.status == 99) {
+      sexyAlert('Ваша столица захвачена,<br> игра продолжается между игроками <span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0]+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1]+'</span>', 900)
     }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');

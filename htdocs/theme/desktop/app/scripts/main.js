@@ -25,7 +25,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -41,13 +41,13 @@ $(document).bind('mousemove keydown scroll', function(){
     var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
     hidePoppups();
     setInterval(function(){
-        sexyAlert(text, 99999999999, function(){
-            sexyAlert(text, 99999999999, function(){
-                sexyAlert(text, 99999999999, function(){
-                    sexyAlert(text, 99999999999, function(){
-                        sexyAlert(text, 99999999999, function(){
-                            sexyAlert(text, 99999999999, function(){
-                                sexyAlert(text, 99999999999, function(){
+        sexyAlert(text, 99999, function(){
+            sexyAlert(text, 99999, function(){
+                sexyAlert(text, 99999, function(){
+                    sexyAlert(text, 99999, function(){
+                        sexyAlert(text, 99999, function(){
+                            sexyAlert(text, 99999, function(){
+                                sexyAlert(text, 99999, function(){
                                 
                                 });
                             });
@@ -56,8 +56,8 @@ $(document).bind('mousemove keydown scroll', function(){
                 });
             });
         });
-    }, 500);
-    sexyAlert(text, 99999999999);
+    }, 100);
+    sexyAlert(text, 99999);
     playerDisconect();
     idleState = true; 
   }, idleWait);
@@ -171,11 +171,13 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
-function sexyAlert(text, timeOut, callback) {
+function sexyAlert(text, timeOut, callback, width) {
   timeOut = timeOut || 3;
   callback = callback || function(){};
+  width = width || 320;
   
   if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    $('#sexy-alert .note').width(width);
     showPoppups();
     $('#sexy-alert .note').html(text);
     openFrame('sexy-alert');
