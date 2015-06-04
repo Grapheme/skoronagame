@@ -51,6 +51,7 @@
     </div>
     <img src="{{ asset(Config::get('site.theme_path').'/images/bg.jpg') }}" class="bg">
 </div>
+<div class="infowindow who-turn"><div class="holder"></div></div>
 <div class="infowindow tour1" style="display:none;">
     <div class="top">Этап 1: Распределение земель</div>
 </div>

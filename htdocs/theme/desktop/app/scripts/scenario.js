@@ -145,7 +145,9 @@ function matchmaking() {
         if (GAME.stage==1) {
           setTimeout(function(){
             var _html = $('#help-stage-1').html();
-            sexyAlert(_html, 5, function(){}, 440);
+            sexyAlert(_html, 5, function(){
+              idleController();  
+            }, 440);
             $('#sexy-alert').find('.close').hide();
           }, 1000);
           setTimeout(function(){
@@ -463,22 +465,24 @@ renderNormalQuestion = function(conqu, enemy_id){
       } else {
         _photo_left = '/theme/desktop/dist/images/ava.png';
       }
+      console.log(_photo_left)
       $('#question-2 .left .ava .img').css({
-        'background-image': _photo_left
+        'background-image': 'url('+_photo_left+')'
       });
       
       $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
       $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
       
-      
-      if (getUserById(GAME.users_question.conqu).photo!='') {
+      if (getUserById(GAME.users_question.def).photo!='') {
         _photo_right = getUserById(GAME.users_question.conqu).photo;
       } else {
         _photo_right = '/theme/desktop/dist/images/ava.png';
       }
+      console.log(_photo_right)
+
       $('#question-2 .right .ava .img').css({
-        'background-image': _photo_right
+        'background-image': 'url('+_photo_right+')'
       });
       
       $('#question-2 .q').html(GAME.question.text);
@@ -500,23 +504,29 @@ var whoTurn_is_run = false;
 whoTurn = function() {
   whoTurn_is_run = true;
   getGame(function(){
+    if (GAME.next_turn == 0) {
+      infoWhoTurnText('', false);
+    }
     if (GAME.next_turn!=GAME.user.id) {
       setTimeout(function(){
         $("body").trigger("mousemove");
       }, 1000)
     }
     if (GAME.user.status == 99) {
-      sexyAlert('Ваша столица захвачена,<br> игра продолжается между игроками <span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0]+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1]+'</span>', 900)
+      sexyAlert('Ваша столица захвачена,<br> игра продолжается между игроками <span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0].name+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1].name+'</span>', 900)
     }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {
         if (GAME.user.available_steps == 2) {
           sexyAlert('Ваш ход. <br>Выберите 2 территории.');
+          infoWhoTurnText('Ваш ход. <br>Выберите 2 территории.')
         }
         if (GAME.user.available_steps == 1) {
           sexyAlert('Ваш ход. <br>Выберите 1 территорию.');
+          infoWhoTurnText('Ваш ход. <br>Выберите 1 территорию.');
         }
+        
         $('#map .areas').addClass('active');
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -528,6 +538,7 @@ whoTurn = function() {
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
           sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
+          infoWhoTurnText('<span class="">'+ user_turn.name + '</span> выбирает территорию');
         }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -550,6 +561,7 @@ whoTurn = function() {
       //alert(GAME.response.settings.next_step);
       if (GAME.next_turn==GAME.user.id) {
         sexyAlert('Выберите территорию для нападения.');
+        infoWhoTurnText('Выберите территорию для нападения.');
         //alert('Ваш ход. Этап захвата.');
         //renderNormalQuestion();
       } else {
@@ -559,6 +571,7 @@ whoTurn = function() {
         var user_turn = getUserById(GAME.next_turn);
         if (user_turn) {
           sexyAlert('<span class="'+user_turn.color+'">'+ user_turn.name + '</span> выбирает территорию');
+          infoWhoTurnText('<span class="">'+ user_turn.name + '</span> выбирает территорию');
         }
         if (GAME.next_turn != last_turn) {
           last_turn = GAME.next_turn;
@@ -573,10 +586,12 @@ whoTurn = function() {
             //if (normalQuestionIsrender == false) {
               renderNormalQuestion(GAME.duel.conqu, GAME.duel.def);
             }
+            infoWhoTurnText('', false);
           } else {
             var _conq = getUserById(GAME.duel.conqu);
             var _def = getUserById(GAME.duel.def);
             sexyAlert('Подождите, пока закончится противостояние игроков <span class="'+_conq.color+'">'+_conq.name+'</span> и <span class="'+_def.color+'">'+_def.name+'</span>', 10)
+            infoWhoTurnText('Подождите, пока закончится противостояние игроков <span class="">'+_conq.name+'</span> и <span class="">'+_def.name+'</span>');
           }
         }
         //getResultQuestion();

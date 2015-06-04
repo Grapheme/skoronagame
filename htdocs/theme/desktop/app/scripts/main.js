@@ -23,46 +23,58 @@ function isEmpty(obj) {
     return true;
 }
 
+function infoWhoTurnText(text, show) {
+    show = show || true
+    $('.infowindow.who-turn .holder').html(text);
+    if (show) {
+        $('.infowindow.who-turn').show();
+    } else {
+        $('.infowindow.who-turn').hide();
+    }
+}
+
+
 idleTimer = null;
 idleState = false; // состояние отсутствия
 idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
-$(document).bind('mousemove keydown scroll', function(){
-  clearTimeout(idleTimer); // отменяем прежний временной отрезок
-  if(idleState == true){ 
-    // Действия на возвращение пользователя
-     //$("body").append("<p>С возвращением!</p>");
-  }
-
-  idleState = false;
-  idleTimer = setTimeout(function(){ 
-    // Действия на отсутствие пользователя
-    var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
-    hidePoppups();
-    setInterval(function(){
-        sexyAlert(text, 99999, function(){
+function idleController() {
+    $(document).bind('mousemove keydown scroll', function(){
+      clearTimeout(idleTimer); // отменяем прежний временной отрезок
+      if(idleState == true){ 
+        // Действия на возвращение пользователя
+         //$("body").append("<p>С возвращением!</p>");
+      }
+    
+      idleState = false;
+      idleTimer = setTimeout(function(){ 
+        // Действия на отсутствие пользователя
+        var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
+        hidePoppups();
+        setInterval(function(){
             sexyAlert(text, 99999, function(){
                 sexyAlert(text, 99999, function(){
                     sexyAlert(text, 99999, function(){
                         sexyAlert(text, 99999, function(){
                             sexyAlert(text, 99999, function(){
                                 sexyAlert(text, 99999, function(){
-                                
+                                    sexyAlert(text, 99999, function(){
+                                    
+                                    });
                                 });
                             });
                         });
                     });
                 });
             });
-        });
-    }, 100);
-    sexyAlert(text, 99999);
-    playerDisconect();
-    idleState = true; 
-  }, idleWait);
-});
- 
+        }, 100);
+        sexyAlert(text, 99999);
+        playerDisconect();
+        idleState = true; 
+      }, idleWait);
+    });
+}
 //$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
 
 var bg_width = $('#map').width();
@@ -71,7 +83,7 @@ function scale() {
   var doc_width = $(window).width();
   $('#map').transition({ scale: doc_width/bg_width });
   $('#user-list').transition({ scale: doc_width/bg_width });
-  $('.infowindow.tour1, .infowindow.tour2').transition({ scale: doc_width/bg_width });
+  $('.infowindow.tour1, .infowindow.tour2, .infowindow.who-turn .holder').transition({ scale: doc_width/bg_width });
 }
 
 $(window).resize(function (){
