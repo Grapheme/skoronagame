@@ -817,7 +817,7 @@ class GameController extends BaseController {
                     else:
 
                         Log::info('changeGameUsersSteps. ERROR', array('method' => 'sendConquestTerritory',
-                            'message' => 'Захват столицы не удался. Нет доступных очков хода',
+                            'message' => 'Захват территории не удался. Нет доступных очков хода',
                             'zone_conquest' => $zone_conquest, 'current_user' => Auth::user()->id,
                             'stage' => $this->game->stage));
                     endif;
@@ -849,7 +849,7 @@ class GameController extends BaseController {
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
 
-                            Log::info('resetGameUsers', array('method' => 'sendConquestCapital',
+                            Log::info('resetGameUsers. capitalLives === 0', array('method' => 'sendConquestCapital',
                                 'message' => 'Сброс параметров игроков',
                                 'current_user' => Auth::user()->id, 'stage' => $this->game->stage));
 
@@ -869,6 +869,7 @@ class GameController extends BaseController {
                             $this->json_request['conquest_result'] = 'success';
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             $this->json_request['status'] = TRUE;
+
                             if ($this->isConqueredCapitals()):
                                 $this->nextStep();
 
@@ -887,7 +888,7 @@ class GameController extends BaseController {
                             $this->closeGameUsersQuestions();
                             $this->resetGameUsers();
 
-                            Log::info('resetGameUsers', array('method' => 'sendConquestCapital',
+                            Log::info('resetGameUsers. capitalLives > 0', array('method' => 'sendConquestCapital',
                                 'message' => 'Сброс параметров игроков',
                                 'current_user' => Auth::user()->id, 'stage' => $this->game->stage));
 
@@ -1923,6 +1924,20 @@ class GameController extends BaseController {
                         'stage' => $this->game->stage));
 
                 endif;
+                foreach($this->game->users as $game_user):
+                    if($game_user->user_id == $botConqueror && $game_user->available_steps > 0):
+                        $botExecute = TRUE;
+
+                        Log::info('execute', array('method' => 'isBotNextStepStage2',
+                            'message' => 'У бота есть доступные очки хода. Запуск бота.',
+                            'bot' => $botConqueror, 'duel' => $duel,
+                            'available_steps' => $game_user->available_steps,
+                            'current_user' => Auth::user()->id,
+                            'stage' => $this->game->stage));
+
+                    endif;
+                endforeach;
+
                 if ($this->isBot($botConqueror) && $botExecute):
 
                     Log::info('isBot 1', array('method' => 'isBotNextStepStage2',
@@ -2269,7 +2284,7 @@ class GameController extends BaseController {
                         'remove_user' => $conquest->user_id, 'current_user' => $user_id,
                         'stage' => $this->game->stage));
 
-                    $this->removeUserInGame($conquest->user_id);
+                    $this->removeUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
                     foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
                         if ($territory->capital == 1):
                             $territory->points = 200;
