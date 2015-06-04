@@ -120,7 +120,7 @@ getNormalQuestion = function(callback){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: GAME.users_question},
+        data: {game: GAME.game_id, users: GAME.users_question, zone: GAME.mustConquer},
         dataType: 'json',
         success: function (response) {
             if (response.status) {
@@ -433,8 +433,6 @@ idleState = false; // состояние отсутствия
 idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
-/* jshint devel:true */
-console.log('\'Allo \'Allo!');
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 

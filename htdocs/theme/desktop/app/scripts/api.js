@@ -120,7 +120,7 @@ getNormalQuestion = function(callback){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: GAME.users_question},
+        data: {game: GAME.game_id, users: GAME.users_question, zone: GAME.mustConquer},
         dataType: 'json',
         success: function (response) {
             if (response.status) {
