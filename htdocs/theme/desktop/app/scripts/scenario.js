@@ -145,14 +145,14 @@ function matchmaking() {
         if (GAME.stage==1) {
           setTimeout(function(){
             var _html = $('#help-stage-1').html();
-            sexyAlert(_html, 5, function(){
+            sexyAlert(_html, 10, function(){
               idleController();  
             }, 440);
             $('#sexy-alert').find('.close').hide();
           }, 1000);
           setTimeout(function(){
             takingLand();            
-          }, 7000)
+          }, 1200)
         }
         if (GAME.stage==2) {
           whoTurn();

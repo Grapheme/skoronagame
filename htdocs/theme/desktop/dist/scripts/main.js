@@ -273,7 +273,7 @@ function parseGameData(response) {
     if (last_stage == 1 && GAME.stage==2) {
         //sexyAlert('Начался 2 этап!')
         var _html = $('#help-stage-2').html();
-        sexyAlert(_html, 5, function(){}, 440);
+        sexyAlert(_html, 10, function(){}, 440);
         $('#sexy-alert').find('.close').hide();
     }
     last_stage = GAME.stage;
@@ -884,14 +884,14 @@ function matchmaking() {
         if (GAME.stage==1) {
           setTimeout(function(){
             var _html = $('#help-stage-1').html();
-            sexyAlert(_html, 5, function(){
+            sexyAlert(_html, 10, function(){
               idleController();  
             }, 440);
             $('#sexy-alert').find('.close').hide();
           }, 1000);
           setTimeout(function(){
             takingLand();            
-          }, 7000)
+          }, 1200)
         }
         if (GAME.stage==2) {
           whoTurn();
