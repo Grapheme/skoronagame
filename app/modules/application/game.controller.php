@@ -1535,7 +1535,6 @@ class GameController extends BaseController {
         endif;
         return $dead_users_count;
     }
-
     /********************************** BOTS *************************************/
     public function addBots() {
 
