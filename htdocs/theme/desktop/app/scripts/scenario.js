@@ -665,6 +665,23 @@ showQuestionResult = function(response){
     }
     showQuestionResult_timeout = setTimeout(function(){
       hidePoppups(function(){
+        
+        if (GAME.stage == 2){
+          for(var i in GAME.resultQuestion.results) {
+            if (GAME.resultQuestion.results[i].place==1) {
+              var _usr = getUserById(i);
+              var _name = _usr.name;
+              if (GAME.user.id == i) {
+                sexyAlert('<span class='+_usr.color+'>Вы</span> выиграли в сражении.');
+              } else {
+                sexyAlert('Игрок <span class='+_usr.color+'>'+_name+'</span> выиграл в сражении.');
+              }
+            }
+          }
+          $.each(GAME.users, function(index, value){
+            console.log(GAME.resultQuestion.results);
+          }); 
+        }
         tryToConquer();
       });
     }, 7000);
