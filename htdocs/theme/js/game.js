@@ -491,6 +491,7 @@ GAME.parseGameResponse = function(){
         GAME.startBotTimer();
     if(GAME.response.users.length == 3)
         clearInterval(GAME.bots_timer);
+
     if(GAME.status == GAME.statuses[1]){
         GAME.createMap();
         if(GAME.user_step == GAME.user.id){
