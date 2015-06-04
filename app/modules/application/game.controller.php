@@ -344,7 +344,7 @@ class GameController extends BaseController {
     public function getNormalQuestion() {
 
         if (!Request::ajax()) return App::abort(404);
-        $validation = Validator::make(Input::all(), array('users' => 'required', 'zone' => 'required'));
+        $validation = Validator::make(Input::all(), array('users' => 'required', 'zone' => ''));
         if ($validation->passes()):
             if ($this->initGame()):
                 if ($this->validGameStage(2)):
@@ -392,7 +392,8 @@ class GameController extends BaseController {
                                 'message' => 'Пользователь создал normal вопрос', 'question' => $randomQuestion->id,
                                 ' users' => Input::get('users'), 'current_user' => Auth::user()->id));
 
-                            $this->createDuel(Input::get('users'), Input::get('zone'));
+                            #$this->createDuel(Input::get('users'), Input::get('zone'));
+                            $this->createDuel(Input::get('users'));
 
                             Log::info('createQuestion', array('method' => 'getNormalQuestion',
                                 'message' => 'Создана дуель', 'duel' => $this->getDuel(),
@@ -1248,11 +1249,11 @@ class GameController extends BaseController {
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $json_settings['duel'] = is_array($users_ids) ? $users_ids : array();
 
-        if(is_null($zone) && !isset($json_settings['conqu_zone'])):
-            $json_settings['conqu_zone'] = NULL;
-        elseif(!is_null($zone)):
-            $json_settings['conqu_zone'] = $zone;
-        endif;
+//        if(is_null($zone) && !isset($json_settings['conqu_zone'])):
+//            $json_settings['conqu_zone'] = NULL;
+//        elseif(!is_null($zone)):
+//            $json_settings['conqu_zone'] = $zone;
+//        endif;
 
         $json_settings['conqu_zone'] = is_null($zone) && isse ? $zone : NULL;
         $this->game->json_settings = json_encode($json_settings);
