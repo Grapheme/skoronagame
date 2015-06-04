@@ -455,7 +455,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -1187,9 +1187,29 @@ renderNormalQuestion = function(conqu, enemy_id){
       $('#question-2 .left').removeClass('red green blue');
       $('#question-2 .right').removeClass('red green blue');
       $('#question-2 .left').addClass(getUserById(GAME.users_question.conqu).color)
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_left = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_left = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .left .ava .img').css({
+        'background-image': _photo_left
+      });
+      
       $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
       $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
+      
+      
+      if (getUserById(GAME.users_question.conqu).photo!='') {
+        _photo_right = getUserById(GAME.users_question.conqu).photo;
+      } else {
+        _photo_right = '/theme/desktop/dist/images/ava.png';
+      }
+      $('#question-2 .right .ava .img').css({
+        'background-image': _photo_right
+      });
+      
       $('#question-2 .q').html(GAME.question.text);
       $('#question-2 .a').html('');
       $.each(GAME.question.answers, function(index, value){

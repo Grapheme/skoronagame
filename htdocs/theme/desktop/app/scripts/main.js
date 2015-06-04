@@ -25,7 +25,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
