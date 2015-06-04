@@ -870,6 +870,7 @@ class GameController extends BaseController {
 
                             $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
                             $this->changeGameUsersStatus(2, $users);
+
                             $this->json_request['conquest_result'] = 'success';
                             $this->json_request['responseText'] = 'Вы заняли столицу.';
                             $this->json_request['status'] = TRUE;
@@ -1452,12 +1453,13 @@ class GameController extends BaseController {
                 if ($user->available_steps > $user->make_steps):
                     $user->make_steps = $user->make_steps + 1;
                     $user->save();
-                    $user->touch();
                     $status = TRUE;
                     if ($user->available_steps == $user->make_steps):
-                        $this->changeGameUsersStatus(1, $user);
+                        $user->status = 1;
+                        $user->save();
                         $this->reInitGame();
                     endif;
+                    $user->touch();
                 endif;
             endif;
         endif;
@@ -1468,13 +1470,7 @@ class GameController extends BaseController {
 
         if (is_numeric($users)):
             GameUser::where('user_id', $users)->where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->update(array('status' => $status));
-        elseif (!is_null($users) && count($users) == 1):
-            if ($users->status != 100 && $users->status != 99):
-                $users->status = $status;
-                $users->save();
-                $users->touch();
-            endif;
-        elseif (!is_null($users) && count($users) > 1):
+        elseif (!is_array($users) || is_object($users)):
             foreach ($users as $user):
                 if ($user->status != 100 && $user->status != 99):
                     $user->status = $status;
