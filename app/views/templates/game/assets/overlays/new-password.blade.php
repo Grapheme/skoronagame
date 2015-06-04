@@ -2,7 +2,7 @@
     <a href="#close" class="close"></a>
     <div class="title">Новый пароль</div>
     {{ Form::open(array('url'=>URL::route('profile-password-save'),'data-result'=>'password-is-new')) }}
-        {{ Form::password('password',array('placeholder'=>'Новый пароль')) }}
+        {{ Form::password('password',array('placeholder'=>'Новый пароль', 'id'=>'password')) }}
         <div class="i">
             <div class="text-wrapper">
                 <div class="text">

@@ -720,10 +720,32 @@ $('#register form').validate({
   }
 });
 
+$.validator.addMethod("passRegex", function(value, element) {
+    return this.optional(element) || /^[a-z0-9\-]+$/i.test(value);
+}, "Username must contain only letters, numbers, or dashes.");
+
 $('#new-password form').validate({
   rules: {
+    password :{
+        required: true,
+        minlength: 6,
+        passRegex: true
+    },
+    ver_password :{
+        required: true,
+        equalTo: "#password"
+    }
   },
   messages: {
+    password :{
+        required: 'Обязательное поле',
+        minlength: 'Должно быть не мение 6 символов',
+        passRegex: 'Используйте латинский алфавит<br> и цифры'
+    },
+    ver_password :{
+        required: 'Обязательное поле',
+        equalTo: 'Пароли не совпадают',
+    }
   },
   submitHandler: function(form) {
     sendForm(form);
