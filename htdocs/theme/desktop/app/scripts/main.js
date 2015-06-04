@@ -1,3 +1,8 @@
+idleTimer = null;
+idleState = false; // состояние отсутствия
+idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
+idleUrl = "/game/disconnect_user";
+
 /* jshint devel:true */
 console.log('\'Allo \'Allo!');
 
@@ -32,12 +37,6 @@ function infoWhoTurnText(text, show) {
         $('.infowindow.who-turn').hide();
     }
 }
-
-
-idleTimer = null;
-idleState = false; // состояние отсутствия
-idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
-idleUrl = "/game/disconnect_user";
 
 function idleController() {
     $(document).bind('mousemove keydown scroll', function(){

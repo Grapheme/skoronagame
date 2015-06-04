@@ -220,7 +220,8 @@ function tryToConquer() {
           }
         })
       } else {
-        sendConquestEmptyTerritory(GAME.mustConquer, function(){
+        sendConquestEmptyTerritory(GAME.mustConquer, function(response){
+          //Object {status: true, responseJSON: "", responseText: "Вы заняли территорию.", redirect: false} "ОТВЕТ НА ЗАХВАТ"
           //normalQuestionIsrender=false;
           //GAalert('ЗАХВАт')
           //GAME.mustConquer = null
@@ -475,7 +476,7 @@ renderNormalQuestion = function(conqu, enemy_id){
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
       
       if (getUserById(GAME.users_question.def).photo!='') {
-        _photo_right = getUserById(GAME.users_question.conqu).photo;
+        _photo_right = getUserById(GAME.users_question.def).photo;
       } else {
         _photo_right = '/theme/desktop/dist/images/ava.png';
       }
