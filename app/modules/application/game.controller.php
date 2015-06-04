@@ -2774,10 +2774,20 @@ class GameController extends BaseController {
                 'user' => $remove_user_id, 'status' => $user->status, 'stage' => $this->game->stage));
 
         endif;
+        foreach(GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
+            $zone->user_id = $set_new_owner;
+            if($set_status == 100):
+                $zone->points = 0;
+            elseif($set_status != 100 && $zone->capital == 1):
+                $zone->points = 200;
+            endif;
+            $zone->capital = 0;
+            $zone->status = $set_status;
+            $zone->json_settings = '{"color":"' . $set_color . '"}';
 
-        GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)
-            ->update(array('user_id' => $set_new_owner, 'capital' => 0, 'points' => 0, 'status' => $set_status,
-                'json_settings' => '{"color":"' . $set_color . '"}'));
+            $zone->save();
+            $zone->touch();
+        endforeach;
 
         Log::info('stage2_tours', array('method' => 'removeUserInGame',
             'message' => 'Новый владелец ' . $set_new_owner,
