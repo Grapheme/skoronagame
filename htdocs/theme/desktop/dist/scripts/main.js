@@ -1214,6 +1214,9 @@ whoTurn = function() {
         $("body").trigger("mousemove");
       }, 1000)
     }
+    if (GAME.user.status == 99) {
+      sexyAlert('Ваша столица захвачена,<br> игра продолжается между игроками <span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0]+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1]+'</span>', 900)
+    }
     if (GAME.stage == 1) {
       $('#map .areas').addClass('stage-1');
       if (GAME.next_turn==GAME.user.id) {
