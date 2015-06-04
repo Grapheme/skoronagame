@@ -1871,7 +1871,7 @@ class GameController extends BaseController {
                 $execute = TRUE;
                 $botConqueror = $this->getNextStep();
 
-                if(!empty($duel) && $botConqueror != $duel['conqu']):
+                if (!empty($duel) && $botConqueror != $duel['conqu']):
                     $execute = FALSE;
 
                     Log::info('execute', array('method' => 'isBotNextStepStage2',
@@ -2035,7 +2035,8 @@ class GameController extends BaseController {
 
                                                         Log::info('resetGameUsers', array('method' => 'isBotNextStepStage2',
                                                             'message' => 'Сброс параметров игроков',
-                                                            'current_user' => Auth::user()->id, 'stage' => $this->game->stage));
+                                                            'current_user' => Auth::user()->id,
+                                                            'stage' => $this->game->stage));
 
                                                         $this->createDuel();
                                                         $points = $this->getTerritoryPoints($zoneConqueror);
@@ -2486,7 +2487,7 @@ class GameController extends BaseController {
             $points = array_values($users_points);
             GameUser::where('game_id', $this->game->id)->update(array('place' => 0));
             $rating = array(0, 0, 0);
-            if(count($points) < 3):
+            if (count($points) < 3):
                 return array();
             endif;
             if ($points[0] == $points[1] && $points[1] == $points[2]):
