@@ -1,5 +1,5 @@
 <div id="winer" class="popup">
-    <a href="#menu" class="close"></a>
+    <!--<a href="#menu" class="close"></a>-->
     <div class="title">Поздравляем победителя!</div>
     <div class="places">
         <div class="second">
