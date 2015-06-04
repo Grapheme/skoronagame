@@ -271,7 +271,10 @@ function parseGameData(response) {
     GAME.game_id = response.responseJSON.game_id;
     GAME.stage = response.responseJSON.game_stage;
     if (last_stage == 1 && GAME.stage==2) {
-        sexyAlert('Начался 2 этап!')
+        //sexyAlert('Начался 2 этап!')
+        var _html = $('#help-stage-2').html();
+        sexyAlert(_html, 5, function(){}, 440);
+        $('#sexy-alert').find('.close').hide();
     }
     last_stage = GAME.stage;
     GAME.status = response.responseJSON.game_status;
@@ -598,11 +601,13 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
-function sexyAlert(text, timeOut, callback) {
+function sexyAlert(text, timeOut, callback, width) {
   timeOut = timeOut || 3;
   callback = callback || function(){};
+  width = width || 320;
   
   if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    $('#sexy-alert .note').width(width);
     showPoppups();
     $('#sexy-alert .note').html(text);
     openFrame('sexy-alert');
@@ -845,6 +850,7 @@ function quizQuesionRender(players) {
 function takingLand() {
   getGame(function(){
     //console.log(GAME.status);
+    $('.infowindow.tour1').show();
     quizQuesionRender();
     //getUsersResultQuestions();
   });
@@ -868,8 +874,13 @@ function matchmaking() {
         }
         if (GAME.stage==1) {
           setTimeout(function(){
+            var _html = $('#help-stage-1').html();
+            sexyAlert(_html, 5, function(){}, 440);
+            $('#sexy-alert').find('.close').hide();
+          }, 1000);
+          setTimeout(function(){
             takingLand();            
-          }, 3000)
+          }, 7000)
         }
         if (GAME.stage==2) {
           whoTurn();

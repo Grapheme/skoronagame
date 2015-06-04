@@ -171,11 +171,13 @@ if (_skoronagame_.open_frame) {
   openFrame(_skoronagame_.open_frame);
 }
 
-function sexyAlert(text, timeOut, callback) {
+function sexyAlert(text, timeOut, callback, width) {
   timeOut = timeOut || 3;
   callback = callback || function(){};
+  width = width || 320;
   
   if ($('#sexy-alert .note').html()!=text && !$('.popup-wrapper').is(':visible')) {
+    $('#sexy-alert .note').width(width);
     showPoppups();
     $('#sexy-alert .note').html(text);
     openFrame('sexy-alert');
