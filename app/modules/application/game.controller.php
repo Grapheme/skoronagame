@@ -2784,7 +2784,6 @@ class GameController extends BaseController {
             $zone->capital = 0;
             $zone->status = $set_status;
             $zone->json_settings = '{"color":"' . $set_color . '"}';
-
             $zone->save();
             $zone->touch();
         endforeach;
