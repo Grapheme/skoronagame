@@ -1255,7 +1255,6 @@ class GameController extends BaseController {
 //            $json_settings['conqu_zone'] = $zone;
 //        endif;
 
-        #$json_settings['conqu_zone'] = is_null($zone) && isse ? $zone : NULL;
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
