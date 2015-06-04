@@ -1207,22 +1207,24 @@ renderNormalQuestion = function(conqu, enemy_id){
       } else {
         _photo_left = '/theme/desktop/dist/images/ava.png';
       }
+      console.log(_photo_left)
       $('#question-2 .left .ava .img').css({
-        'background-image': _photo_left
+        'background-image': 'url('+_photo_left+')'
       });
       
       $('#question-2 .left .score').text(getUserById(GAME.users_question.conqu).points)
       $('#question-2 .right').addClass(getUserById(GAME.users_question.def).color)
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
       
-      
-      if (getUserById(GAME.users_question.conqu).photo!='') {
+      if (getUserById(GAME.users_question.def).photo!='') {
         _photo_right = getUserById(GAME.users_question.conqu).photo;
       } else {
         _photo_right = '/theme/desktop/dist/images/ava.png';
       }
+      console.log(_photo_right)
+
       $('#question-2 .right .ava .img').css({
-        'background-image': _photo_right
+        'background-image': 'url('+_photo_right+')'
       });
       
       $('#question-2 .q').html(GAME.question.text);
