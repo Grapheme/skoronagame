@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//10                                       // id игры
+GAME.game_id = 0;//18                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -212,7 +212,7 @@ sendConquestEmptyTerritory = function(territory, callback){
         success: function (response) {
             if (response.status) {
                 console.log(response, 'ОТВЕТ НА ЗАХВАТ');
-                callback();
+                callback(response);
             }
         },
         error: function (xhr, textStatus, errorThrown) {

@@ -3,7 +3,7 @@
  */
 
 var GAME = GAME || {};
-GAME.game_id = 0;//10                                       // id игры
+GAME.game_id = 0;//18                                       // id игры
 GAME.user = {};                                         // пользователь
 GAME.enemies = [];                                         // враги
 GAME.status = 0;                                        // статус игры
@@ -212,7 +212,7 @@ sendConquestEmptyTerritory = function(territory, callback){
         success: function (response) {
             if (response.status) {
                 console.log(response, 'ОТВЕТ НА ЗАХВАТ');
-                callback();
+                callback(response);
             }
         },
         error: function (xhr, textStatus, errorThrown) {
@@ -428,6 +428,11 @@ sendQuestionAnswer = function(callback){
     }
   });
 }
+idleTimer = null;
+idleState = false; // состояние отсутствия
+idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
+idleUrl = "/game/disconnect_user";
+
 /* jshint devel:true */
 console.log('\'Allo \'Allo!');
 
@@ -462,12 +467,6 @@ function infoWhoTurnText(text, show) {
         $('.infowindow.who-turn').hide();
     }
 }
-
-
-idleTimer = null;
-idleState = false; // состояние отсутствия
-idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
-idleUrl = "/game/disconnect_user";
 
 function idleController() {
     $(document).bind('mousemove keydown scroll', function(){
@@ -962,7 +961,8 @@ function tryToConquer() {
           }
         })
       } else {
-        sendConquestEmptyTerritory(GAME.mustConquer, function(){
+        sendConquestEmptyTerritory(GAME.mustConquer, function(response){
+          //Object {status: true, responseJSON: "", responseText: "Вы заняли территорию.", redirect: false} "ОТВЕТ НА ЗАХВАТ"
           //normalQuestionIsrender=false;
           //GAalert('ЗАХВАт')
           //GAME.mustConquer = null
@@ -1217,7 +1217,7 @@ renderNormalQuestion = function(conqu, enemy_id){
       $('#question-2 .right .score').text(getUserById(GAME.users_question.def).points)
       
       if (getUserById(GAME.users_question.def).photo!='') {
-        _photo_right = getUserById(GAME.users_question.conqu).photo;
+        _photo_right = getUserById(GAME.users_question.def).photo;
       } else {
         _photo_right = '/theme/desktop/dist/images/ava.png';
       }
