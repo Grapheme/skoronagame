@@ -120,7 +120,7 @@ getNormalQuestion = function(callback){
     $.ajax({
         type: "POST",
         url: '/game/question/get-normal',
-        data: {game: GAME.game_id, users: GAME.users_question},
+        data: {game: GAME.game_id, users: GAME.users_question, zone: GAME.mustConquer},
         dataType: 'json',
         success: function (response) {
             if (response.status) {
@@ -273,7 +273,7 @@ function parseGameData(response) {
     if (last_stage == 1 && GAME.stage==2) {
         //sexyAlert('Начался 2 этап!')
         var _html = $('#help-stage-2').html();
-        sexyAlert(_html, 5, function(){}, 440);
+        sexyAlert(_html, 10, function(){}, 440);
         $('#sexy-alert').find('.close').hide();
     }
     last_stage = GAME.stage;
@@ -433,8 +433,6 @@ idleState = false; // состояние отсутствия
 idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
-/* jshint devel:true */
-console.log('\'Allo \'Allo!');
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -886,14 +884,14 @@ function matchmaking() {
         if (GAME.stage==1) {
           setTimeout(function(){
             var _html = $('#help-stage-1').html();
-            sexyAlert(_html, 5, function(){
+            sexyAlert(_html, 10, function(){
               idleController();  
             }, 440);
             $('#sexy-alert').find('.close').hide();
           }, 1000);
           setTimeout(function(){
             takingLand();            
-          }, 7000)
+          }, 12000)
         }
         if (GAME.stage==2) {
           whoTurn();
@@ -1406,6 +1404,23 @@ showQuestionResult = function(response){
     }
     showQuestionResult_timeout = setTimeout(function(){
       hidePoppups(function(){
+        
+        if (GAME.stage == 2){
+          for(var i in GAME.resultQuestion.results) {
+            if (GAME.resultQuestion.results[i].place==1) {
+              var _usr = getUserById(i);
+              var _name = _usr.name;
+              if (GAME.user.id == i) {
+                sexyAlert('<span class='+_usr.color+'>Вы</span> выиграли в сражении.');
+              } else {
+                sexyAlert('Игрок <span class='+_usr.color+'>'+_name+'</span> выиграл в сражении.');
+              }
+            }
+          }
+          $.each(GAME.users, function(index, value){
+            console.log(GAME.resultQuestion.results);
+          }); 
+        }
         tryToConquer();
       });
     }, 7000);
