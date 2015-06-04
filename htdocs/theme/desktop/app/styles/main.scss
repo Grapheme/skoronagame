@@ -29,6 +29,7 @@ body {
   top: 30px;
   position: fixed;
   display: none;
+  pointer-events: none;
   user-event: none;
   .infowindow-small {
     display: inline-block;
@@ -47,8 +48,31 @@ body {
   display: none;
   transform-origin: left bottom;
   pointer-events: none;
+  user-event: none;
   &.tour1 {
     display: block;
+  }
+  &.who-turn {
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 9;
+    .holder {
+      display: inline-block;
+      padding: 5px 10px;
+      background: rgba(#00341f, 0.5);
+      color: white;
+      transform-origin: center bottom;
+      .green {
+        color: #d39500;
+      }
+      .red {
+        color: #ad062e;
+      }
+      .blue {
+        color: #0000ff;
+      }
+    }
   }
   .top {
     font-size: 14px;
