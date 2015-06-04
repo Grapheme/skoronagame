@@ -318,6 +318,7 @@ $('body').on('click', '#question-2 .a a', function(e){
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass(GAME.user.color);
+    $(this).addClass('active');
     sendQuestionAnswer(function(){
       getResultQuestion();
       //normalQuestionIsrender=false;

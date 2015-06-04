@@ -455,7 +455,7 @@ function isEmpty(obj) {
 
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 30*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 $(document).bind('mousemove keydown scroll', function(){
@@ -471,13 +471,13 @@ $(document).bind('mousemove keydown scroll', function(){
     var text = "Вы отсутствовали более " + idleWait/1000 + " секунд и были отключены от сервера. <a href='' style='font-size:18px'>Обновите страницу</a> чтобы начать новую игру."
     hidePoppups();
     setInterval(function(){
-        sexyAlert(text, 99999999999, function(){
-            sexyAlert(text, 99999999999, function(){
-                sexyAlert(text, 99999999999, function(){
-                    sexyAlert(text, 99999999999, function(){
-                        sexyAlert(text, 99999999999, function(){
-                            sexyAlert(text, 99999999999, function(){
-                                sexyAlert(text, 99999999999, function(){
+        sexyAlert(text, 99999, function(){
+            sexyAlert(text, 99999, function(){
+                sexyAlert(text, 99999, function(){
+                    sexyAlert(text, 99999, function(){
+                        sexyAlert(text, 99999, function(){
+                            sexyAlert(text, 99999, function(){
+                                sexyAlert(text, 99999, function(){
                                 
                                 });
                             });
@@ -486,8 +486,8 @@ $(document).bind('mousemove keydown scroll', function(){
                 });
             });
         });
-    }, 500);
-    sexyAlert(text, 99999999999);
+    }, 100);
+    sexyAlert(text, 99999);
     playerDisconect();
     idleState = true; 
   }, idleWait);
@@ -1048,6 +1048,7 @@ $('body').on('click', '#question-2 .a a', function(e){
     GAME.question.answer = $(this).data('id');
     GAME.question.time = quiz_timer_default - $('#question-2 .timer').text();
     $(this).addClass(GAME.user.color);
+    $(this).addClass('active');
     sendQuestionAnswer(function(){
       getResultQuestion();
       //normalQuestionIsrender=false;
