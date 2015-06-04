@@ -1333,7 +1333,6 @@ class GameController extends BaseController {
                 endif;
             endif;
         endforeach;
-
         try {
             // третий тур
             $json_settings['stage2_tours'][$current_tour][$first_step] = $first_step_value;
@@ -1348,7 +1347,6 @@ class GameController extends BaseController {
                 'user_ids' => $user_ids,
                 'current_user' => Auth::user()->id));
         }
-
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
