@@ -1587,9 +1587,9 @@ class GameController extends BaseController {
         foreach ($this->game->users as $user_game):
             if ($this->isBot($user_game->user->id) === FALSE):
 
-//                Log::info('isBot?', array('method' => 'validDropGameUsers',
-//                    'message' => 'Проверка на бота. Это не бот!',
-//                    'current_user' => Auth::user()->id));
+                Log::info('isBot?', array('method' => 'validDropGameUsers',
+                    'message' => 'Проверка на бота. Это не бот!',
+                    'current_user' => Auth::user()->id));
 
                 $this->dropUser($user_game);
             elseif ($user_game->status == 100) :
