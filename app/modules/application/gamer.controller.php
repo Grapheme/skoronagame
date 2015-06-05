@@ -95,7 +95,7 @@ class GamerController extends BaseController {
             $games_time_def = 0;
             foreach($games as $game):
                 if($game->date_over != '0000-00-00 00:00:00'):
-                    $games_time_def += \Carbon\Carbon::createFromTimestamp(strtotime($game->date_over))->diffInMinutes(\Carbon\Carbon::createFromTimestamp(strtotime($game->date_begin)));
+                    $games_time_def += Carbon::createFromTimestamp(strtotime($game->date_over))->diffInMinutes(Carbon::createFromTimestamp(strtotime($game->date_begin)));
                 endif;
             endforeach;
             $games_time = round($games_time_def/$games->count(),0);

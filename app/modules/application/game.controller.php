@@ -49,7 +49,7 @@ class GameController extends BaseController {
             Route::post('register/user', array('before' => 'csrf', 'as' => 'quick-register',
                 'uses' => $class . '@QuickRegister'));
         });
-        Route::group(array('before' => 'user.auth', 'prefix' => $class::$name), function () use ($class) {
+        Route::group(array('before' => 'user.auth.session', 'prefix' => $class::$name), function () use ($class) {
             Route::get('', array('as' => 'game', 'uses' => $class . '@indexGame'));
             Route::get('demo', array('as' => 'game-demo', 'uses' => $class . '@demoGame'));
         });
@@ -212,10 +212,6 @@ class GameController extends BaseController {
     /****************************************************************************/
     public function indexGame() {
 
-        if (File::exists(storage_path('logs/laravel.log'))):
-            File::delete(storage_path('logs/laravel.log'));
-        endif;
-
         $games = Game::where('status', '!=', $this->game_statuses[3])->with(array('users' => function ($query) {
             $query->where('user_id', Auth::user()->id);
         }))->get();
@@ -252,9 +248,6 @@ class GameController extends BaseController {
             endforeach;
         endif;
 
-        $this->updateTemplateStepInSecondStage(7);
-        exit;
-
         return View::make(Helper::acclayout('demo'), array('game' => $this->game));
     }
 
@@ -274,6 +267,8 @@ class GameController extends BaseController {
 
         $this->isBotNextStepStage2();
         $this->finishGameInFourTour();
+        $this->droppingGameUsers();
+
         $this->createGameJSONResponse();
         return Response::json($this->json_request, 200);
     }
@@ -432,7 +427,7 @@ class GameController extends BaseController {
                         'current_user' => Auth::user()->id));
 
                     $this->sendBotsAnswers($userGameQuestion);
-                    $this->checkOfflineUsers($userGameQuestion);
+                    $this->sendDroppedUserAnswers($userGameQuestion);
                     if ($userGameQuestion->answer != 99999):
                         $this->json_request['responseText'] = "GOOD";
                     else:
@@ -814,7 +809,8 @@ class GameController extends BaseController {
                             $points = $this->getTerritoryPoints($zone_conquest);
                             $this->changeUserPoints(Auth::user()->id, $points, $this->user);
                             $this->changeTerritoryPoints($zone_conquest, 200);
-                            $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+                            $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99,
+                                100))->get();
                             $this->changeGameUsersStatus(2, $users);
                             $this->json_request['responseText'] = 'Вы заняли территорию.';
                             $this->json_request['status'] = TRUE;
@@ -869,7 +865,8 @@ class GameController extends BaseController {
                                 'duel' => $this->getDuel(),
                                 'stage' => $this->game->stage));
 
-                            $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+                            $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99,
+                                100))->get();
                             $this->changeGameUsersStatus(2, $users);
 
                             $this->json_request['conquest_result'] = 'success';
@@ -957,7 +954,7 @@ class GameController extends BaseController {
         $validation = Validator::make(Input::all(), array('user' => 'numeric'));
         if ($validation->passes()):
             if ($this->initGame()):
-                $this->dropUserInGame(Input::get('user'));
+                $this->disconnectUserInGame(Input::get('user'));
                 $this->json_request['status'] = TRUE;
             endif;
         endif;
@@ -993,6 +990,13 @@ class GameController extends BaseController {
         if (GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->exists() === FALSE):
             $this->game->users[] = GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
                 'is_bot' => 0, 'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
+
+            Sessions::setUserLastActivity();
+
+            Log::info('setUserLastActivity', array('method' => 'joinNewGame',
+                'message' => 'Пользователь подключился к игре',
+                'game_id' => $this->game->id, 'current_user' => Auth::user()->id));
+
         endif;
     }
 
@@ -1017,11 +1021,13 @@ class GameController extends BaseController {
 
     private function finishGame($status_over = 1) {
 
-        $this->game->status = $this->game_statuses[3];
-        $this->game->status_over = $status_over;
-        $this->game->date_over = Carbon::now()->format('Y-m-d H:i:s');
-        $this->game->save();
-        $this->game->touch();
+        if ($this->validGameStatus($this->game_statuses[3]) === FALSE):
+            $this->game->status = $this->game_statuses[3];
+            $this->game->status_over = $status_over;
+            $this->game->date_over = Carbon::now()->format('Y-m-d H:i:s');
+            $this->game->save();
+            $this->game->touch();
+        endif;
     }
 
     /************************** CREATING RESPONSES ******************************/
@@ -1033,7 +1039,6 @@ class GameController extends BaseController {
                 $users_ids = $this->getUsersIDs();
                 $activeUsers = Sessions::getUserIDsLastActivity($users_ids);
                 foreach ($this->game->users as $user_game):
-                    $this->validDropGameUsers();
                     $photo_link = '';
                     if (!empty($user_game->user_social) && isset($user_game->user_social->photo_big) && !empty($user_game->user_social->photo_big)):
                         $photo_link = $user_game->user_social->photo_big;
@@ -1194,6 +1199,12 @@ class GameController extends BaseController {
             'date_begin' => '000-00-00 00:00:00', 'status_over' => 0, 'date_over' => '000-00-00 00:00:00',
             'json_settings' => json_encode(array('next_step' => 0))));
 
+        if (Config::get('app.debug') === TRUE):
+            if (File::exists(storage_path('logs/laravel.log'))):
+                File::delete(storage_path('logs/laravel.log'));
+            endif;
+        endif;
+
         Log::info('createNewGame', array('method' => 'createNewGame',
             'message' => 'Создана новая игра',
             'game_id' => $this->game->id, 'current_user' => Auth::user()->id));
@@ -1279,7 +1290,7 @@ class GameController extends BaseController {
                 $json_settings['stage2_tours'][3][$user_id] = FALSE;
             endforeach;
             try {
-                $users = GameUser::where('game_id', $this->game->id)->lists('status','user_id');
+                $users = GameUser::where('game_id', $this->game->id)->lists('status', 'user_id');
                 foreach ($user_ids as $index => $user_id):
                     if (in_array($users[$user_id], array(99, 100))):
                         $step_values[$index] = TRUE;
@@ -1329,13 +1340,14 @@ class GameController extends BaseController {
             $this->reInitGame();
         endif;
 
-        $first_step_value = GameUser::where('game_id', $this->game->id)->where('user_id', $first_step)->whereNotIn('status', array(99, 100))->exists();
+        $first_step_value = GameUser::where('game_id', $this->game->id)->where('user_id', $first_step)->whereNotIn('status', array(99,
+            100))->exists();
         $step_values[0] = FALSE;
         $step_values[1] = FALSE;
 
         $user_ids = array();
-        foreach($this->game->users as $index => $game_user):
-            if($game_user->user_id != $first_step):
+        foreach ($this->game->users as $index => $game_user):
+            if ($game_user->user_id != $first_step):
                 $user_ids[$index] = $game_user->user_id;
                 if (in_array($game_user->status, array(99, 100))):
                     $step_values[$index] = TRUE;
@@ -1477,7 +1489,8 @@ class GameController extends BaseController {
     private function changeGameUsersStatus($status, $users = NULL) {
 
         if (is_numeric($users)):
-            GameUser::where('user_id', $users)->where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->update(array('status' => $status));
+            GameUser::where('user_id', $users)->where('game_id', $this->game->id)->whereNotIn('status', array(99,
+                100))->update(array('status' => $status));
         elseif (!is_array($users) || is_object($users)):
             foreach ($users as $user):
                 if ($user->status != 100 && $user->status != 99):
@@ -1535,6 +1548,15 @@ class GameController extends BaseController {
     }
 
     /******************************* VALIDATION **********************************/
+    private function validGame(){
+
+        if(!is_null($this->game) && isset($this->game->id) && !empty($this->game->users)):
+            return TRUE;
+        else:
+            return FALSE;
+        endif;
+    }
+
     private function validGameStatus($status) {
 
         if ($this->initGame()):
@@ -1589,33 +1611,6 @@ class GameController extends BaseController {
         return FALSE;
     }
 
-    private function validDropGameUsers() {
-
-        $dead_users_count = 0;
-        foreach ($this->game->users as $user_game):
-            if ($this->isBot($user_game->user->id) === FALSE):
-
-                Log::info('isBot?', array('method' => 'validDropGameUsers',
-                    'message' => 'Проверка на бота. Это не бот!',
-                    'current_user' => Auth::user()->id));
-
-                $this->dropUser($user_game);
-            elseif ($user_game->status == 100) :
-                $dead_users_count++;
-            endif;
-        endforeach;
-        if ($dead_users_count >= 2):
-            $this->nextStep();
-            $this->finishGame(1);
-
-            Log::info('finishGame (1)', array('method' => 'validDropGameUsers',
-                'message' => 'Игра завершилась. Отвалились 2 или более игроков',
-                'current_user' => Auth::user()->id));
-
-            $this->reInitGame();
-        endif;
-        return $dead_users_count;
-    }
     /********************************** BOTS *************************************/
     public function addBots() {
 
@@ -1736,7 +1731,8 @@ class GameController extends BaseController {
                         $this->changeUserPoints($bot_id, $points, $bot);
                         $this->changeTerritoryPoints($conqueror_zone, 200);
 
-                        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+                        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99,
+                            100))->get();
                         $this->changeGameUsersStatus(2, $users);
                         $this->reInitGame();
                         return TRUE;
@@ -1766,7 +1762,7 @@ class GameController extends BaseController {
                             'zone' => $conqueror_zone, 'current_user' => $bot_id, 'stage' => $this->game->stage,
                             'owner' => $conquest->user_id));
 
-                        $this->dropUserInGame($conquest->user_id);
+                        $this->disconnectUserInGame($conquest->user_id);
                         foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
                             if ($territory->capital == 1):
                                 $territory->points = 200;
@@ -1832,21 +1828,6 @@ class GameController extends BaseController {
                 endif;
             endif;
         endif;
-    }
-
-    private function checkOfflineUsers($userGameQuestion) {
-
-        foreach ($this->game->users as $user):
-            if ($user->status == 100 || $user->status == 99):
-                if ($botGameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $user->id)->first()):
-                    $botGameQuestion->status = 1;
-                    $botGameQuestion->answer = 99999;
-                    $botGameQuestion->seconds = 10;
-                    $botGameQuestion->save();
-                    $botGameQuestion->touch();
-                endif;
-            endif;
-        endforeach;
     }
 
     private function botAnswerQuizQuestion($bot_id, $current_answer, $question_group_id) {
@@ -1926,7 +1907,7 @@ class GameController extends BaseController {
 
                 $this->botConquestTerritory($winners_id[1]);
 
-                $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+                $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99, 100))->get();
                 $this->changeGameUsersStatus(2, $users);
 
                 $this->nextStep();
@@ -2004,8 +1985,8 @@ class GameController extends BaseController {
                         'stage' => $this->game->stage));
 
                 endif;
-                foreach($this->game->users as $game_user):
-                    if($game_user->user_id == $botConqueror && $game_user->available_steps > 0):
+                foreach ($this->game->users as $game_user):
+                    if ($game_user->user_id == $botConqueror && $game_user->available_steps > 0):
                         $botExecute = TRUE;
 
                         Log::info('execute', array('method' => 'isBotNextStepStage2',
@@ -2187,7 +2168,8 @@ class GameController extends BaseController {
                                                             'duel' => $this->getDuel(),
                                                             'stage' => $this->game->stage));
 
-                                                        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+                                                        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99,
+                                                            100))->get();
                                                         $this->changeGameUsersStatus(2, $users);
                                                         if ($this->isConqueredCapitals()):
                                                             $this->nextStep();
@@ -2359,12 +2341,12 @@ class GameController extends BaseController {
                         'zone' => $zone, 'current_user' => $user_id, 'stage' => $this->game->stage,
                         'owner' => $conquest->user_id));
 
-                    Log::info('dropUserInGame', array('method' => 'conquestCapital',
+                    Log::info('disconnectUserInGame', array('method' => 'conquestCapital',
                         'message' => 'Запуск скрипта на исключение пользователя из игры',
                         'remove_user' => $conquest->user_id, 'current_user' => $user_id,
                         'stage' => $this->game->stage));
 
-                    $this->dropUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
+                    $this->disconnectUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
                     foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $conquest->user_id)->get() as $territory):
                         if ($territory->capital == 1):
                             $territory->points = 200;
@@ -2436,7 +2418,7 @@ class GameController extends BaseController {
             $lives = GameMap::where('game_id', $this->game->id)->where('zone', $zone)->pluck('lives');
         endif;
         $this->changeUserPoints($duel['def'], 100 * $lives);
-        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->get();
+        $users = GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99, 100))->get();
         $this->changeGameUsersStatus(2, $users);
         $this->reInitGame();
     }
@@ -2669,6 +2651,271 @@ class GameController extends BaseController {
             ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
     }
 
+    /****************************** REMOVED USERS *********************************/
+    private function disconnectUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
+
+        if($this->validGame() === FALSE):
+            return FALSE;
+        endif;
+
+        $validDropUser = FALSE;
+        if (is_null($remove_user_id)):
+            $remove_user_id = Auth::user()->id;
+        endif;
+        if (is_null($set_new_owner)):
+            $set_new_owner = -1;
+        endif;
+
+        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->where('is_bot', 0)->whereNotIn('status', array(99,
+            100))->first()
+        ):
+            $validDropUser = TRUE;
+        endif;
+
+        if ($validDropUser && is_object($user)):
+            $user->status = $set_status;
+            $user->available_steps = 0;
+            $user->make_steps = 0;
+            $user->save();
+            $user->touch();
+
+            Log::info('user.status', array('method' => 'disconnectUserInGame',
+                'message' => 'Пользователю выставился статус ' . $set_status,
+                'user' => $remove_user_id, 'status' => $user->status, 'stage' => $this->game->stage));
+
+            foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
+                $zone->user_id = $set_new_owner;
+                if ($set_status == 100):
+                    $zone->points = 0;
+                    $zone->lives = 0;
+                    $zone->status = $set_status;
+                elseif ($set_status != 100 && $zone->capital == 1):
+                    $zone->points = 200;
+                    $zone->lives = 1;
+                endif;
+                $zone->capital = 0;
+                $zone->json_settings = '{"color":"' . $set_color . '"}';
+                $zone->save();
+                $zone->touch();
+            endforeach;
+
+            Log::info('stage2_tours', array('method' => 'disconnectUserInGame',
+                'message' => 'Новый владелец ' . $set_new_owner,
+                'zones_color' => $set_color,
+                'user' => $remove_user_id, 'stage' => $this->game->stage));
+
+            if ($this->validGameStage(2)):
+                $json_settings = json_decode($this->game->json_settings, TRUE);
+                if (isset($json_settings['stage2_tours']) && !empty($json_settings['stage2_tours'])):
+                    foreach ($json_settings['stage2_tours'] as $tour => $users_steps):
+                        foreach ($users_steps as $user_id => $status):
+                            if ($user_id == $remove_user_id):
+                                $json_settings['stage2_tours'][$tour][$user_id] = TRUE;
+                            endif;
+                        endforeach;
+                    endforeach;
+
+                    Log::info('stage2_tours', array('method' => 'disconnectUserInGame',
+                        'message' => 'Шаги пользователя помечанные как TRUE',
+                        'user' => $remove_user_id, 'stage2_tours' => $json_settings['stage2_tours'],
+                        'stage' => $this->game->stage));
+
+                    $this->game->json_settings = json_encode($json_settings);
+                    $this->game->save();
+                    $this->game->touch();
+                endif;
+            endif;
+            return TRUE;
+        else:
+
+            Log::info('not validDropUser', array('method' => 'disconnectUserInGame',
+                'message' => 'Исключить игрока не удалось. Или он бот, или был исключен из игры раньше',
+                'user' => $remove_user_id,
+                'stage' => $this->game->stage));
+
+            return FALSE;
+        endif;
+    }
+
+    private function dropUser($user_game, $remove_in_game = FALSE) {
+
+        if ($this->isBot($user_game->user_id)):
+            return FALSE;
+        endif;
+
+        if ($remove_in_game === TRUE):
+            if ((time() - $user_game->session->last_activity) > Config::get('game.remove_user_timeout_in_game_wait', 15)):
+                GameUser::where('game_id', $this->game->id)->where('user_id', $user_game->user_id)->where('is_bot', 0)->delete();
+
+                Log::info('remove_in_game == TRUE', array('method' => 'dropUser',
+                    'message' => 'Обнаружился неактивный игрок. Он был удален из игры.',
+                    'user_id' => $user_game->user_id,
+                    'current_user' => Auth::user()->id));
+
+                $this->reInitGame();
+            endif;
+        else:
+            if ((time() - $user_game->session->last_activity) > Config::get('game.remove_user_timeout_in_game_wait', 15)):
+
+            endif;
+        endif;
+
+        return FALSE;
+
+        $drop_user_anyway = 1;
+
+        ## Если у игрока есть сессия и он не помечен как выбывший...
+        if (
+            isset($user_game->session)
+            && is_object($user_game->session)
+            && $user_game->status != 100
+        ) {
+
+            ## Если от игрока слишком долго не было ответа (или стоит пометка "дропать в любом случае")...
+            if (
+                (time() - $user_game->session->last_activity) > Config::get('game.disconnect_user_timeout', 30)
+                || $drop_user_anyway
+            ) {
+
+                ## ...Устанавливаем статус игрока как "отключившийся" = 100...
+                $this->changeGameUsersStatus(100, $user_game);
+
+                ## ...Также проверяем, требуются ли какие-то действия со стороны выбывшего игрока,
+                ## чтобы не остановилась игра у всех остальных участников, и если требуется - выполняем эти действия.
+                ## Первый этап
+                if ($this->validGameStage(1)) {
+
+                    ## Если у игрока было два доступных хода...
+                    if ($user_game->available_steps == 2 && $user_game->status == 0) {
+
+                        ## ...найти игрока, у которого available_steps = 1 (следующий ходящий)
+                        $user_id = GameUser::where('game_id', $this->game->id)->where('status', 0)->where('available_steps', 1)->pluck('user_id');
+                        $this->nextStep($user_id);
+                        if ($this->isBot($user_id)):
+                            $this->botConquestTerritory($user_id);
+                            $this->nextStep();
+                        endif;
+
+                    } elseif ($user_game->available_steps == 1 && $user_game->status == 0) {
+
+                        ## Если у игрока был один доступный ход...
+                        ## ...найти игрока, у которого available_steps = 2 (победителя предыдущего шага)
+                        $user_id = GameUser::where('game_id', $this->game->id)->where('status', 1)->where('available_steps', 2)->pluck('user_id');
+                        if ($user_id) {
+                            $this->nextStep();
+                        }
+                    }
+
+                } elseif ($this->validGameStage(2)) {
+
+                    ## Второй этап
+                    ## ID игрока, который сейчас ходит
+                    $current_user_id = $this->getNextStep();
+
+                    ## Карта ходов второго этапа (флажки для Марата)
+                    ## Ее нужно распаковать, расставить пометки, запаковать обратно и сохранить в БД
+                    $json_settings = json_decode($this->game->json_settings, TRUE);
+                    $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : FALSE;
+                    if ($stage2_tours):
+                        ## Ищем ходы текущего игрока
+                        foreach ($stage2_tours as $t => $tour) {
+                            foreach ($tour as $user_id => $bool) {
+                                if ($user_id == $current_user_id) {
+                                    ## Если найден ход отвалившегося игрока - ставим пометку о том, что ход уже был "совершен"
+                                    $stage2_tours[$t][$user_id] = true;
+                                }
+                            }
+                        }
+
+                        ## Запаковываем карту обратно и записываем ее в БД
+                        $this->game->json_settings = json_encode($stage2_tours);
+                        $this->game->save();
+                    endif;
+
+
+                    ## Отвечаем на все неотвеченные вопросы текущего юзера
+                    GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_game->id)->where('status', 0)->update(['answer' => 99999,
+                        'seconds' => 10, 'status' => 1]);
+
+                    ## Переход хода
+                    $this->nextStepInSecondStage();
+                }
+            }
+
+        } else {
+            ## Если у юзера нет сессии - сразу помечаем его как отключившегося
+            $this->changeGameUsersStatus(100, $user_game);
+        }
+
+        ###################################################################################
+        return TRUE;
+    }
+
+    private function droppingGameUsers() {
+
+        $deadUsersCount = $inActiveUsersCount = 0;
+        if ($this->validGameStatus($this->game_statuses[0]) || $this->validGameStatus($this->game_statuses[1])):
+            foreach ($this->game->users as $user_game):
+                $this->dropUser($user_game, TRUE);
+            endforeach;
+        elseif ($this->validGameStatus($this->game_statuses[2])):
+            foreach ($this->game->users as $user_game):
+                if ($user_game->status == 100) :
+                    $deadUsersCount++;
+                elseif ($user_game->status == 99):
+                    $inActiveUsersCount++;
+                else:
+                    $this->dropUser($user_game);
+                endif;
+            endforeach;
+            if ($deadUsersCount >= 2):
+                $this->nextStep();
+                $this->finishGame(0);
+
+                Log::info('finishGame (1)', array('method' => 'validDropGameUsers',
+                    'message' => 'Игра завершилась. Отвалились 2 или более игроков',
+                    'current_user' => Auth::user()->id));
+
+                $this->reInitGame();
+            endif;
+
+            if ($inActiveUsersCount >= 2):
+                $this->nextStep();
+                $this->finishGame(1);
+
+                Log::info('finishGame (1)', array('method' => 'validDropGameUsers',
+                    'message' => 'Игра завершилась. 2 или более игроков были повержаны в процессе игры и получили 99 статус',
+                    'current_user' => Auth::user()->id));
+
+                $this->reInitGame();
+            endif;
+
+        endif;
+    }
+
+    private function sendDroppedUserAnswers($userGameQuestion) {
+
+        foreach ($this->game->users as $user):
+            if (in_array($user->status, array(99, 100))):
+                if ($gameQuestion = GameUserQuestions::where('game_id', $this->game->id)->where('group_id', $userGameQuestion->group_id)->where('user_id', $user->id)->first()):
+                    $gameQuestion->status = 1;
+                    $gameQuestion->answer = 99999;
+                    $gameQuestion->seconds = 10;
+                    $gameQuestion->save();
+                    $gameQuestion->touch();
+
+                    Log::info('droppedUserAnswers', array('method' => 'sendDroppedUserAnswers',
+                        'message' => 'Выбывшиц игрок ответил на вопрос', 'user_id' => $user->id,
+                        'current_answer' => 'Не известно',
+                        'user_answer' => 99999,
+                        'current_user' => Auth::user()->id,
+                        'stage' => $this->game->stage));
+
+                endif;
+            endif;
+        endforeach;
+    }
+
     /********************************* OTHER *************************************/
     private function exclude_indexes($capital, $map_places, $map_places_ids) {
 
@@ -2857,82 +3104,6 @@ class GameController extends BaseController {
         return FALSE;
     }
 
-    private function dropUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
-
-        $validDropUser = FALSE;
-        if (is_null($remove_user_id)):
-            $remove_user_id = Auth::user()->id;
-        endif;
-        if (is_null($set_new_owner)):
-            $set_new_owner = -1;
-        endif;
-
-        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->where('is_bot', 0)->whereNotIn('status', array(99, 100))->first()):
-            $validDropUser = TRUE;
-        endif;
-
-        if($validDropUser && is_object($user)):
-            $user->status = $set_status;
-            $user->available_steps = 0;
-            $user->make_steps = 0;
-            $user->save();
-            $user->touch();
-
-            Log::info('user.status', array('method' => 'dropUserInGame',
-                'message' => 'Пользователю выставился статус ' . $set_status,
-                'user' => $remove_user_id, 'status' => $user->status, 'stage' => $this->game->stage));
-
-            foreach(GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
-                $zone->user_id = $set_new_owner;
-                if($set_status == 100):
-                    $zone->points = 0;
-                elseif($set_status != 100 && $zone->capital == 1):
-                    $zone->points = 200;
-                endif;
-                $zone->capital = 0;
-                $zone->status = $set_status;
-                $zone->json_settings = '{"color":"' . $set_color . '"}';
-                $zone->save();
-                $zone->touch();
-            endforeach;
-
-            Log::info('stage2_tours', array('method' => 'dropUserInGame',
-                'message' => 'Новый владелец ' . $set_new_owner,
-                'zones_color' => $set_color,
-                'user' => $remove_user_id, 'stage' => $this->game->stage));
-            if ($this->validGameStage(2)):
-                $json_settings = json_decode($this->game->json_settings, TRUE);
-                if (isset($json_settings['stage2_tours']) && !empty($json_settings['stage2_tours'])):
-                    foreach ($json_settings['stage2_tours'] as $tour => $users_steps):
-                        foreach ($users_steps as $user_id => $status):
-                            if ($user_id == $remove_user_id):
-                                $json_settings['stage2_tours'][$tour][$user_id] = TRUE;
-                            endif;
-                        endforeach;
-                    endforeach;
-
-                    Log::info('stage2_tours', array('method' => 'dropUserInGame',
-                        'message' => 'Шаги пользователя помечанные как TRUE',
-                        'user' => $remove_user_id, 'stage2_tours' => $json_settings['stage2_tours'],
-                        'stage' => $this->game->stage));
-
-                    $this->game->json_settings = json_encode($json_settings);
-                    $this->game->save();
-                    $this->game->touch();
-                endif;
-            endif;
-            return TRUE;
-        else:
-
-            Log::info('not validDropUser', array('method' => 'dropUserInGame',
-                'message' => 'Исключить игрока не удалось. Или он бот, или был исключен из игры раньше',
-                'user' => $remove_user_id,
-                'stage' => $this->game->stage));
-
-            return FALSE;
-        endif;
-    }
-
     private function getGameBotsIDs() {
 
         $botsIDs = array();
@@ -3049,107 +3220,6 @@ class GameController extends BaseController {
         });
         $rating = $sort_rating;
         return $rating;
-    }
-
-    private function dropUser($user_game) {
-
-        #Helper::tad($user_game);
-
-        if($this->initGame()):
-            if ($user_game->status != 100 && $user_game->status != 99):
-                #
-            endif;
-        endif;
-
-        return FALSE;
-
-        $drop_user_anyway = 1;
-
-            ## Если у игрока есть сессия и он не помечен как выбывший...
-            if (
-                isset($user_game->session)
-                && is_object($user_game->session)
-                && $user_game->status != 100
-            ) {
-
-                ## Если от игрока слишком долго не было ответа (или стоит пометка "дропать в любом случае")...
-                if (
-                    (time() - $user_game->session->last_activity) > Config::get('game.disconnect_user_timeout', 30)
-                    || $drop_user_anyway
-                ) {
-
-                    ## ...Устанавливаем статус игрока как "отключившийся" = 100...
-                    $this->changeGameUsersStatus(100, $user_game);
-
-                    ## ...Также проверяем, требуются ли какие-то действия со стороны выбывшего игрока,
-                    ## чтобы не остановилась игра у всех остальных участников, и если требуется - выполняем эти действия.
-                    ## Первый этап
-                    if ($this->validGameStage(1)) {
-
-                        ## Если у игрока было два доступных хода...
-                        if ($user_game->available_steps == 2 && $user_game->status == 0) {
-
-                            ## ...найти игрока, у которого available_steps = 1 (следующий ходящий)
-                            $user_id = GameUser::where('game_id', $this->game->id)->where('status', 0)->where('available_steps', 1)->pluck('user_id');
-                            $this->nextStep($user_id);
-                            if ($this->isBot($user_id)):
-                                $this->botConquestTerritory($user_id);
-                                $this->nextStep();
-                            endif;
-
-                        } elseif ($user_game->available_steps == 1 && $user_game->status == 0) {
-
-                            ## Если у игрока был один доступный ход...
-                            ## ...найти игрока, у которого available_steps = 2 (победителя предыдущего шага)
-                            $user_id = GameUser::where('game_id', $this->game->id)->where('status', 1)->where('available_steps', 2)->pluck('user_id');
-                            if ($user_id) {
-                                $this->nextStep();
-                            }
-                        }
-
-                    } elseif ($this->validGameStage(2)) {
-
-                        ## Второй этап
-                        ## ID игрока, который сейчас ходит
-                        $current_user_id = $this->getNextStep();
-
-                        ## Карта ходов второго этапа (флажки для Марата)
-                        ## Ее нужно распаковать, расставить пометки, запаковать обратно и сохранить в БД
-                        $json_settings = json_decode($this->game->json_settings, TRUE);
-                        $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : FALSE;
-                        if ($stage2_tours):
-                            ## Ищем ходы текущего игрока
-                            foreach ($stage2_tours as $t => $tour) {
-                                foreach ($tour as $user_id => $bool) {
-                                    if ($user_id == $current_user_id) {
-                                        ## Если найден ход отвалившегося игрока - ставим пометку о том, что ход уже был "совершен"
-                                        $stage2_tours[$t][$user_id] = true;
-                                    }
-                                }
-                            }
-
-                            ## Запаковываем карту обратно и записываем ее в БД
-                            $this->game->json_settings = json_encode($stage2_tours);
-                            $this->game->save();
-                        endif;
-
-
-                        ## Отвечаем на все неотвеченные вопросы текущего юзера
-                        GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_game->id)->where('status', 0)->update(['answer' => 99999,
-                            'seconds' => 10, 'status' => 1]);
-
-                        ## Переход хода
-                        $this->nextStepInSecondStage();
-                    }
-                }
-
-            } else {
-                ## Если у юзера нет сессии - сразу помечаем его как отключившегося
-                $this->changeGameUsersStatus(100, $user_game);
-            }
-
-            ###################################################################################
-        return TRUE;
     }
 
     private function getUsersIDs() {
