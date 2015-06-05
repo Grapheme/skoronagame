@@ -1484,17 +1484,17 @@ class GameController extends BaseController {
 
     private function changeGameUsersStatus($status, $user = NULL) {
 
-        if(is_null($user)):
+        if (is_null($user)):
             foreach (GameUser::where('game_id', $this->game->id)->whereNotIn('status', array(99, 100))->get() as $user):
                 $user->status = $status;
                 $user->save();
                 $user->touch();
             endforeach;
-        elseif(is_numeric($user)):
+        elseif (is_numeric($user)):
             GameUser::where('game_id', $this->game->id)->where('user_id', $user)
                 ->whereNotIn('status', array(99, 100))
                 ->update(array('status' => $status));
-        elseif(is_object($user)):
+        elseif (is_object($user)):
             if (isset($user->status) && !in_array($user->status, array(99, 100))):
                 $user->status = $status;
                 $user->save();
@@ -1543,9 +1543,9 @@ class GameController extends BaseController {
     }
 
     /******************************* VALIDATION **********************************/
-    private function validGame(){
+    private function validGame() {
 
-        if(!is_null($this->game) && isset($this->game->id) && !empty($this->game->users)):
+        if (!is_null($this->game) && isset($this->game->id) && !empty($this->game->users)):
             return TRUE;
         else:
             return FALSE;
@@ -2643,7 +2643,7 @@ class GameController extends BaseController {
     /****************************** REMOVED USERS *********************************/
     private function disconnectUserInGame($remove_user_id = NULL, $set_status = 100, $set_new_owner = -1, $set_color = 'black') {
 
-        if($this->validGame() === FALSE):
+        if ($this->validGame() === FALSE):
             return FALSE;
         endif;
 
@@ -2654,7 +2654,9 @@ class GameController extends BaseController {
             $set_new_owner = -1;
         endif;
 
-        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->where('is_bot', 0)->whereNotIn('status', array(99, 100))->first()):
+        if ($user = GameUser::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->where('is_bot', 0)->whereNotIn('status', array(99,
+            100))->first()
+        ):
             $user->status = $set_status;
             $user->available_steps = 0;
             $user->make_steps = 0;
@@ -2707,7 +2709,7 @@ class GameController extends BaseController {
                     $this->game->touch();
 
                     $current_user_step = $this->getNextStep();
-                    if($current_user_step == $remove_user_id):
+                    if ($current_user_step == $remove_user_id):
                         $this->nextStepInSecondStage();
 
                         Log::info('nextStepInSecondStage', array('method' => 'disconnectUserInGame',
@@ -2715,7 +2717,7 @@ class GameController extends BaseController {
                             'user' => $remove_user_id,
                             'nextStep' => $this->getNextStep(),
                             'current_user' => Auth::user()->id,
-                            'stage'=>$this->game->stage));
+                            'stage' => $this->game->stage));
 
                     endif;
                 endif;
@@ -3153,7 +3155,7 @@ class GameController extends BaseController {
         return $users_ids;
     }
 
-    private function transferCurrentStep($user_game){
+    private function transferCurrentStep($user_game) {
 
         if ($this->validGameStage(1)):
             if ($user_game->available_steps == 2 && $user_game->status == 0):
@@ -3165,16 +3167,16 @@ class GameController extends BaseController {
                     'message' => 'У исключаемого пользователя есть 2 доступных очка хода. Делаем что он их использовал',
                     'user_id' => $user_game->user_id,
                     'current_user' => Auth::user()->id,
-                    'stage'=>$this->game->stage));
+                    'stage' => $this->game->stage));
 
-                if($user_id = GameUser::where('game_id', $this->game->id)->where('status', 0)->where('available_steps', 1)->pluck('user_id')):
+                if ($user_id = GameUser::where('game_id', $this->game->id)->where('status', 0)->where('available_steps', 1)->pluck('user_id')):
                     $this->nextStep($user_id);
 
                     Log::info('nextStep', array('method' => 'transferCurrentStep',
                         'message' => 'Переход хода предоставляется следующему победителю. У него 1 очко хода',
                         'nextStep' => $this->getNextStep(),
                         'current_user' => Auth::user()->id,
-                        'stage'=>$this->game->stage));
+                        'stage' => $this->game->stage));
 
                     if ($this->isBot($user_id)):
 
@@ -3182,7 +3184,7 @@ class GameController extends BaseController {
                             'message' => 'Переход хода предоставляется боту победителю. У него 1 очко хода',
                             'bot_id' => $user_id,
                             'current_user' => Auth::user()->id,
-                            'stage'=>$this->game->stage));
+                            'stage' => $this->game->stage));
 
                         $this->botConquestTerritory($user_id);
                         $this->nextStep();
@@ -3190,7 +3192,7 @@ class GameController extends BaseController {
                         Log::info('nextStep', array('method' => 'dropUser',
                             'message' => 'Сброс перехода хода.',
                             'current_user' => Auth::user()->id,
-                            'stage'=>$this->game->stage));
+                            'stage' => $this->game->stage));
 
                     endif;
                 else:
@@ -3200,7 +3202,7 @@ class GameController extends BaseController {
                         'message' => 'Переход хода не предоставляется следующему победителю. Игрока с  1 очком хода не найдено',
                         'nextStep' => $this->getNextStep(),
                         'current_user' => Auth::user()->id,
-                        'stage'=>$this->game->stage));
+                        'stage' => $this->game->stage));
 
                 endif;
             elseif ($user_game->available_steps == 1 && $user_game->status == 0):
@@ -3213,26 +3215,26 @@ class GameController extends BaseController {
                     'message' => 'У исключаемого пользователя есть 1 доступное очко хода. Делаем что он их использовал',
                     'user_id' => $user_game->user_id,
                     'current_user' => Auth::user()->id,
-                    'stage'=>$this->game->stage));
+                    'stage' => $this->game->stage));
 
                 if (GameUser::where('game_id', $this->game->id)->where('status', 1)->where('available_steps', 2)->exists()):
 
                     Log::info('exists available_steps == 2', array('method' => 'transferCurrentStep',
                         'message' => 'Нашли игрока, у которого available_steps = 2 (победителя предыдущего шага). Сбрасываем ход.',
                         'current_user' => Auth::user()->id,
-                        'stage'=>$this->game->stage));
+                        'stage' => $this->game->stage));
 
                     $this->nextStep();
                 endif;
             endif;
-        elseif($this->validGameStage(2)):
+        elseif ($this->validGameStage(2)):
             GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_game->id)->where('status', 0)
                 ->update(array('status' => 1, 'answer' => 99999, 'seconds' => 10));
 
             Log::info('validGameStage == 2', array('method' => 'transferCurrentStep',
                 'message' => 'Отвечаем на все неотвеченные вопросы исключаемого пользователя',
                 'current_user' => Auth::user()->id,
-                'stage'=>$this->game->stage));
+                'stage' => $this->game->stage));
 
         endif;
     }
