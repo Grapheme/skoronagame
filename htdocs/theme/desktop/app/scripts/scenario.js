@@ -145,6 +145,7 @@ function matchmaking() {
         if (GAME.stage==1) {
           setTimeout(function(){
             var _html = $('#help-stage-1').html();
+            $('#sexy-alert').addClass('with-tabs');
             sexyAlert(_html, 10, function(){
               idleController();  
             }, 440);

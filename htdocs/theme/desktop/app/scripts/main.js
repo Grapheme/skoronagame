@@ -194,6 +194,7 @@ function sexyAlert(text, timeOut, callback, width) {
     setTimeout(function(){
       hidePoppups();
       callback();
+      $('#secy-alert').removeClass('with-tabs');
     }, timeOut*1000);
   }
   

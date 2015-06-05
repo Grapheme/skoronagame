@@ -273,6 +273,7 @@ function parseGameData(response) {
     if (last_stage == 1 && GAME.stage==2) {
         //sexyAlert('Начался 2 этап!')
         var _html = $('#help-stage-2').html();
+        $('#sexy-alert').addClass('with-tabs');
         sexyAlert(_html, 10, function(){}, 440);
         $('#sexy-alert').find('.close').hide();
     }
