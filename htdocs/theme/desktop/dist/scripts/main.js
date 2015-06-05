@@ -869,7 +869,7 @@ function quizQuesionRender(players) {
     $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
     $('#question-1 .left .answer').text('');
     $('#question-1 .right .answerlkhbdsfksdlhfg').slideUp();
-    $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideDown();
+    $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer, #question-1 .right .note-ast').slideDown();
     $('#question-1 .right .q').html(GAME.question.text);
     $('#question-1 .right .answer-true .qa').text('');
     $('#question-1 .right .answer-true').slideUp(100);
@@ -1459,7 +1459,7 @@ showQuestionResult = function(response){
 
 
 function afterAnswer() {
-  $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer').slideUp(100);
+  $('#question-1 form.a, #question-1 .numpad, #question-1 .right .timer, #question-1 .right .note-ast').slideUp(100);
   $('#question-1 .right .answerlkhbdsfksdlhfg').slideDown(100);
 }
 

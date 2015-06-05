@@ -80,6 +80,6 @@
             <a href="" class="zero">0</a>
         </div>
         <div class="timer">00:02</div>
-        
+        <small class="note-ast" style="margin-top: 20px;display: block;">* ответ можно вводить используя клавиатуру</small>
     </div>
 </div>
