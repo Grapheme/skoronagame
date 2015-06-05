@@ -358,16 +358,15 @@ getResultQuestion = function(){
                   //}
                 } else if (response.responseJSON.result == 'standoff') {
                   //alert('Ничья');
-                    //hidePoppups(function(){
-                    //   sexyAlert('Ничья! Будет задан другой вопрос.', callback = function(){
-                        
-                    if (GAME.stage == 2) {
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
-                    } else {
-                        quizQuesionRender();
-                    }
-                    //});
-                //});
+                    hidePoppups(function(){
+                        sexyAlert('Ничья! Будет задан другой вопрос.', undefined, function(){
+                            if (GAME.stage == 2) {
+                                quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);
+                            } else {
+                                quizQuesionRender();
+                            }
+                        });
+                    });
                     
                   //console.log(response)
                 } else {
