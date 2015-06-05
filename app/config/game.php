@@ -19,5 +19,6 @@ return array(
     'colors' => array('red','green','blue'),
     'bots_ids' => array(3,4),
 
-    'disconnect_user_timeout' => 3000000,
+    'disconnect_user_timeout' => 120,
+    'remove_user_timeout_in_game_wait' => 15
 );
