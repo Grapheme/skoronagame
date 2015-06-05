@@ -549,9 +549,13 @@ whoTurn = function() {
             //alert('Ходит игрок:'+user_turn.color+'! Ваш цвет: '+GAME.user.color+'. Кол-во доступных ходов: '+ GAME.user.available_steps)
             //hidePoppups();
           } else {
-            renderMap(true);
-            takingLand();
+            //renderMap(true);
+            //takingLand();
           }
+        }
+        if (GAME.next_turn == 0 && !$('.popup').is(':visible')) {
+          renderMap(true);
+          takingLand();
         }
       }
       setTimeout(whoTurn, 1000);

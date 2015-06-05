@@ -1,6 +1,6 @@
 idleTimer = null;
 idleState = false; // состояние отсутствия
-idleWait = 60*1000; // время ожидания в мс. (1/1000 секунды)
+idleWait = 900*1000; // время ожидания в мс. (1/1000 секунды)
 idleUrl = "/game/disconnect_user";
 
 
