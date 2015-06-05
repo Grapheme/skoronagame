@@ -866,6 +866,7 @@ function quizQuesionRender(players) {
   
   getQuizQuestion(players, function(){
     //alert(GAME.question.text);
+    $('#question-1 .left .place').text('');
     $('#question-1 .left .timer').text('...').prev('.led').removeClass('red').addClass('black');
     $('#question-1 .left .answer').text('');
     $('#question-1 .right .answerlkhbdsfksdlhfg').slideUp();
@@ -1405,6 +1406,7 @@ showQuestionResult = function(response){
           if (_answ.answer == 99999) {
             _answ.answer = '';
           }
+          $unit.find('.place').text(_answ.place+' Место');
           $unit.find('.timer').text(_answ.answer);
           //$unit.find('.timer').text('10 сек.');
           $unit.find('.timer').prev('.led').removeClass('black').addClass('red');
