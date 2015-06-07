@@ -26,7 +26,8 @@ body {
   width: 100%;
   text-align: center;
   z-index: 1;
-  top: 30px;
+  //top: 30px;
+  top: 70px;
   position: fixed;
   display: none;
   pointer-events: none;
@@ -56,13 +57,16 @@ body {
     left: 0;
     right: 0;
     text-align: center;
-    z-index: 9;
+    z-index: 9;    
+    top: 0px;
+    bottom: initial;
     .holder {
       display: inline-block;
       padding: 5px 10px;
       background: rgba(#00341f, 0.5);
       color: white;
       transform-origin: center bottom;
+      font-size: 20px;
       .green {
         color: #d39500;
       }

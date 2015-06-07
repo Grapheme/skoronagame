@@ -7,6 +7,7 @@
             </div>
             <div class="info">
                 <div class="name">Наполеон</div>
+                <small class="place" style="display: block;margin-bottom: 10px;margin-top: -10px;font-size: 10px;">1 Место</small>
                 <div class="row">
                     <div class="led black"></div>
                     <div class="timer">...</div>
@@ -23,6 +24,7 @@
             </div>
             <div class="info">
                 <div class="name">Хамон</div>
+                <small class="place" style="display: block;margin-bottom: 10px;margin-top: -10px;font-size: 10px;">1 Место</small>
                 <div class="row">
                     <div class="led black"></div>
                     <div class="timer">...</div>
@@ -39,6 +41,7 @@
             </div>
             <div class="info">
                 <div class="name">Мамон</div>
+                <small class="place" style="display: block;margin-bottom: 10px;margin-top: -10px;font-size: 10px;">1 Место</small>
                 <div class="row">
                     <div class="led black"></div>
                     <div class="timer">...</div>
@@ -80,6 +83,6 @@
             <a href="" class="zero">0</a>
         </div>
         <div class="timer">00:02</div>
-        
+        <small class="note-ast" style="margin-top: 20px;display: block;">* ответ можно вводить используя клавиатуру</small>
     </div>
 </div>
