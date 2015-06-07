@@ -63,7 +63,6 @@ class GameController extends BaseController {
             );
         endif;
     }
-
     /****************************************************************************/
     public static function returnRoutes() {
 
