@@ -1,6 +1,9 @@
 <?php
 return array(
 
+    'make_log' => TRUE,
+    'new_game_log' => TRUE,
+
     'number_participants' => 3,
     'time_activity' => time()-(1000*3*60),
     'number_places_on_map' => 15,
