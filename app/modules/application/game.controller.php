@@ -1213,25 +1213,27 @@ class GameController extends BaseController {
             $this->reInitGame();
         endif;
 
-        $nextTour = TRUE;
-        foreach ($stage2_tours[$current_tour] as $user_id => $status):
-            if ($status == FALSE):
-                $nextTour = FALSE;
-                break;
+        if($current_tour < 4):
+            $nextTour = TRUE;
+            foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                if ($status == FALSE):
+                    $nextTour = FALSE;
+                    break;
+                endif;
+            endforeach;
+            if ($nextTour):
+                $current_tour++;
+
+                $json_settings['current_tour'] = $current_tour;
+                $this->game->json_settings = json_encode($json_settings);
+                $this->game->save();
+                $this->game->touch();
+
+                $this->setLog('nextTourInSecondStage', 'current_tour++', 'Наступил следующий тур', array('current_tour' => $current_tour));
+
             endif;
-        endforeach;
-
-        if ($nextTour):
-            $current_tour++;
-
-            $json_settings['current_tour'] = $current_tour;
-            $this->game->json_settings = json_encode($json_settings);
-            $this->game->save();
-            $this->game->touch();
-
-            $this->setLog('nextTourInSecondStage', 'current_tour++', 'Наступил следующий тур', array('current_tour' => $current_tour));
-
         endif;
+
 
         return $current_tour;
     }
@@ -1345,9 +1347,11 @@ class GameController extends BaseController {
             'json_settings' => json_encode(array('next_step' => 0))));
 
         if (Config::get('game.new_game_log') === TRUE):
-            if (File::exists(storage_path('logs/laravel.log'))):
-                File::delete(storage_path('logs/laravel.log'));
+            $fileLogName = 'game-log-' . $this->game->id . '.log';
+            if (File::exists(storage_path('logs/' . $fileLogName))):
+                File::delete(storage_path('logs/' . $fileLogName));
             endif;
+            Log::useFiles(storage_path() . '/logs/' . $fileLogName);
         endif;
 
         $this->setLog('createNewGame', 'createNewGame', 'Создана новая игра');

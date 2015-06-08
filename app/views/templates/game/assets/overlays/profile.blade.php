@@ -48,6 +48,7 @@ endif;
         </div>
     </section>
     <hr>
+    {{--
     @if($badges->count())
     <section class="n2">
         <div class="achivments">
@@ -60,6 +61,7 @@ endif;
         </div>
     </section>
     @endif
+    --}}
     <hr>
     <section class="n3">
         <div class="small-title">ПРИГЛАСИТЬ ДРУЗЕЙ В ИГРУ</div>
