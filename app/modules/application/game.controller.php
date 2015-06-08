@@ -276,7 +276,6 @@ class GameController extends BaseController {
     public function getGame() {
 
         if (!Request::ajax()) return App::abort(404);
-
         if (!$this->initGame()):
             if (!$this->hasCreatedGame()):
                 $this->createNewGame();
@@ -285,11 +284,9 @@ class GameController extends BaseController {
                 $this->startGame();
             endif;
         endif;
-
         $this->isBotNextStepStage2();
         $this->finishGameInFourTour();
         $this->droppingGameUsers();
-
         $this->createGameJSONResponse();
         return Response::json($this->json_request, 200);
     }
