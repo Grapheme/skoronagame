@@ -127,10 +127,18 @@ function takingLand() {
   });
 }
 
+function getTimeOutBots() {
+  setTimeout(function(){
+    if (GAME.status == 'wait') {
+      getBots();
+    }
+  }, 60*1000)
+}
 function matchmaking() {
   getGame(function(){
     if (GAME.status == 'wait') {
       //createPlayers();
+      getTimeOutBots();
       renderPlayers();
       setTimeout(matchmaking, 1000)
     } else {
