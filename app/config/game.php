@@ -1,6 +1,10 @@
 <?php
 return array(
 
+    'make_log' => TRUE,
+    'new_game_log' => TRUE,
+    'make_log_stage' => 2, // 0 - всех этапов, 1-только первого, 2 - только втогоро
+
     'number_participants' => 3,
     'time_activity' => time()-(1000*3*60),
     'number_places_on_map' => 15,
