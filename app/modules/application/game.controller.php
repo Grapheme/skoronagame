@@ -2898,7 +2898,7 @@ class GameController extends BaseController {
                             break;
                         endif;
                     endforeach;
-                    if ($all_steps && !$this->validAvailableSteps() && $this->validUsersStatus(2)):
+                    if ($all_steps && !$this->validAvailableSteps()):
                         $this->nextStep();
                         $this->finishGame(1);
 
