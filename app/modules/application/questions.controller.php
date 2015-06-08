@@ -156,18 +156,29 @@ class QuestionsController extends BaseController {
                         $file_line = trim($file_lines[$j]);
                         if($file_line != ''):
                             if (substr($file_line, 0, 1) == '+'):
-                                $answers[] = array('title' => substr($file_line, 1), 'current' => "1");
+                                $answers[] = array('title' => substr($file_line, 1), 'current' => 1);
                             else:
-                                $answers[] = array('title' => $file_line, 'current' => "0");
+                                $answers[] = array('title' => $file_line, 'current' => 0);
                             endif;
                         else:
-                            $questions[$index] = array('title' => trim(@$file_lines[$i]),
-                                'question' => trim(@$file_lines[$i]),
-                                'type' => $type_question, 'answers' =>json_encode($answers),
-                                'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
-                            $index++;
-                            $i = $j;
-                            break;
+                            if(!empty($answers)):
+                                $insert = FALSE;
+                                foreach($answers as $answer):
+                                    if($answer['current'] == 1):
+                                        $insert = TRUE;
+                                    endif;
+                                endforeach;
+                                if ($insert):
+                                    $questions[$index] = array('title' => trim(@$file_lines[$i]),
+                                        'question' => trim(@$file_lines[$i]),
+                                        'type' => $type_question, 'answers' =>json_encode($answers),
+                                        'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'));
+                                    $index++;
+                                    $i = $j;
+                                endif;
+
+                                break;
+                            endif;
                         endif;
                     endfor;
                 endfor;
