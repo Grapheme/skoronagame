@@ -848,8 +848,7 @@ class GameController extends BaseController {
                             $this->setLog('sendConquestCapital', 'resetGameUsers. capitalLives === 0', 'Сброс параметров игроков');
 
                             $this->createDuel();
-                            $points = $this->getTerritoryPoints($zone_conqueror);
-                            $this->changeUserPoints(Auth::user()->id, $points, $this->user);
+                            $this->changeUserPoints(Auth::user()->id, 1000);
                             $this->nextStepInSecondStage();
 
                             $this->setLog('sendConquestCapital', 'nextStepInSecondStage', 'Столица захвачена. Переход хода');
@@ -1114,6 +1113,14 @@ class GameController extends BaseController {
             $json_settings = json_decode($this->game->json_settings, TRUE);
             $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : FALSE;
             $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : FALSE;
+
+            if ($this->validCurrentTourInSecondStage(4)):
+
+                $this->setLog('nextStepInSecondStage', 'validCurrentTourInSecondStage', 'Переход хода отменено. Текущий номер тура - 5');
+
+                return FALSE;
+            endif;
+
             $current_tour = $this->nextTourInSecondStage($current_tour, $stage2_tours);
             if (isset($stage2_tours[$current_tour])):
                 if ($current_tour < 3):
@@ -1880,6 +1887,7 @@ class GameController extends BaseController {
                             'bot' => $bot_id));
 
                         $this->disconnectUserInGame($conquest->user_id, 99, @$bot->user_id, @$bot->color);
+                        $this->changeUserPoints($bot_id, 1000, $bot);
                         return 0;
                     elseif ($conquest->lives > 1):
                         $conquest->lives = $conquest->lives - 1;
@@ -2106,6 +2114,7 @@ class GameController extends BaseController {
                             'capitalLives' => $capitalLives));
 
                         $this->botDestroyCapital($botConqueror, $zoneConqueror);
+                        $this->changeUserPoints($botConqueror, 1000);
                         break;
                     endif;
                 endif;
@@ -2222,9 +2231,6 @@ class GameController extends BaseController {
         $this->setLog('botDestroyCapital', 'resetGameUsers. capitalLives === 0', 'Сброс параметров игроков');
 
         $this->createDuel();
-        $bot = GameUser::where('game_id', $this->game->id)->where('is_bot', 1)->where('user_id', $botConqueror)->first();
-        $points = $this->getTerritoryPoints($zoneConqueror);
-        $this->changeUserPoints($botConqueror, $points, $bot);
         $this->nextStepInSecondStage();
 
         $this->setLog('botDestroyCapital', 'nextStepInSecondStage', 'Бот захватил столицу. Переход хода', array('duel' => $this->getDuel()));
@@ -2334,6 +2340,7 @@ class GameController extends BaseController {
                                             'capitalLives' => $capitalLives));
 
                                         $this->botDestroyCapital($botConqueror, $zoneConqueror);
+                                        $this->changeUserPoints($botConqueror, 1000);
                                     elseif ($capitalLives > 0):
                                         $this->closeGameUsersQuestions();
                                         $this->resetGameUsers();
@@ -2430,6 +2437,7 @@ class GameController extends BaseController {
                     $this->setLog('conquestCapital', 'disconnectUserInGame', 'Запуск скрипта на исключение пользователя из игры', array('remove_user' => $conquest->user_id));
 
                     $this->disconnectUserInGame($conquest->user_id, 99, @$user->user_id, @$user->color);
+                    $this->changeUserPoints($user_id, 1000);
                     return 0;
                 elseif ($conquest->lives > 1):
                     $conquest->lives = $conquest->lives - 1;
