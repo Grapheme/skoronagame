@@ -24,6 +24,10 @@ class GameController extends BaseController {
         elseif (Input::has('game') && Input::get('game') > 0):
             $this->game = Game::where('id', Input::get('game'))->with('users', 'users.user_social', 'users.session', 'map_places')->first();
             $this->user = GameUser::where('game_id', Input::get('game'))->where('user_id', Auth::user()->id)->first();
+
+            $fileLogName = 'game-log-' . $this->game->id . '.log';
+            Log::useFiles(storage_path() . '/logs/' . $fileLogName);
+
             return ($this->user) ? TRUE : FALSE;
         else:
             $this->game = 0;
