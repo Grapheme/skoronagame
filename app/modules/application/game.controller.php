@@ -343,9 +343,9 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function setGameSync($sync_status = 0){
+    private function setGameSync($sync_status = 0) {
 
-        if($this->initGame()):
+        if ($this->initGame()):
             $this->game->sync = $sync_status;
             $this->game->save();
         endif;
@@ -524,7 +524,7 @@ class GameController extends BaseController {
             'zone' => ''));
         if ($validation->passes()):
 
-            if($this->validGameSync(1)):
+            if ($this->validGameSync(1)):
                 $this->game_winners = 'retry';
                 $this->createQuestionResultJSONResponse();
                 return Response::json($this->json_request, 200);
@@ -1242,7 +1242,7 @@ class GameController extends BaseController {
             $this->reInitGame();
         endif;
 
-        if($current_tour < 4):
+        if ($current_tour < 4):
             $nextTour = TRUE;
             foreach ($stage2_tours[$current_tour] as $user_id => $status):
                 if ($status == FALSE):
@@ -1708,7 +1708,7 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function validWinnersCalculate($post){
+    private function validWinnersCalculate($post) {
 
         $hasWinnersCalculate = FALSE;
         if ($this->validGameStage(1)):
@@ -1746,7 +1746,7 @@ class GameController extends BaseController {
 
     }
 
-    private function validGameSync($sync_status = 0){
+    private function validGameSync($sync_status = 0) {
 
         if ($this->initGame()):
             if ($this->game->sync == $sync_status):
@@ -1942,13 +1942,13 @@ class GameController extends BaseController {
     private function botAnswerQuizQuestion($bot_id, $current_answer, $question_group_id) {
 
         $percent = 0.4;
-        if($current_answer >= 100 && $current_answer <= 1000):
+        if ($current_answer >= 100 && $current_answer <= 1000):
             $percent = 0.2;
-        elseif($current_answer > 1000 && $current_answer <= 1800):
+        elseif ($current_answer > 1000 && $current_answer <= 1800):
             $percent = 0.1;
-        elseif($current_answer > 1800 && $current_answer <= 2000):
+        elseif ($current_answer > 1800 && $current_answer <= 2000):
             $percent = 0.05;
-        elseif($current_answer > 2000):
+        elseif ($current_answer > 2000):
             $percent = 0.01;
         endif;
 
@@ -2254,7 +2254,7 @@ class GameController extends BaseController {
 
         if ($this->validGame() && $this->validGameStatus($this->game_statuses[2]) && $this->validGameStage(2)):
 
-            if($this->validGameSync(1)):
+            if ($this->validGameSync(1)):
                 return FALSE;
             endif;
 
