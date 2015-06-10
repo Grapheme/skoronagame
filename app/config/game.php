@@ -1,6 +1,8 @@
 <?php
 return array(
 
+    'use_bots' => TRUE,
+
     'make_log' => TRUE,
     'new_game_log' => TRUE,
     'make_log_stage' => 0, // 0 - всех этапов, 1-только первого, 2 - только втогоро

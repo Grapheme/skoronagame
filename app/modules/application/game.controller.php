@@ -247,7 +247,7 @@ class GameController extends BaseController {
         if (count($games)):
             foreach ($games as $game):
                 if ($game->users->count()):
-                    $this->game = Game::where('id', $game->id)->with('users')->first();
+                    $this->game = Game::where('id', $game->id)->with('users', 'users.user_social', 'users.session', 'map_places')->first();
                     break;
                 endif;
             endforeach;
@@ -267,12 +267,11 @@ class GameController extends BaseController {
         if (count($games)):
             foreach ($games as $game):
                 if ($game->users->count()):
-                    $this->game = Game::where('id', $game->id)->with('users')->first();
+                    $this->game = Game::where('id', $game->id)->with('users', 'users.user_social', 'users.session', 'map_places')->first();
                     break;
                 endif;
             endforeach;
         endif;
-
         return View::make(Helper::acclayout('demo'), array('game' => $this->game));
     }
 
@@ -305,11 +304,8 @@ class GameController extends BaseController {
         if (GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->exists() === FALSE):
             $this->game->users[] = GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
                 'is_bot' => 0, 'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
-
             Sessions::setUserLastActivity();
-
             $this->setLog('joinNewGame', 'setUserLastActivity', 'Пользователь подключился к игре');
-
         endif;
     }
 
@@ -1387,6 +1383,8 @@ class GameController extends BaseController {
 
         if ($this->game):
             self::joinNewGame();
+            $this->reInitGame();
+            $this->droppingNewGameUsers();
             $this->reInitGame();
         endif;
         return TRUE;
@@ -2917,6 +2915,29 @@ class GameController extends BaseController {
                 $this->reInitGame();
             endif;
 
+        endif;
+    }
+
+
+    private function droppingNewGameUsers(){
+
+        if ($this->initGame()):
+            foreach ($this->game->users as $user_game):
+
+                Helper::ta($user_game);
+
+                if ($this->isBot($user_game->user_id) === FALSE):
+                    if (empty($user_game->session) || !isset($user_game->session->last_activity)):
+                        GameUser::where('game_id', $this->game->id)->where('user_id', $user_game->user_id)->where('is_bot', 0)->delete();
+                        $this->setLog('droppingNewGameUsers', 'empty(user_game->session)', 'У пользователя отсутствует данные сессии. Удален из игры.', array('user' => $user_game->user_id));
+                        $this->reInitGame();
+                    elseif ((time() - $user_game->session->last_activity) > Config::get('game.disconnect_user_timeout', 60)):
+                        GameUser::where('game_id', $this->game->id)->where('user_id', $user_game->user_id)->where('is_bot', 0)->delete();
+                        $this->setLog('droppingNewGameUsers', 'time() - last_activity', 'У пользователя истекло время на действия. Удален из игры.', array('user' => $user_game->user_id));
+                        $this->reInitGame();
+                    endif;
+                endif;
+            endforeach;
         endif;
     }
 
