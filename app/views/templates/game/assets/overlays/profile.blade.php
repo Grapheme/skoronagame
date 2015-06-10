@@ -5,6 +5,7 @@ $winners = GameUser::where('user_id', Auth::user()->id)->where('place', 1)->coun
 $tours = GameUser::where('user_id', Auth::user()->id)->count();
 $bals = GameUserRating::where('user_id', Auth::user()->id)->sum('rating');
 $user_badges = array();
+$points = 0;
 if (count($profile->games)):
     foreach ($profile->games as $games):
         if (isset($games->game->status_over) && $games->game->status_over):
