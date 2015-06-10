@@ -26,6 +26,7 @@
     <script>
         var _skoronagame_ = {}
         _skoronagame_.game_id = {{ is_object($game) ? $game->id : -1 }};
+        _skoronagame_.use_bost = {{ (int) Config::get('game.use_bots') }};
         _skoronagame_.open_frame = 'menu';
     </script>
 @stop

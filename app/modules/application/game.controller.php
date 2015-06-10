@@ -356,6 +356,9 @@ class GameController extends BaseController {
                 $this->createNewGame();
             else:
                 $this->joinNewGame();
+                $this->reInitGame();
+                $this->droppingNewGameUsers();
+                $this->reInitGame();
                 $this->startGame();
             endif;
         endif;
@@ -2923,9 +2926,6 @@ class GameController extends BaseController {
 
         if ($this->initGame()):
             foreach ($this->game->users as $user_game):
-
-                Helper::ta($user_game);
-
                 if ($this->isBot($user_game->user_id) === FALSE):
                     if (empty($user_game->session) || !isset($user_game->session->last_activity)):
                         GameUser::where('game_id', $this->game->id)->where('user_id', $user_game->user_id)->where('is_bot', 0)->delete();
