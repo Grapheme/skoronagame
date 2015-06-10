@@ -2921,7 +2921,6 @@ class GameController extends BaseController {
         endif;
     }
 
-
     private function droppingNewGameUsers(){
 
         if ($this->initGame()):

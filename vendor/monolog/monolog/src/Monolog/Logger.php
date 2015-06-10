@@ -443,7 +443,7 @@ class Logger implements LoggerInterface
     public function log($level, $message, array $context = array())
     {
         $level = static::toMonologLevel($level);
-        
+
         return $this->addRecord($level, $message, $context);
     }
 
@@ -613,5 +613,17 @@ class Logger implements LoggerInterface
     public function emergency($message, array $context = array())
     {
         return $this->addRecord(static::EMERGENCY, $message, $context);
+    }
+
+    /**
+     * Set the timezone to be used for the timestamp of log records.
+     *
+     * This is stored globally for all Logger instances
+     *
+     * @param \DateTimeZone $tz Timezone object
+     */
+    public static function setTimezone(\DateTimeZone $tz)
+    {
+        self::$timezone = $tz;
     }
 }

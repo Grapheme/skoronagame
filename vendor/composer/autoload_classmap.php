@@ -110,6 +110,7 @@ return array(
     'Whoops\\Module' => $vendorDir . '/filp/whoops/src/deprecated/Zend/Module.php',
     'Whoops\\Provider\\Zend\\ExceptionStrategy' => $vendorDir . '/filp/whoops/src/deprecated/Zend/ExceptionStrategy.php',
     'Whoops\\Provider\\Zend\\RouteNotFoundStrategy' => $vendorDir . '/filp/whoops/src/deprecated/Zend/RouteNotFoundStrategy.php',
+    'Xss' => $baseDir . '/app/modules/application/models/Xss.php',
     'helperr' => $baseDir . '/app/commands/helperr.php',
     'link' => $baseDir . '/app/lib/link.php',
     'myDateTime' => $baseDir . '/app/lib/myDateTime.php',
