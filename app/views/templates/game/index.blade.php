@@ -10,6 +10,8 @@
     @include(Helper::layout('blocks.map'))
 @stop
 @section('overlays')
+<div class="popup-wrapper">
+    <div class="popup-holder">
     @include(Helper::acclayout('assets.overlays.menu'))
     @include(Helper::acclayout('assets.overlays.help'))
     @include(Helper::acclayout('assets.overlays.rating'))
@@ -21,6 +23,8 @@
     @include(Helper::acclayout('assets.overlays.new-password'))
     @include(Helper::acclayout('assets.overlays.password-is-new'))
     @include(Helper::acclayout('assets.overlays.alert'))
+    </div>
+</div>
 @stop
 @section('scripts')
     <script>
