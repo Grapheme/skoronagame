@@ -8,7 +8,7 @@ return array(
     'make_log_stage' => 0, // 0 - всех этапов, 1-только первого, 2 - только втогоро
 
     'number_participants' => 3,
-    'time_activity' => time()-(1000*3*60),
+    'time_activity' => time() - (1000 * 3 * 60),
     'number_places_on_map' => 15,
     'map_empty_place_lives' => 1,
     'map_capital_place_lives' => 3,
@@ -22,8 +22,8 @@ return array(
         11 => array(8, 12), 12 => array(13, 3, 10, 6, 7, 8, 11),
         13 => array(15, 4, 3, 12), 14 => array(1, 2, 15), 15 => array(14, 2, 4, 13),
     ),
-    'colors' => array('red','green','blue'),
-    'bots_ids' => array(3,4),
+    'colors' => array('red', 'green', 'blue'),
+    'bots_ids' => array(3, 4),
 
     'disconnect_user_timeout' => 120,
     'remove_user_timeout_in_game_wait' => 15
