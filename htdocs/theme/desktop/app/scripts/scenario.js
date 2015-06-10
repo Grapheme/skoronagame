@@ -696,24 +696,33 @@ showQuestionResult = function(response){
     }
     showQuestionResult_timeout = setTimeout(function(){
       hidePoppups(function(){
-        
-        if (GAME.stage == 2){
-          for(var i in GAME.resultQuestion.results) {
-            if (GAME.resultQuestion.results[i].place==1) {
-              var _usr = getUserById(i);
-              var _name = _usr.name;
-              if (GAME.user.id == i) {
-                sexyAlert('<span class='+_usr.color+'>Вы</span> выиграли в сражении.');
-              } else {
-                sexyAlert('Игрок <span class='+_usr.color+'>'+_name+'</span> выиграл в сражении.');
+        function do_this() {
+          if (GAME.stage == 2){
+            for(var i in GAME.resultQuestion.results) {
+              if (GAME.resultQuestion.results[i].place==1) {
+                var _usr = getUserById(i);
+                var _name = _usr.name;
+                if (GAME.user.id == i) {
+                  sexyAlert('<span class='+_usr.color+'>Вы</span> выиграли в сражении.');
+                } else {
+                  sexyAlert('Игрок <span class='+_usr.color+'>'+_name+'</span> выиграл в сражении.');
+                }
               }
             }
+            $.each(GAME.users, function(index, value){
+              console.log(GAME.resultQuestion.results);
+            }); 
           }
-          $.each(GAME.users, function(index, value){
-            console.log(GAME.resultQuestion.results);
-          }); 
+          tryToConquer();
         }
-        tryToConquer();
+        if (GAME.resultQuestion2 && GAME.resultQuestion2.responseJSON['2bots'] == 1 && GAME.stage == 1) {
+          $('#sexy-alert .note').html('');
+          sexyAlert('<span class="'+GAME.enemies[0].color+'">'+GAME.enemies[0].name+'</span> и <span class="'+GAME.enemies[1].color+'">'+GAME.enemies[1].name+'</span> распределили между собой территории.', undefined, function(){
+            do_this();
+          })
+        } else {
+          do_this();
+        }
       });
     }, 7000);
   })

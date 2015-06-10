@@ -348,6 +348,7 @@ getResultQuestion = function(){
       dataType: 'json',
       success: function (response) {
           if (response.status) {
+            GAME.resultQuestion2 = response;
             console.log(response.responseJSON.result);
             //if(GAME.stage == 1 || GAME.question.type=='quiz'){
             if(GAME.question.type=='quiz'){
@@ -372,7 +373,7 @@ getResultQuestion = function(){
                 } else {
                   showQuestionResult(response);
                   if (GAME.stage == 2) {
-                    showQuestionResult(response);
+                    //showQuestionResult(response);
                     tryToConquer();
                     //GAME.question = {};
                   }
@@ -383,7 +384,7 @@ getResultQuestion = function(){
                     //hidePoppups(fun);
                     //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
                        //setTimeout(function(){
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);   
                         //}, 0) 
                     //});
                     //GAME.getQuizQuestion();
