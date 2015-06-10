@@ -410,17 +410,19 @@ getResultQuestion = function(){
 
 sendQuestionAnswer = function(callback){
   callback = callback || function(){}
+  console.log({game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time}, 'request send-answer')
   $.ajax({
     type: "POST",
     url: '/game/question/send-answer',
     data: {game: GAME.game_id, question: GAME.question.id, answer: GAME.question.answer, time: GAME.question.time},
     dataType: 'json',
     success: function (response) {
+        console.log(response, 'RESPONSE send-answer')
       if (response.status && response.status == true) {
         //console.log(response);
         callback();
       } else {
-        sendQuestionAnswer(callback);
+        //sendQuestionAnswer(callback);
       }
     },
     error: function (xhr, textStatus, errorThrown) {

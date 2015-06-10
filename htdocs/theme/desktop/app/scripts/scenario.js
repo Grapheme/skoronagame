@@ -687,9 +687,10 @@ showQuestionResult = function(response){
           var _usr = getUserById(value.id);
           if (_answ.correctly==1) {
             $('#question-2 .a a').eq(_answ.current_answer_index).addClass('true');
-            $('#question-2 .a a').eq(_answ.current_answer_index).addClass(_usr.color);
+            //$('#question-2 .a a').eq(_answ.current_answer_index).addClass(_usr.color);
           }
-          $('#question-2 .a a:contains("'+value.answer+'")').addClass(_usr.color);
+          $('#question-2 .a a').eq(_answ.user_answer_index).addClass(_usr.color);
+          //$('#question-2 .a a:contains("'+value.answer+'")').addClass(_usr.color);
         }
       });
     }
