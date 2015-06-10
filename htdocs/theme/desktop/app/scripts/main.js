@@ -248,6 +248,7 @@ sendForm = function(form) {
       console.log(textStatus)
     }
   });
+  //openFrame(_popup);
 }
 
 
@@ -316,6 +317,24 @@ $('#new-password form').validate({
     ver_password :{
         required: 'Обязательное поле',
         equalTo: 'Пароли не совпадают',
+    }
+  },
+  submitHandler: function(form) {
+    sendForm(form);
+  }
+});
+
+$('#password-forgot form').validate({
+  rules: {
+    email: {
+      required: true,
+      email: true
+    }
+  },
+  messages: {
+    email: {
+      required: 'Обязательное поле',
+      email: 'Неверный формат. Попробуйте еще'
     }
   },
   submitHandler: function(form) {
