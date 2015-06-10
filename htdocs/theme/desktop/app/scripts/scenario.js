@@ -82,8 +82,10 @@ function renderGameOver() {
     });
   }
   
-  openFrame('winer');
-  showPoppups();
+  if (!$('.popup-wrapper').is(':visible')) {
+    openFrame('winer');
+    showPoppups();
+  }
 }
 
 function quizQuesionRender(players) {
@@ -132,7 +134,7 @@ function getTimeOutBots() {
     if (GAME.status == 'wait') {
       getBots();
     }
-  }, 60*1000)
+  }, 20*1000)
 }
 function matchmaking() {
   getGame(function(){
@@ -144,6 +146,7 @@ function matchmaking() {
     } else {
       renderPlayers();
       createPlayers();
+      $('#infowindow-question').show();
       if (GAME.status == "start" || GAME.status == "ready") {
         renderMap(true);
         hidePoppups();
@@ -531,10 +534,14 @@ whoTurn = function() {
       if (GAME.next_turn==GAME.user.id) {
         if (GAME.user.available_steps == 2) {
           sexyAlert('Ваш ход. <br>Выберите 2 территории.');
-          infoWhoTurnText('Ваш ход. <br>Выберите 2 территории.')
         }
         if (GAME.user.available_steps == 1) {
           sexyAlert('Ваш ход. <br>Выберите 1 территорию.');
+        }
+        if (GAME.user.available_steps - GAME.user.make_steps == 2) {
+          infoWhoTurnText('Ваш ход. <br>Выберите 2 территории.')
+        }
+        if (GAME.user.available_steps - GAME.user.make_steps == 1) {
           infoWhoTurnText('Ваш ход. <br>Выберите 1 территорию.');
         }
         
