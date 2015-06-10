@@ -697,7 +697,10 @@ class GameController extends BaseController {
                             $current_answer_index = isset($answer_question[0]['title']) ? $answer_question[0]['title'] : 0;
                             foreach ($users_questions as $users_question):
                                 $correctly = ($users_question->answer == $current_answer) ? TRUE : FALSE;
-                                $users_answers[$users_question->user_id] = array('answer' => $users_question->answer,
+                                $users_answers[$users_question->user_id] = array(
+                                    'type' => $post['type'],
+                                    'answer' => $users_question->answer,
+                                    'user_answer_index' => $users_question->answer,
                                     'current_answer_index' => $current_answer_index, 'correctly' => $correctly,
                                     'seconds' => $users_question->seconds, 'place' => $users_question->place,
                                     'status' => $users_question->status);
@@ -711,7 +714,10 @@ class GameController extends BaseController {
                             foreach ($users_questions as $users_question):
                                 $answer_title = isset($answer_question[$users_question->answer]['title']) ? $answer_question[$users_question->answer]['title'] : '';
                                 $answer_current = isset($answer_question[$users_question->answer]['current']) ? $answer_question[$users_question->answer]['current'] : '';
-                                $users_answers[$users_question->user_id] = array('answer' => $answer_title,
+                                $users_answers[$users_question->user_id] = array(
+                                    'type' => $post['type'],
+                                    'answer' => $answer_title,
+                                    'user_answer_index' => $users_question->answer,
                                     'current_answer_index' => $current_answer_index,
                                     'correctly' => (int)$answer_current,
                                     'seconds' => $users_question->seconds, 'place' => $users_question->place,
@@ -2897,7 +2903,7 @@ class GameController extends BaseController {
                 $this->setLog('droppingGameUsers', 'finishGame (1)', 'Игра завершилась. Отвалились 2 или более игроков');
 
                 $this->reInitGame();
-            elseif ($deadUsersCount == 1 && $this->validGameBots()):
+            elseif (($deadUsersCount == 1 || $inActiveUsersCount == 1) && $this->validGameBots()):
                 $bots_count = $this->getGameCountBots();
                 if ($bots_count == 2):
                     $this->nextStep();
