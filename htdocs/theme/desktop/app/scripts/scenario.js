@@ -130,11 +130,13 @@ function takingLand() {
 }
 
 function getTimeOutBots() {
-  setTimeout(function(){
-    if (GAME.status == 'wait') {
-      getBots();
-    }
-  }, 20*1000)
+  if (_skoronagame_.use_bots == 1) {
+    setTimeout(function(){
+      if (GAME.status == 'wait') {
+        getBots();
+      }
+    }, 20*1000)
+  }
 }
 function matchmaking() {
   getGame(function(){
