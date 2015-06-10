@@ -138,6 +138,12 @@ function getTimeOutBots() {
 }
 function matchmaking() {
   getGame(function(){
+    $(window).bind('beforeunload', function(){
+      if (GAME.status != 'over') {
+        return 'Вы уверены что хотите покинуть игру?';
+      }
+    });
+    
     if (GAME.status == 'wait') {
       //createPlayers();
       getTimeOutBots();
