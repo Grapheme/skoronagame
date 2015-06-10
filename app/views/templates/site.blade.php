@@ -16,12 +16,8 @@
     @section('content')
         {{ @$content }}
     @show
-    <div class="popup-wrapper">
-        <div class="popup-holder">
-            @section('overlays')
-            @show
-        </div>
-    </div>
+    @section('overlays')
+    @show
     @include(Helper::layout('assets.footer'))
     @section('footer')
     @show
