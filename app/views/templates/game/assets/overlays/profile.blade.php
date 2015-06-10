@@ -1,9 +1,9 @@
 <?php
 $badges = GameBadges::orderBy('name')->get();
-$profile = Accounts::where('id', Auth::user()->id)->with('games.game','badges','social')->first();
-$winners = GameUser::where('user_id',Auth::user()->id)->where('place',1)->count();
-$tours = GameUser::where('user_id',Auth::user()->id)->count();
-$points = GameUserRating::where('user_id',Auth::user()->id)->sum('rating');
+$profile = Accounts::where('id', Auth::user()->id)->with('games.game', 'badges', 'social')->first();
+$winners = GameUser::where('user_id', Auth::user()->id)->where('place', 1)->count();
+$tours = GameUser::where('user_id', Auth::user()->id)->count();
+$bals = GameUserRating::where('user_id', Auth::user()->id)->sum('rating');
 $user_badges = array();
 if (count($profile->games)):
     foreach ($profile->games as $games):
@@ -28,11 +28,13 @@ endif;
         <div class="center">
             <div class="ava">
                 <div class="mask"></div>
-            @if(!empty($profile->social) && !empty($profile->social->photo_big))
-                <div class="img" style="background-image: url({{ $profile->social->photo_big }}); width:86px; height:98px;"></div>
-            @else
-                <div class="img" style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:86px; height:98px;"></div>
-            @endif
+                @if(!empty($profile->social) && !empty($profile->social->photo_big))
+                    <div class="img"
+                         style="background-image: url({{ $profile->social->photo_big }}); width:86px; height:98px;"></div>
+                @else
+                    <div class="img"
+                         style="background-image: url({{ asset(Config::get('site.theme_path').'/images/ava.png') }}); width:86px; height:98px;"></div>
+                @endif
             </div>
             <div class="info">
                 <div class="name">{{ $profile->name }}</div>
@@ -42,7 +44,8 @@ endif;
                     <span class="grey">| {{ $tours }} {{ Lang::choice('турнир|турнира|турниров',$tours) }}</span>
                 </div>
                 <div class="row">
-                    <div class="ico ruby"></div>Всего баллов: <strong>{{ number_format($points,0,'.',' ') }}</strong>
+                    <div class="ico ruby"></div>
+                    Всего баллов: <strong>{{ number_format($bals,0,'.',' ') }}</strong>
                 </div>
             </div>
         </div>
@@ -70,7 +73,9 @@ endif;
             <a href=""><img src="{{ asset(Config::get('site.theme_path').'/images/ico-ok.png') }}"></a>
             <a href=""><img src="{{ asset(Config::get('site.theme_path').'/images/ico-fb.png') }}"></a>
         </div>
-    </section><br>
+    </section>
+    <br>
+
     <div class="buttons">
         <div class="left">
             <a href="#rating">Рейтинг</a>
