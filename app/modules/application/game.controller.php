@@ -2011,7 +2011,7 @@ class GameController extends BaseController {
 
             if ($this->isBot($winners_id[1])):
 
-                Config::set('game.2bots', 1);
+                Config::set('game.2bots', 2);
 
                 $this->setLog('isBotNextStepStage1', '2bots', 'Победили 2 бота');
 
