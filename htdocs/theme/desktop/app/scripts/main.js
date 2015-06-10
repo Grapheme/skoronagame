@@ -74,13 +74,13 @@ function idleController() {
 }
 //$("body").trigger("mousemove"); // сгенерируем ложное событие, для запуска скрипта
 
-var bg_width = $('#map').width();
+var bg_width = $('#map, #tutorial').width();
 
 function scale() {
   var doc_width = $(window).width();
   $('#map').transition({ scale: doc_width/bg_width });
   $('#user-list').transition({ scale: doc_width/bg_width });
-  $('.infowindow.tour1, .infowindow.tour2, .infowindow.who-turn .holder').transition({ scale: doc_width/bg_width });
+  $('.infowindow.tour1, .infowindow.tour2, .infowindow.who-turn .holder, #tutorial').transition({ scale: doc_width/bg_width });
 }
 
 $(window).resize(function (){
@@ -88,7 +88,7 @@ $(window).resize(function (){
 });
 
 $(window).load(function() {
-  bg_width = $('#map').width();
+  bg_width = $('#map, #tutorial').width();
   scale();
 });
 
@@ -329,3 +329,17 @@ $('form').submit(function(e){
     //e.preventDefault();
   }
 });
+
+if ($('#tutorial').length > 0) {
+    var c = $('#tutorial .tip').size();
+    
+    setTimeout(function(){
+        $('#tutorial .screen').fadeIn(300, function(){
+            for (i=1; i<=c; i++) {
+                setTimeout(function(i){
+                    $('#tutorial .help-'+i).addClass('active');
+                }, 1000*i, i);
+            } 
+        });
+    }, 1000);
+}
