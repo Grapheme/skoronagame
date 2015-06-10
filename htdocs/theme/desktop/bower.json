@@ -7,5 +7,8 @@
     "normalize-scss": "~3.0.3",
     "jquery.transit": "~0.9.12",
     "jquery-validation": "~1.13.1"
+  },
+  "devDependencies": {
+    "js-cookie": "~1.5.1"
   }
 }

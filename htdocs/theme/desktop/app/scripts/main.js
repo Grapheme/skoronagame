@@ -357,8 +357,20 @@ if ($('#tutorial').length > 0) {
             for (i=1; i<=c; i++) {
                 setTimeout(function(i){
                     $('#tutorial .help-'+i).addClass('active');
+                    if (i == (c-1)) {
+                        $('#tutorial').click(function(){
+                            window.location.href='../'
+                        });
+                    }
                 }, 1000*i, i);
             } 
         });
     }, 1000);
+}
+
+if ($('#menu').is('.active')) {
+    if (!Cookies.get('firsttime')) {
+        Cookies.set('firsttime', true);
+        window.location.href="../tutorial"
+    }
 }
