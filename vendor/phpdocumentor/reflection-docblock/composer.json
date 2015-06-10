@@ -15,8 +15,8 @@
         "phpunit/phpunit": "~4.0"
     },
     "suggest": {
-        "erusev/parsedown": "~1.0",
-        "league/commonmark": "*"
+        "dflydev/markdown": "~1.0",
+        "erusev/parsedown": "~1.0"
     },
     "extra": {
         "branch-alias": {
