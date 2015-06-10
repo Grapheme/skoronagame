@@ -1367,7 +1367,8 @@ class GameController extends BaseController {
         if ($this->validGameStatus($this->game_statuses[2])):
             $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
                 'game_status' => $this->game->status, 'game_stage' => $this->game->stage,
-                'current_user' => Auth::user()->id, 'result' => $this->game_winners);
+                'current_user' => Auth::user()->id, 'result' => $this->game_winners,
+                '2bots' => (int) Config::get('game.2bots'));
             $this->json_request['status'] = TRUE;
         endif;
     }
@@ -2009,6 +2010,10 @@ class GameController extends BaseController {
             $this->setLog('isBotNextStepStage1', 'nextStep', 'Переводим ход на следующего игрока. Бот отходил');
 
             if ($this->isBot($winners_id[1])):
+
+                Config::set('game.2bots', 1);
+
+                $this->setLog('isBotNextStepStage1', '2bots', 'Победили 2 бота');
 
                 $this->setLog('isBotNextStepStage1', 'isBot', 'Бот занял 2-е место', array('bot' => $winners_id[1]));
 
