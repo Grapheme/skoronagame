@@ -11,14 +11,18 @@
     @include(Helper::layout('blocks.map'))
 @stop
 @section('overlays')
-    @include(Helper::layout('assets.overlays.login'))
-    @include(Helper::layout('assets.overlays.register'))
-    @include(Helper::layout('assets.overlays.password-forgot'))
-    @include(Helper::layout('assets.overlays.authorisation-send'))
-    @include(Helper::layout('assets.overlays.password-send'))
-    @if(Session::has('reset_token') && Session::has('reset_email'))
-        @include(Helper::layout('assets.overlays.password-reset'))
-    @endif
+<div class="popup-wrapper">
+    <div class="popup-holder">
+        @include(Helper::layout('assets.overlays.login'))
+        @include(Helper::layout('assets.overlays.register'))
+        @include(Helper::layout('assets.overlays.password-forgot'))
+        @include(Helper::layout('assets.overlays.authorisation-send'))
+        @include(Helper::layout('assets.overlays.password-send'))
+        @if(Session::has('reset_token') && Session::has('reset_email'))
+            @include(Helper::layout('assets.overlays.password-reset'))
+        @endif
+    </div>
+</div>
 @stop
 @section('scripts')
 <script>
