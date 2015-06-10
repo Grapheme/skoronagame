@@ -331,7 +331,7 @@ GAME.getUsersResultQuestions = function () {
     $.ajax({
         type: "POST",
         url: '/game/question/get-users-results',
-        data: {game: GAME.game_id, question: 1, type: 'quiz'},
+        data: {game: GAME.game_id, question: 14, type: 'normal'},
         dataType: 'json',
         beforeSend: function () {},
         success: function (response) {
