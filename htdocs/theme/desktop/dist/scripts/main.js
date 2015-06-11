@@ -384,7 +384,11 @@ getResultQuestion = function(){
                     //hidePoppups(fun);
                     //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
                        //setTimeout(function(){
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);   
+                    renderResultNormalQuestion(function(){
+                        setTimeout(function(){
+                            quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        }, 4000)
+                    })
                         //}, 0) 
                     //});
                     //GAME.getQuizQuestion();
@@ -1453,6 +1457,39 @@ function orderPlayers() {
 }
 
 var showQuestionResult_timeout;
+
+function renderResultNormalQuestion(callback) {
+  callback = callback || function(){};
+  getUsersResultQuestions(function(){
+    $.each(GAME.users, function(index, value){
+      var _answ = GAME.resultQuestion.results[value.id];
+      console.log(_answ)
+      if (_answ) {
+        var _usr = getUserById(value.id);
+        if (_answ.correctly==1) {
+          $('#question-2 .a a').eq(_answ.current_answer_index).addClass('true');
+        }
+        
+        $('#question-2 .a a').eq(_answ.user_answer_index).addClass(_usr.color);
+        $('#question-2 .a a').eq(_answ.current_answer_index).addClass('true');
+        
+        if (value.id != GAME.user.id) {
+          if (_answ.user_answer_index == 99999) {
+            if (_answ.current_answer_index == 0) {
+              $('#question-2 .a a').eq(1).addClass(_usr.color);
+            }
+            else {
+              $('#question-2 .a a').eq(0).addClass(_usr.color);
+            }
+          }
+        }
+        
+      }
+    });
+    callback();
+  });
+}
+
 showQuestionResult = function(response){
   GAME.question.result = response.responseJSON.result;
   //var _s = '';
@@ -1490,7 +1527,8 @@ showQuestionResult = function(response){
       orderPlayers();
       //showQuestionResult_timeout = setTimeout(hidePoppups, 7000);
     } else {
-      $.each(GAME.users, function(index, value){
+      renderResultNormalQuestion();
+      /*$.each(GAME.users, function(index, value){
         var _answ = GAME.resultQuestion.results[value.id];
         console.log(_answ)
         if (_answ) {
@@ -1502,7 +1540,7 @@ showQuestionResult = function(response){
           $('#question-2 .a a').eq(_answ.user_answer_index).addClass(_usr.color);
           //$('#question-2 .a a:contains("'+value.answer+'")').addClass(_usr.color);
         }
-      });
+      });*/
     }
     showQuestionResult_timeout = setTimeout(function(){
       hidePoppups(function(){
