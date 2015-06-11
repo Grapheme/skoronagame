@@ -239,9 +239,10 @@ class GameController extends BaseController {
             $this->user = GameUser::where('game_id', Input::get('game'))->where('user_id', Auth::user()->id)->first();
             $this->leader = GameUser::where('game_id', Input::get('game'))->where('leader', 1)->first();
 
-            $fileLogName = 'game-log-' . $this->game->id . '.log';
-            Log::useFiles(storage_path() . '/logs/' . $fileLogName);
-
+            if (Config::get('game.new_game_log') === TRUE):
+                $fileLogName = 'game-log-' . $this->game->id . '.log';
+                Log::useFiles(storage_path() . '/logs/' . $fileLogName);
+            endif;
             return ($this->user) ? TRUE : FALSE;
         else:
             $this->game = 0;
@@ -309,7 +310,7 @@ class GameController extends BaseController {
     private function joinNewGame() {
 
         if (GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->exists() === FALSE):
-            $newGamer =  GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
+            $newGamer = GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
                 'leader' => 0, 'is_bot' => 0, 'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
             $this->game->users[] = $newGamer;
             $this->leader = $this->nextGameLeader($newGamer->user_id);
@@ -363,7 +364,7 @@ class GameController extends BaseController {
                 $this->startGame();
             endif;
         endif;
-        if($this->validGameLeader()):
+        if ($this->validGameLeader()):
             $this->isBotNextStepStage2();
             $this->finishGameInFourTour();
             $this->droppingGameUsers();
@@ -1319,7 +1320,7 @@ class GameController extends BaseController {
             $this->json_request['responseJSON'] = array('game_id' => $this->game->id,
                 'game_status' => $this->game->status, 'game_stage' => $this->game->stage,
                 'current_user' => Auth::user()->id, 'result' => $this->game_winners,
-                '2bots' => (int) Config::get('game.2bots'));
+                '2bots' => (int)Config::get('game.2bots'));
             $this->json_request['status'] = TRUE;
         endif;
     }
@@ -1667,9 +1668,9 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function validGameLeader($user_id = NULL){
+    private function validGameLeader($user_id = NULL) {
 
-        if(is_null($user_id)):
+        if (is_null($user_id)):
             $user_id = Auth::user()->id;
         endif;
         if (GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->where('leader', 1)->where('is_bot', 0)->exists()):
@@ -1938,7 +1939,7 @@ class GameController extends BaseController {
 
     private function isBotNextStepStage1() {
 
-        if($this->validGameLeader() === FALSE):
+        if ($this->validGameLeader() === FALSE):
             return FALSE;
         endif;
 
@@ -2317,7 +2318,7 @@ class GameController extends BaseController {
     private function conquestTerritory($zone, $user_id = NULL) {
 
         if (is_null($user_id)):
-            $user_id = $this->user->id;
+            $user_id = Auth::user()->id;
             $user = $this->user;
         else:
             $user = GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->first();
@@ -2693,7 +2694,7 @@ class GameController extends BaseController {
             $user->touch();
             $this->setLog('disconnectUserInGame', 'user.status', 'Пользователю выставился статус ' . $set_status, array('user' => $remove_user_id,
                 'status' => $user->status));
-            if($this->validGameLeader($remove_user_id)):
+            if ($this->validGameLeader($remove_user_id)):
                 $this->nextGameLeader();
             endif;
             foreach (GameMap::where('game_id', $this->game->id)->where('user_id', $remove_user_id)->get() as $zone):
@@ -2821,7 +2822,7 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function droppingNewGameUsers(){
+    private function droppingNewGameUsers() {
 
         if ($this->initGame()):
             foreach ($this->game->users as $user_game):
@@ -3050,18 +3051,18 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function nextGameLeader($user_id = NULL){
+    private function nextGameLeader($user_id = NULL) {
 
         GameUser::where('game_id', $this->game->id)->update(array('leader' => 0));
         $newLeader = NULL;
-        if(is_null($user_id)):
+        if (is_null($user_id)):
             $newLeader = GameUser::where('game_id', $this->game->id)->where('is_bot', 0)
                 ->whereNotIn('status', array(99, 100))->first();
         else:
             $newLeader = GameUser::where('game_id', $this->game->id)->where('user_id', $user_id)->where('is_bot', 0)
                 ->whereNotIn('status', array(99, 100))->first();
         endif;
-        if($newLeader):
+        if ($newLeader):
             $newLeader->leader = 1;
             $newLeader->save();
             $this->leader = $newLeader;
@@ -3074,7 +3075,7 @@ class GameController extends BaseController {
         endif;
     }
 
-    private function getNumberParticipants(){
+    private function getNumberParticipants() {
 
         $number_participants = Config::get('game.number_participants');
         if ($this->validGameStage(2)):
