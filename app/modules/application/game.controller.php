@@ -362,9 +362,9 @@ class GameController extends BaseController {
                 $this->droppingNewGameUsers();
                 $this->reInitGame();
                 $this->startGame();
+
                 $this->changeGameStatus($this->game_statuses[1]);
                 $this->changeGameStage(1);
-                $this->reInitGame();
             endif;
         endif;
         if ($this->validGameLeader()):
@@ -903,7 +903,8 @@ class GameController extends BaseController {
             $this->joinBotsInGame();
             $this->reInitGame();
             $this->startGame();
-            $this->reInitGame();
+            $this->changeGameStatus($this->game_statuses[1]);
+            $this->changeGameStage(1);
             $this->json_request['responseText'] = 'Виртуальные пользователи добавлены';
             $this->json_request['status'] = TRUE;
         endif;
@@ -1424,7 +1425,7 @@ class GameController extends BaseController {
     /******************************* RANDOM**************************************/
     private function randomUsersColor() {
 
-        if ($this->validGameStage(1)):
+        if ($this->initGame()):
             foreach ($this->game->users as $user_index => $user):
                 $random_color = $this->randomColor($user_index);
                 $user->color = $random_color;
