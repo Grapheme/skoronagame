@@ -975,10 +975,9 @@ class GameController extends BaseController {
             $step_values[2] = FALSE;
             $step_values[3] = FALSE;
 
-//            foreach ($users as $index => $user_id):
-//                $user_ids[$index + 1] = $user_id;
-//                $json_settings['stage2_tours'][3][$user_id] = FALSE;
-//            endforeach;
+            foreach ($users as $index => $user_id):
+                $user_ids[$index + 1] = $user_id;
+            endforeach;
             $users = GameUser::where('game_id', $this->game->id)->lists('status', 'user_id');
             foreach ($user_ids as $index => $user_id):
                 if (in_array($users[$user_id], array(99, 100))):
