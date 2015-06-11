@@ -2313,7 +2313,6 @@ class GameController extends BaseController {
             'users' => $users_ids));
 
     }
-
     /******************************** CONQUEST ***********************************/
     private function conquestTerritory($zone, $user_id = NULL) {
 
