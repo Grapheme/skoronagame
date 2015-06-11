@@ -4,7 +4,8 @@ return array(
     'use_bots' => TRUE,
 
     'make_log' => TRUE,
-    'new_game_log' => TRUE,
+    'rebuild_log' => TRUE,
+    'new_game_log' => FALSE,
     'make_log_stage' => 0, // 0 - всех этапов, 1-только первого, 2 - только втогоро
 
     'number_participants' => 3,
