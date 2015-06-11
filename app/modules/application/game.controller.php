@@ -329,8 +329,6 @@ class GameController extends BaseController {
             $this->game->save();
             $this->game->touch();
 
-            $this->changeGameStatus($this->game_statuses[1]);
-            $this->changeGameStage(1);
             $this->randomUsersColor();
             $this->reInitGame();
             $this->createGameMap();
@@ -364,6 +362,9 @@ class GameController extends BaseController {
                 $this->droppingNewGameUsers();
                 $this->reInitGame();
                 $this->startGame();
+                $this->changeGameStatus($this->game_statuses[1]);
+                $this->changeGameStage(1);
+                $this->reInitGame();
             endif;
         endif;
         if ($this->validGameLeader()):
