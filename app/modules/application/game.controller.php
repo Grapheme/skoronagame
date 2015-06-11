@@ -1406,7 +1406,6 @@ class GameController extends BaseController {
 
         $json_settings = json_decode($this->game->json_settings, TRUE);
         $json_settings['duel'] = is_array($users_ids) ? $users_ids : array();
-
         if (is_null($users_ids) && is_null($zone)):
             $json_settings['conqu_zone'] = NULL;
         elseif (!is_null($users_ids) && is_null($zone) && !isset($json_settings['conqu_zone'])):
@@ -1416,7 +1415,6 @@ class GameController extends BaseController {
         elseif (!is_null($zone)):
             $json_settings['conqu_zone'] = $zone;
         endif;
-
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
