@@ -10,6 +10,7 @@
 @section('content')
 <div id="tutorial">
     <div class="screen"></div>
+    <a href="../" style="position: absolute;color: white;font-size: 18px;right: 30px;top: 30px;">Пропустить</a>
     <div class="tip help-1 players"><img src="{{ asset(Config::get('site.theme_path')).'/images/help-1.png' }}"></div>
     <div class="tip help-2 info"><img src="{{ asset(Config::get('site.theme_path')).'/images/help-2.png' }}"></div>
     <div class="tip help-3 area"><img src="{{ asset(Config::get('site.theme_path')).'/images/help-3.png' }}"></div>
