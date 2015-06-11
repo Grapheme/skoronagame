@@ -3066,7 +3066,10 @@ class GameController extends BaseController {
             $newLeader->save();
             $this->leader = $newLeader;
         else:
-            $this->leader = FALSE;
+            $this->nextStep();
+            $this->finishGame(1);
+            $this->setLog('nextGameLeader', 'finishGame (1)', 'Невозможно определить лидера игры.');
+            $this->reInitGame();
             return FALSE;
         endif;
     }
