@@ -3082,5 +3082,4 @@ class GameController extends BaseController {
         endif;
         return $number_participants;
     }
-
 }
