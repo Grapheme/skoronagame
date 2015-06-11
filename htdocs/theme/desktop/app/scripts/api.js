@@ -384,7 +384,11 @@ getResultQuestion = function(){
                     //hidePoppups(fun);
                     //sexyAlert('Ничья! Будет задан квиз-вопрос.', function(){
                        //setTimeout(function(){
-                        quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);   
+                    renderResultNormalQuestion(function(){
+                        setTimeout(function(){
+                            quizQuesionRender([GAME.duel.conqu, GAME.duel.def]);    
+                        }, 4000)
+                    })
                         //}, 0) 
                     //});
                     //GAME.getQuizQuestion();
