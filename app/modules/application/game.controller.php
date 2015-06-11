@@ -310,7 +310,9 @@ class GameController extends BaseController {
 
         if (GameUser::where('game_id', $this->game->id)->where('user_id', Auth::user()->id)->exists() === FALSE):
             $newGamer = GameUser::create(array('game_id' => $this->game->id, 'user_id' => Auth::user()->id,
-                'leader' => 0, 'is_bot' => 0, 'status' => 0, 'points' => 0, 'json_settings' => json_encode(array())));
+                'leader' => 0, 'is_bot' => 0, 'status' => 0,
+                'available_steps' => 0, 'make_steps' => 0, 'color' => NULL,
+                'points' => 0, 'json_settings' => json_encode(array())));
             $this->game->users[] = $newGamer;
             $this->leader = $this->nextGameLeader($newGamer->user_id);
             Sessions::setUserLastActivity();
@@ -335,6 +337,9 @@ class GameController extends BaseController {
             $this->randomDistributionCapital();
             $this->randomStep();
             $this->reInitGame();
+
+            $this->changeGameStatus($this->game_statuses[1]);
+            $this->changeGameStage(1);
         endif;
     }
 
@@ -362,9 +367,7 @@ class GameController extends BaseController {
                 $this->droppingNewGameUsers();
                 $this->reInitGame();
                 $this->startGame();
-
-                $this->changeGameStatus($this->game_statuses[1]);
-                $this->changeGameStage(1);
+                $this->reInitGame();
             endif;
         endif;
         if ($this->validGameLeader()):
@@ -903,8 +906,7 @@ class GameController extends BaseController {
             $this->joinBotsInGame();
             $this->reInitGame();
             $this->startGame();
-            $this->changeGameStatus($this->game_statuses[1]);
-            $this->changeGameStage(1);
+            $this->reInitGame();
             $this->json_request['responseText'] = 'Виртуальные пользователи добавлены';
             $this->json_request['status'] = TRUE;
         endif;
@@ -977,29 +979,26 @@ class GameController extends BaseController {
 //                $user_ids[$index + 1] = $user_id;
 //                $json_settings['stage2_tours'][3][$user_id] = FALSE;
 //            endforeach;
-            $json_settings['stage2_tours'][3] = array();
-            try {
-                $users = GameUser::where('game_id', $this->game->id)->lists('status', 'user_id');
-                foreach ($user_ids as $index => $user_id):
-                    if (in_array($users[$user_id], array(99, 100))):
-                        $step_values[$index] = TRUE;
-                    endif;
-                endforeach;
-                // первый тур
-                $json_settings['stage2_tours'][0][$user_ids[1]] = $step_values[1];
-                $json_settings['stage2_tours'][0][$user_ids[2]] = $step_values[2];
-                $json_settings['stage2_tours'][0][$user_ids[3]] = $step_values[3];
-                // второй тур
-                $json_settings['stage2_tours'][1][$user_ids[2]] = $step_values[2];
-                $json_settings['stage2_tours'][1][$user_ids[3]] = $step_values[3];
-                $json_settings['stage2_tours'][1][$user_ids[1]] = $step_values[1];
-                // третий тур
-                $json_settings['stage2_tours'][2][$user_ids[3]] = $step_values[3];
-                $json_settings['stage2_tours'][2][$user_ids[1]] = $step_values[1];
-                $json_settings['stage2_tours'][2][$user_ids[2]] = $step_values[2];
-            } catch (Exception $e) {
+            $users = GameUser::where('game_id', $this->game->id)->lists('status', 'user_id');
+            foreach ($user_ids as $index => $user_id):
+                if (in_array($users[$user_id], array(99, 100))):
+                    $step_values[$index] = TRUE;
+                endif;
+            endforeach;
+            // первый тур
+            $json_settings['stage2_tours'][0][$user_ids[1]] = $step_values[1];
+            $json_settings['stage2_tours'][0][$user_ids[2]] = $step_values[2];
+            $json_settings['stage2_tours'][0][$user_ids[3]] = $step_values[3];
+            // второй тур
+            $json_settings['stage2_tours'][1][$user_ids[2]] = $step_values[2];
+            $json_settings['stage2_tours'][1][$user_ids[3]] = $step_values[3];
+            $json_settings['stage2_tours'][1][$user_ids[1]] = $step_values[1];
+            // третий тур
+            $json_settings['stage2_tours'][2][$user_ids[3]] = $step_values[3];
+            $json_settings['stage2_tours'][2][$user_ids[1]] = $step_values[1];
+            $json_settings['stage2_tours'][2][$user_ids[2]] = $step_values[2];
 
-            }
+            $json_settings['stage2_tours'][3] = array();
         endif;
 
         $this->game->json_settings = json_encode($json_settings);
@@ -1366,7 +1365,7 @@ class GameController extends BaseController {
 
     private function createGameMap() {
 
-        if ($this->validGameStatus($this->game_statuses[1])):
+        if ($this->initGame()):
             $map_places = array();
             GameMap::where('game_id', $this->game->id)->delete();
             for ($i = 0; $i < Config::get('game.number_places_on_map'); $i++):
@@ -1431,13 +1430,14 @@ class GameController extends BaseController {
                 $user->color = $random_color;
                 $user->save();
                 $user->touch();
+                $this->game->users[$user_index]['color'] = $random_color;
             endforeach;
         endif;
     }
 
     private function randomDistributionCapital() {
 
-        if ($this->validGameStage(1)):
+        if ($this->initGame()):
             if ($map_places_list = GameMap::where('game_id', $this->game->id)->orderBy('zone')->orderBy('id')->get()):
                 $map_places = $map_places_ids = $map_capital_ids = array();
                 foreach ($map_places_list as $map_place):
@@ -1730,11 +1730,11 @@ class GameController extends BaseController {
         if ($user_games_count == 1):
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[0],
                 'is_bot' => 1,
-                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color' => '', 'points' => 0,
+                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color' => NULL, 'points' => 0,
                 'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[1],
                 'is_bot' => 1,
-                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color' => '', 'points' => 0,
+                'status' => 0, 'available_steps' => 0, 'make_steps' => 0, 'color' => NULL, 'points' => 0,
                 'place' => 0, 'json_settings' => json_encode(array()), 'created_at' => date('Y-m-d H:i:s'));
         elseif ($user_games_count == 2):
             $this->game->users[] = $bots[] = array('game_id' => $this->game->id, 'user_id' => $bots_ids[0],
