@@ -238,7 +238,6 @@ class GameController extends BaseController {
             $this->game = Game::where('id', Input::get('game'))->with('users', 'users.user_social', 'users.session', 'map_places')->first();
             $this->user = GameUser::where('game_id', Input::get('game'))->where('user_id', Auth::user()->id)->first();
             $this->leader = GameUser::where('game_id', Input::get('game'))->where('leader', 1)->first();
-
             if (Config::get('game.new_game_log') === TRUE):
                 $fileLogName = 'game-log-' . $this->game->id . '.log';
                 Log::useFiles(storage_path() . '/logs/' . $fileLogName);
@@ -316,6 +315,9 @@ class GameController extends BaseController {
             $this->leader = $this->nextGameLeader($newGamer->user_id);
             Sessions::setUserLastActivity();
             $this->setLog('joinNewGame', 'setUserLastActivity', 'Пользователь подключился к игре и стал новым лидером');
+            if (!empty($this->game->map_places)):
+                GameMap::where('game_id', $this->game->id)->delete();
+            endif;
         endif;
     }
 
@@ -649,8 +651,10 @@ class GameController extends BaseController {
                                     'type' => $post['type'],
                                     'answer' => $users_question->answer,
                                     'user_answer_index' => $users_question->answer,
-                                    'current_answer_index' => $current_answer_index, 'correctly' => $correctly,
-                                    'seconds' => $users_question->seconds, 'place' => $users_question->place,
+                                    'current_answer_index' => $current_answer_index,
+                                    'correctly' => $correctly,
+                                    'seconds' => $users_question->seconds,
+                                    'place' => $users_question->place,
                                     'status' => $users_question->status);
                             endforeach;
                         elseif ($post['type'] == 'normal'):
@@ -668,7 +672,8 @@ class GameController extends BaseController {
                                     'user_answer_index' => $users_question->answer,
                                     'current_answer_index' => $current_answer_index,
                                     'correctly' => (int)$answer_current,
-                                    'seconds' => $users_question->seconds, 'place' => $users_question->place,
+                                    'seconds' => $users_question->seconds,
+                                    'place' => $users_question->place,
                                     'status' => $users_question->status);
                             endforeach;
                         endif;
@@ -966,10 +971,11 @@ class GameController extends BaseController {
             $step_values[2] = FALSE;
             $step_values[3] = FALSE;
 
-            foreach ($users as $index => $user_id):
-                $user_ids[$index + 1] = $user_id;
-                $json_settings['stage2_tours'][3][$user_id] = FALSE;
-            endforeach;
+//            foreach ($users as $index => $user_id):
+//                $user_ids[$index + 1] = $user_id;
+//                $json_settings['stage2_tours'][3][$user_id] = FALSE;
+//            endforeach;
+            $json_settings['stage2_tours'][3] = array();
             try {
                 $users = GameUser::where('game_id', $this->game->id)->lists('status', 'user_id');
                 foreach ($user_ids as $index => $user_id):
@@ -1333,14 +1339,18 @@ class GameController extends BaseController {
             'date_begin' => '000-00-00 00:00:00', 'status_over' => 0, 'date_over' => '000-00-00 00:00:00',
             'json_settings' => json_encode(array('next_step' => 0))));
 
-        if (Config::get('game.new_game_log') === TRUE):
-            $fileLogName = 'game-log-' . $this->game->id . '.log';
-            if (File::exists(storage_path('logs/' . $fileLogName))):
-                File::delete(storage_path('logs/' . $fileLogName));
+        if (Config::get('game.make_log')):
+            $fileLogName = 'laravel.log';
+            if (Config::get('game.new_game_log') === TRUE):
+                $fileLogName = 'game-log-' . $this->game->id . '.log';
+            endif;
+            if (Config::get('game.rebuild_log')):
+                if (File::exists(storage_path('logs/' . $fileLogName))):
+                    File::delete(storage_path('logs/' . $fileLogName));
+                endif;
             endif;
             Log::useFiles(storage_path() . '/logs/' . $fileLogName);
         endif;
-
         $this->setLog('createNewGame', 'createNewGame', 'Создана новая игра');
 
         if ($this->game):
@@ -1356,6 +1366,7 @@ class GameController extends BaseController {
 
         if ($this->validGameStatus($this->game_statuses[1])):
             $map_places = array();
+            GameMap::where('game_id', $this->game->id)->delete();
             for ($i = 0; $i < Config::get('game.number_places_on_map'); $i++):
                 $map_places[] = new GameMap(array(
                     'game_id' => $this->game->id, 'user_id' => 0, 'zone' => $i + 1, 'capital' => 0,
@@ -2313,6 +2324,7 @@ class GameController extends BaseController {
             'users' => $users_ids));
 
     }
+
     /******************************** CONQUEST ***********************************/
     private function conquestTerritory($zone, $user_id = NULL) {
 
@@ -2455,6 +2467,9 @@ class GameController extends BaseController {
                 elseif ($this->game_winners['first_place'][0] == $duel['def']):
                     $this->game_winners['second_place'][] = $duel['conqu'];
                 endif;
+
+                $this->setLog('setQuizQuestionWinner', 'validGameStage(2)', 'Занятые места', array('game_winners' => $this->game_winners));
+
             endif;
             $winner_places = array();
             $places = array('first_place' => 1, 'second_place' => 2, 'third_place' => 3);
@@ -2465,6 +2480,8 @@ class GameController extends BaseController {
             endforeach;
             if ($this->validGameStage(1)):
                 $this->nextStep(@$this->game_winners['first_place'][0]);
+            else:
+                $this->setLog('setQuizQuestionWinner', 'validGameStage(2)', 'Определения победителей', array('winner_places' => $winner_places));
             endif;
             $this->game_winners = $winner_places;
         endif;

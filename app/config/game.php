@@ -1,9 +1,10 @@
 <?php
 return array(
 
-    'use_bots' => FALSE,
+    'use_bots' => TRUE,
 
     'make_log' => TRUE,
+    'rebuild_log' => TRUE,
     'new_game_log' => FALSE,
     'make_log_stage' => 0, // 0 - всех этапов, 1-только первого, 2 - только втогоро
 
