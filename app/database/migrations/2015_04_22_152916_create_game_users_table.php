@@ -10,6 +10,7 @@ class CreateGameUsersTable extends Migration {
 			$table->increments('id');
             $table->integer('game_id')->default(0)->nullable()->unsigned();
             $table->integer('user_id')->default(0)->nullable()->unsigned();
+            $table->boolean('leader')->default(0)->nullable()->unsigned();
             $table->boolean('is_bot')->default(0)->nullable()->unsigned();
             $table->tinyInteger('status')->default(0)->nullable()->unsigned();
             $table->tinyInteger('available_steps')->default(0)->nullable()->unsigned();

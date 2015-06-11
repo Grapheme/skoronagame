@@ -1,7 +1,7 @@
 <?php
 return array(
 
-    'use_bots' => TRUE,
+    'use_bots' => FALSE,
 
     'make_log' => TRUE,
     'new_game_log' => TRUE,
