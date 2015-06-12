@@ -2418,13 +2418,11 @@ class GameController extends BaseController {
             elseif ($this->validGameStage(2)):
                 $duel = $this->getDuel();
                 if ($this->game_winners['first_place'][0] == $duel['conqu']):
-                    $this->game_winners['second_place'][] = $duel['def'];
+                    $this->game_winners['second_place'][0] = (int) $duel['def'];
                 elseif ($this->game_winners['first_place'][0] == $duel['def']):
-                    $this->game_winners['second_place'][] = $duel['conqu'];
+                    $this->game_winners['second_place'][0] = (int) $duel['conqu'];
                 endif;
-
                 $this->setLog('setQuizQuestionWinner', 'validGameStage(2)', 'Занятые места', array('game_winners' => $this->game_winners));
-
             endif;
             $winner_places = array();
             $places = array('first_place' => 1, 'second_place' => 2, 'third_place' => 3);
@@ -2639,8 +2637,8 @@ class GameController extends BaseController {
 
     private function setGameUserQuestionPlace($user_id, $place) {
 
-        GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->where('status', 1)->where('place', 0)
-            ->update(array('status' => 2, 'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
+        GameUserQuestions::where('game_id', $this->game->id)->where('user_id', $user_id)->update(array('status' => 2,
+            'place' => $place, 'updated_at' => date('Y-m-d H:i:s')));
     }
 
     /****************************** REMOVED USERS *********************************/
