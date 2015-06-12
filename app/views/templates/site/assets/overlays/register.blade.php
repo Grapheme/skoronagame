@@ -2,7 +2,7 @@
     <a href="#close" class="close"></a>
     <div class="title">Регистрация</div>
     {{ Form::open(array('url'=>URL::route('quick-register'),'data-result'=>'authorisation-send')) }}
-    {{ Form::text('name',NULL,array('placeholder'=>'Введите имя','maxlength'=>12)) }}
+    {{ Form::text('name',NULL,array('placeholder'=>'Введите имя')) }}
         <div class="i">
           <div class="text-wrapper">
             <div class="text">
