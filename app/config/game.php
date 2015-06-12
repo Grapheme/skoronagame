@@ -6,7 +6,7 @@ return array(
     'make_log' => TRUE,
     'rebuild_log' => TRUE,
     'new_game_log' => FALSE,
-    'make_log_stage' => 0, // 0 - всех этапов, 1-только первого, 2 - только втогоро
+    'make_log_stage' => 2, // 0 - всех этапов, 1-только первого, 2 - только втогоро
 
     'number_participants' => 3,
     'time_activity' => time() - (1000 * 3 * 60),

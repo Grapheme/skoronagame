@@ -276,6 +276,7 @@ class GameController extends BaseController {
                     'current_user' => Auth::user()->id,
                     'current_step' => $this->getNextStep(),
                     'game_stage' => $this->game->stage,
+                    'game_tour' => $this->getCurrentTourInSecondStage(),
                     'game_id' => $this->game->id
                 )
             );
@@ -933,6 +934,7 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
+        $this->reInitGame();
     }
 
     private function createStepInSecondStage($userID = NULL) {
@@ -947,17 +949,16 @@ class GameController extends BaseController {
             $current_tour = $this->nextTourInSecondStage($current_tour, $stage2_tours);
             if (isset($stage2_tours[$current_tour][$userID]) && $stage2_tours[$current_tour][$userID] == FALSE):
                 $stage2_tours[$current_tour][$userID] = TRUE;
-
                 $this->setLog('createStepInSecondStage', 'user_step == TRUE', 'Зафиксировался шаг игрока', array('current_tour' => $current_tour,
                     'user' => $userID));
-
             endif;
-            $current_tour = $this->nextTourInSecondStage($current_tour, $stage2_tours);
-            $json_settings['current_tour'] = $current_tour;
             $json_settings['stage2_tours'] = $stage2_tours;
             $this->game->json_settings = json_encode($json_settings);
             $this->game->save();
             $this->game->touch();
+            $this->reInitGame();
+
+            $this->nextTourInSecondStage($current_tour, $stage2_tours);
         endif;
     }
 
@@ -1003,56 +1004,34 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
-
+        $this->reInitGame();
         reset($json_settings['stage2_tours'][0]);
         return array_keys($json_settings['stage2_tours'][0])[0];
     }
 
     private function updateTemplateStepInSecondStage($first_step) {
 
-        $this->reInitGame();
-
-        $json_settings = json_decode($this->game->json_settings, TRUE);
-        $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : FALSE;
-        $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : FALSE;
-
-        if ($current_tour === FALSE || $stage2_tours === FALSE):
-            $this->nextStep();
-            $this->finishGame(0);
-
-            $this->setLog('updateTemplateStepInSecondStage', 'finishGame (0)', 'Игра завершилась. Отсутствуют данные current_tour или stage2_tours');
-
-            $this->reInitGame();
+        $step_values[$first_step] = FALSE;
+        if (GameUser::where('game_id', $this->game->id)->where('user_id', $first_step)->whereIn('status', array(99,100))->exists()):
+            $step_values[0] = TRUE;
         endif;
-
-        $first_step_value = GameUser::where('game_id', $this->game->id)->where('user_id', $first_step)->whereNotIn('status', array(99,
-            100))->exists();
-        $step_values[0] = FALSE;
-        $step_values[1] = FALSE;
-
-        $user_ids = array();
-        foreach ($this->game->users as $index => $game_user):
-            if ($game_user->user_id != $first_step):
-                $user_ids[$index] = $game_user->user_id;
-                if (in_array($game_user->status, array(99, 100))):
-                    $step_values[$index] = TRUE;
-                endif;
+        $user_ids = GameUser::where('game_id', $this->game->id)->where('user_id', '!=', $first_step)->lists('status', 'user_id');
+        foreach ($user_ids as $user_id => $status):
+            $step_values[$user_id] = FALSE;
+            if (in_array($status, array(99, 100))):
+                $step_values[$user_id] = TRUE;
             endif;
         endforeach;
-        try {
-            // третий тур
-            $json_settings['stage2_tours'][$current_tour][$first_step] = $first_step_value;
-            $json_settings['stage2_tours'][$current_tour][$user_ids[0]] = $step_values[0];
-            $json_settings['stage2_tours'][$current_tour][$user_ids[1]] = $step_values[1];
-        } catch (Exception $e) {
-
-            $this->setLog('updateTemplateStepInSecondStage', 'try|catch', 'Возникла ошибка при назначении шагов в 3 туре', array('current_tour' => $current_tour,
-                'first_step' => $first_step, 'user_ids' => $user_ids));
-
-        }
+        $current_tour = $this->getCurrentTourInSecondStage();
+        $json_settings = json_decode($this->game->json_settings, TRUE);
+        foreach($step_values as $user_id => $status):
+            $json_settings['stage2_tours'][$current_tour][$user_id] = $status;
+        endforeach;
+        $this->setLog('updateTemplateStepInSecondStage', '', 'Произошло обновление шагов в 3 туре',array('stage2_tours'=>$json_settings, 'current_tour' => $current_tour));
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
+        $this->reInitGame();
     }
 
     private function nextStep($user_id = 0) {
@@ -1062,6 +1041,7 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
+        $this->reInitGame();
     }
 
     private function getNextStep() {
@@ -1076,61 +1056,20 @@ class GameController extends BaseController {
             $json_settings = json_decode($this->game->json_settings, TRUE);
             $current_tour = isset($json_settings['current_tour']) ? $json_settings['current_tour'] : FALSE;
             $stage2_tours = isset($json_settings['stage2_tours']) ? $json_settings['stage2_tours'] : FALSE;
-
             if ($this->validCurrentTourInSecondStage(4)):
-
                 $this->setLog('nextStepInSecondStage', 'validCurrentTourInSecondStage', 'Переход хода отменено. Текущий номер тура - 5');
-
                 return FALSE;
             endif;
-
             $current_tour = $this->nextTourInSecondStage($current_tour, $stage2_tours);
             if (isset($stage2_tours[$current_tour])):
-                if ($current_tour < 3):
-                    foreach ($stage2_tours[$current_tour] as $user_id => $status):
-                        if ($status == FALSE):
-                            $this->nextStep($user_id);
-                            break;
-                        endif;
-                    endforeach;
-                elseif ($current_tour == 3):
-                    $this->nextStep();
-
-                    $this->setLog('nextStepInSecondStage', 'current_tour == 3. NextStep', 'Наступил 3-й тур. Сбрасываем ход', array('current_tour' => $current_tour));
-
-                    $firstStep = TRUE;
-                    foreach ($stage2_tours[$current_tour] as $user_id => $status):
-                        if ($status == TRUE):
-                            $firstStep = FALSE;
-                            break;
-                        endif;
-                    endforeach;
-                    if ($firstStep):
-
-                        $this->setLog('nextStepInSecondStage', 'firstStep', 'Первое вхождение в 3-й тур');
-
-                        if ($winner = $this->getWinnerByPoints()):
-
-                            $this->setLog('nextStepInSecondStage', 'getWinnerByPoints', 'Определился победитель по 3м турам', array('winner' => $winner));
-
-                            $this->updateTemplateStepInSecondStage($winner);
-                            $this->nextStep($winner);
-                        else:
-                            $this->randomStep();
-
-                            $this->setLog('nextStepInSecondStage', 'randomStep', 'Победитель по 3м турам не определился. Выбираем случайного', array('winner' => $winner));
-
-                            $this->updateTemplateStepInSecondStage($this->getNextStep());
-                        endif;
-                    else:
-                        foreach ($stage2_tours[$current_tour] as $user_id => $status):
-                            if ($status == FALSE):
-                                $this->nextStep($user_id);
-                                break;
-                            endif;
-                        endforeach;
+                foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                    if ($status == FALSE):
+                        $this->nextStep($user_id);
+                        break;
                     endif;
-                endif;
+                endforeach;
+            else:
+                $this->setLog('nextStepInSecondStage', 'stage2_tours[current_tour]. ERROR', 'Не существует текущего этапа', array('current_tour' => $current_tour));
             endif;
         endif;
     }
@@ -1199,12 +1138,9 @@ class GameController extends BaseController {
         if ($current_tour === FALSE || $stage2_tours === FALSE):
             $this->nextStep();
             $this->finishGame(0);
-
             $this->setLog('nextTourInSecondStage', 'finishGame (0)', 'Игра завершилась. Отсутствуют данные current_tour или stage2_tours');
-
             $this->reInitGame();
         endif;
-
         if ($current_tour < 4):
             $nextTour = TRUE;
             foreach ($stage2_tours[$current_tour] as $user_id => $status):
@@ -1213,20 +1149,48 @@ class GameController extends BaseController {
                     break;
                 endif;
             endforeach;
+            $old_tour = $current_tour;
             if ($nextTour):
                 $current_tour++;
-
+                $json_settings = json_decode($this->game->json_settings, TRUE);
                 $json_settings['current_tour'] = $current_tour;
                 $this->game->json_settings = json_encode($json_settings);
                 $this->game->save();
                 $this->game->touch();
-
+                $this->reInitGame();
                 $this->setLog('nextTourInSecondStage', 'current_tour++', 'Наступил следующий тур', array('current_tour' => $current_tour));
 
+                if ($old_tour == 2 && $current_tour == 3):
+                    $firstStep = TRUE;
+                    foreach ($stage2_tours[$current_tour] as $user_id => $status):
+                        if ($status == TRUE):
+                            $firstStep = FALSE;
+                            break;
+                        endif;
+                    endforeach;
+                    if ($firstStep):
+                        $this->setLog('nextTourInSecondStage', 'firstStep', 'Первое вхождение в 3-й тур');
+                        if ($winner = $this->getWinnerByPoints()):
+                            $this->setLog('createStepInSecondStage', 'getWinnerByPoints', 'Определился победитель по 3м турам', array('winner' => $winner));
+                            $this->updateTemplateStepInSecondStage($winner);
+                            $this->setStepInSecondStageJSON();
+                            $this->setLog('updateTemplateStepInSecondStage', 'setStepInSecondStageJSON', 'Шаги пользователя на 3 туре',array('json_settings'=>$this->game->json_settings, 'current_tour' => $current_tour));
+
+                            $this->nextStep($winner);
+                        else:
+                            $this->randomStep();
+                            $this->setLog('nextTourInSecondStage', 'randomStep', 'Победитель по 3м турам не определился. Выбираем случайного', array('winner' => $winner));
+                            $this->updateTemplateStepInSecondStage($this->getNextStep());
+                            $this->setStepInSecondStageJSON();
+                        endif;
+                    endif;
+                elseif($old_tour == 3 && $current_tour == 4):
+                    $this->setLog('createStepInSecondStage', '', 'Первое вхождение в 4-й тур');
+
+                    $this->setLog('updateTemplateStepInSecondStage', 'setStepInSecondStageJSON', 'Шаги пользователя на 4 туре',array('json_settings'=>$this->game->json_settings, 'current_tour' => $current_tour));
+                endif;
             endif;
         endif;
-
-
         return $current_tour;
     }
 
@@ -1235,51 +1199,42 @@ class GameController extends BaseController {
         if ($this->validGameStage(2)):
             $json_settings = json_decode($this->game->json_settings, TRUE);
             if (isset($json_settings['current_tour']) && isset($json_settings['stage2_tours'])):
-                $current_tour = $json_settings['current_tour'];
-                $stage2_tours = $json_settings['stage2_tours'];
-                if ($current_tour > 3):
+                if ($json_settings['current_tour'] == 4):
                     if (!$this->validAvailableSteps() && $this->validUsersStatus(2)):
                         $this->nextStep();
                         $this->finishGame(1);
-
                         $this->setLog('finishGameInFourTour', 'finishGame (1)', 'Игра завершилась. Пользователи прошли все 4 этапа игры');
-
                         $this->reInitGame();
                     endif;
                 endif;
             endif;
         endif;
     }
-
     /************************** CREATING RESPONSES ******************************/
     private function createGameJSONResponse() {
 
         if ($this->game):
             $users = $map = array();
-            if (count($this->game->users)):
-                $users_ids = $this->getUsersIDs();
-                $activeUsers = Sessions::getUserIDsLastActivity($users_ids);
-                foreach ($this->game->users as $user_game):
-                    $photo_link = '';
-                    if (!empty($user_game->user_social) && isset($user_game->user_social->photo_big) && !empty($user_game->user_social->photo_big)):
-                        $photo_link = $user_game->user_social->photo_big;
-                    endif;
-                    $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
-                        'email' => $user_game->user->email, 'photo' => $photo_link,
-                        'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
-                        'status' => $user_game->status,
-                        'available_steps' => $user_game->available_steps, 'make_steps' => $user_game->make_steps,
-                        'active' => in_array($user_game->user->id, $activeUsers),
-                        'settings' => json_decode($user_game->json_settings, TRUE));
-                endforeach;
-            endif;
-            if (count($this->game->map_places)):
-                foreach ($this->game->map_places as $map_place):
-                    $map[] = array('id' => $map_place->id, 'zone' => $map_place->zone, 'user_id' => $map_place->user_id,
-                        'capital' => $map_place->capital, 'lives' => $map_place->lives, 'points' => $map_place->points,
-                        'settings' => json_decode($map_place->json_settings, TRUE));
-                endforeach;
-            endif;
+            $users_ids = $this->getUsersIDs();
+            $activeUsers = Sessions::getUserIDsLastActivity($users_ids);
+            foreach (GameUser::where('game_id', $this->game->id)->with('user','user_social')->get() as $user_game):
+                $photo_link = '';
+                if (!empty($user_game->user_social) && isset($user_game->user_social->photo_big) && !empty($user_game->user_social->photo_big)):
+                    $photo_link = $user_game->user_social->photo_big;
+                endif;
+                $users[] = array('id' => $user_game->user->id, 'name' => $user_game->user->name,
+                    'email' => $user_game->user->email, 'photo' => $photo_link,
+                    'color' => $user_game->color, 'points' => $user_game->points, 'place' => $user_game->place,
+                    'status' => $user_game->status,
+                    'available_steps' => $user_game->available_steps, 'make_steps' => $user_game->make_steps,
+                    'active' => in_array($user_game->user->id, $activeUsers),
+                    'settings' => json_decode($user_game->json_settings, TRUE));
+            endforeach;
+            foreach (GameMap::where('game_id', $this->game->id)->get() as $map_place):
+                $map[] = array('id' => $map_place->id, 'zone' => $map_place->zone, 'user_id' => $map_place->user_id,
+                    'capital' => $map_place->capital, 'lives' => $map_place->lives, 'points' => $map_place->points,
+                    'settings' => json_decode($map_place->json_settings, TRUE));
+            endforeach;
             $this->json_request['responseJSON'] = array(
                 'game_id' => $this->game->id,
                 'game_stage' => $this->game->stage,
@@ -1418,6 +1373,7 @@ class GameController extends BaseController {
         $this->game->json_settings = json_encode($json_settings);
         $this->game->save();
         $this->game->touch();
+        $this->reInitGame();
     }
 
     /******************************* RANDOM**************************************/
@@ -2612,11 +2568,11 @@ class GameController extends BaseController {
 
     private function getWinnerByPoints() {
 
-        if ($users_points = GameUser::where('game_id', $this->game->id)->lists('points', 'user_id')):
+        if ($users_points = GameUser::where('game_id', $this->game->id)->whereNotIn('status',array(99, 100))->lists('points', 'user_id')):
             arsort($users_points);
             $users = array_keys($users_points);
             $points = array_values($users_points);
-            if ($points[0] > $points[1]):
+            if (@$points[0] > @$points[1]):
                 return $users[0];
             endif;
         endif;
@@ -2744,6 +2700,7 @@ class GameController extends BaseController {
                     $this->game->json_settings = json_encode($json_settings);
                     $this->game->save();
                     $this->game->touch();
+                    $this->reInitGame();
                     $current_user_step = $this->getNextStep();
                     if ($current_user_step == $remove_user_id):
                         $this->nextStepInSecondStage();
@@ -2805,26 +2762,20 @@ class GameController extends BaseController {
                     $this->dropUser($user_game);
                 endif;
             endforeach;
-
             if ($deadUsersCount >= 2):
                 $this->nextStep();
                 $this->finishGame(0);
-
                 $this->setLog('droppingGameUsers', 'finishGame (1)', 'Игра завершилась. Отвалились 2 или более игроков');
-
                 $this->reInitGame();
             elseif (($deadUsersCount == 1 || $inActiveUsersCount == 1) && $this->validGameBots()):
-                $bots_count = $this->getGameCountBots();
+                $bots_count = $this->getGameCountBots(TRUE);
                 if ($bots_count == 2):
                     $this->nextStep();
                     $this->finishGame(1);
-
                     $this->setLog('droppingGameUsers', 'finishGame (1)', 'Игра завершилась. В игре остались только боты');
-
                     $this->reInitGame();
                 endif;
             endif;
-
             if ($inActiveUsersCount >= 2):
                 $this->nextStep();
                 $this->finishGame(1);
@@ -2833,7 +2784,6 @@ class GameController extends BaseController {
 
                 $this->reInitGame();
             endif;
-
         endif;
     }
 
@@ -2959,14 +2909,20 @@ class GameController extends BaseController {
         return $botsIDs;
     }
 
-    private function getGameCountBots() {
+    private function getGameCountBots($active = FALSE) {
 
         $bots_count = 0;
         if ($this->validGameStatus($this->game_statuses[2])):
             if (isset($this->game->users) && !empty($this->game->users)):
                 foreach ($this->game->users as $game_user):
                     if ($this->isBot($game_user->user_id)):
-                        $bots_count++;
+                        if ($active):
+                            if (!in_array($game_user->status, array(99, 100))):
+                                $bots_count++;
+                            endif;
+                        else:
+                            $bots_count++;
+                        endif;
                     endif;
                 endforeach;
             endif;
@@ -3058,12 +3014,13 @@ class GameController extends BaseController {
 
     private function getCurrentTourInSecondStage() {
 
-        $json_settings = json_decode($this->game->json_settings, TRUE);
-        if (isset($json_settings['current_tour'])):
-            return $json_settings['current_tour'];
-        else:
-            FALSE;
+        if ($this->validGameStage(2)):
+            $json_settings = json_decode($this->game->json_settings, TRUE);
+            if (isset($json_settings['current_tour'])):
+                return $json_settings['current_tour'];
+            endif;
         endif;
+        return FALSE;
     }
 
     private function nextGameLeader($user_id = NULL) {
